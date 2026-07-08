@@ -1,0 +1,104 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+}
+
+enum TaskType {
+  TASK1 // Letter / Email
+  TASK2 // Essay
+}
+
+enum SubmissionStatus {
+  DRAFT
+  PENDING_REVIEW
+  REVIEWED
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String       @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?      // Hashed password for email credentials
+  role          Role         @default(STUDENT)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  // Auth.js accounts / sessions
+  accounts      Account[]
+  sessions      Session[]
+  
+  // App submissions
+  submissions   Submission[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Submission {
+  id                   String           @id @default(cuid())
+  studentId            String
+  student              User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  taskType             TaskType
+  prompt               String           @db.Text
+  essayText            String           @db.Text
+  wordCount            Int
+  status               SubmissionStatus @default(DRAFT)
+  
+  // AI Assessment Data
+  aiScoreOverall       Float?
+  aiScoreTF            Float?           // Task Fulfillment
+  aiScoreOrg           Float?           // Organization
+  aiScoreVoc           Float?           // Vocabulary
+  aiScoreGra           Float?           // Grammar
+  aiFeedbackRaw        String?          @db.Text // XML-tagged text for rendering highlights
+  aiFeedbackJson       Json?            // Object with strengths, weaknesses, lists
+  
+  // Teacher Review Data
+  teacherId            String?
+  teacherScoreOverall  Float?
+  teacherScoreTF       Float?
+  teacherScoreOrg      Float?
+  teacherScoreVoc      Float?
+  teacherScoreGra      Float?
+  teacherComments      String?          @db.Text
+  
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+}
