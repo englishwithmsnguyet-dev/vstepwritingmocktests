@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>Actions</key>
+        <array>
+            <dict>
+                <key>ActionName</key>
+                <string>translate_selected_text</string>
+                <key>ActionScript</key>
+                <string>./translate.sh selected</string>
+            </dict>
+            <dict>
+                <key>ActionName</key>
+                <string>translate_from_input</string>
+                <key>ActionScript</key>
+                <string>./translate.sh input</string>
+            </dict>
+        </array>
+        <key>Category</key>
+        <string>Productivity</string>
+        <key>Creator</key>
+        <string>Google Translate Alfred Extension</string>
+        <key>Description</key>
+        <string>Translate selected text or input text using Google Translate</string>
+        <key>IconName</key>
+        <string>icon</string>
+        <key>Name</key>
+        <string>Google Translate</string>
+        <key>SearchKeywords</key>
+        <array>
+            <string>translate</string>
+            <string>google translate</string>
+            <string>trans</string>
+            <string>dich</string>
+        </array>
+        <key>Triggers</key>
+        <array>
+            <dict>
+                <key>BundleTitle</key>
+                <string>Launch Google Translate</string>
+                <key>Enabled</key>
+                <true/>
+                <key>InputStyle</key>
+                <string>icon</string>
+                <key>OutputStyle</key>
+                <string>none</string>
+                <key>PaletteTitle</key>
+                <string>Google Translate</string>
+                <key>ParentCommandName</key>
+                <string>Google Translate</string>
+                <key>RequiredPermissionType</key>
+                <string>execute_url</string>
+                <key>RequiredPermissionVersion</key>
+                <integer>1</integer>
+                <key>SubCommands</key>
+                <array>
+                    <dict>
+                        <key>ActionName</key>
+                        <string>translate_selected_text</string>
+                        <key>CommandName</key>
+                        <string>Translate Selected Text</string>
+                    </dict>
+                    <dict>
+                        <key>ActionName</key>
+                        <string>translate_from_input</string>
+                        <key>CommandName</key>
+                        <string>Translate From Input</string>
+                    </dict>
+                </array>
+                <key>TriggerType</key>
+                <string>normal</string>
+            </dict>
+        </array>
+        <key>UUID</key>
+        <string>98D4D6B5-D350-4820-9D7E-F067A376B1C9</string>
+    </dict>
+</plist>
