@@ -34,7 +34,7 @@ html_template = """<!DOCTYPE html>
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css?v=1787033333">
+    <link rel="stylesheet" href="styles.css?v=1787034444">
 
     <!-- Direct Student Login Modal Styles -->
     <style id="vstep-login-styles">
@@ -563,10 +563,10 @@ html_template = """<!DOCTYPE html>
     </div>
 
     <!-- DB Scripts -->
-    <script src="../db.js?v=1787033333"></script>
-    <script src="../writing_data.js?v=1787033333"></script>
+    <script src="../db.js?v=1787034444"></script>
+    <script src="../writing_data.js?v=1787034444"></script>
     <!-- Core App logic script -->
-    <script src="app.js?v=1787033333"></script>
+    <script src="app.js?v=1787034444"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -1781,13 +1781,13 @@ const elements = {
 
 
 // ==========================================
-// STUDENT LOGIN & GOOGLE FORM LOGGING
+// STUDENT LOGIN & GOOGLE FORM LOGGING (NO REMEMBER / KHÔNG GHI NHỚ)
 // ==========================================
 const VALID_CLASSES = ['CB201', 'CB202', 'CB196', 'B209'];
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
 const GOOGLE_FORM_ENTRY = 'entry.388968236';
 
-function showLoginModal(allowPrefill = false) {
+function showLoginModal() {
     const overlay = document.getElementById('vstep-login-overlay');
     if (!overlay) return;
     
@@ -1796,24 +1796,14 @@ function showLoginModal(allowPrefill = false) {
     const errorEl = document.getElementById('vstep-login-error');
     
     if (errorEl) errorEl.style.display = 'none';
-    
-    if (allowPrefill) {
-        nameInput.value = localStorage.getItem('vstep_student_name') || '';
-        classInput.value = localStorage.getItem('vstep_student_class') || '';
-    } else {
-        nameInput.value = localStorage.getItem('vstep_student_name') || '';
-        classInput.value = localStorage.getItem('vstep_student_class') || '';
-    }
+    if (nameInput) nameInput.value = '';
+    if (classInput) classInput.value = '';
     
     overlay.style.display = 'flex';
     void overlay.offsetHeight;
     overlay.classList.add('active');
     setTimeout(() => {
-        if (!nameInput.value) {
-            nameInput.focus();
-        } else {
-            classInput.focus();
-        }
+        if (nameInput) nameInput.focus();
     }, 150);
 }
 
@@ -1831,26 +1821,32 @@ function handleStudentLoginSubmit(event) {
     const nameInput = document.getElementById('vstep-input-name');
     const classInput = document.getElementById('vstep-input-class');
     
-    const fullName = nameInput.value.trim();
-    const className = classInput.value.trim().toUpperCase();
+    const fullName = nameInput ? nameInput.value.trim() : '';
+    const className = classInput ? classInput.value.trim().toUpperCase() : '';
     
     if (!fullName) {
         showLoginError('Vui lòng nhập Họ và Tên của bạn.');
-        nameInput.focus();
+        if (nameInput) nameInput.focus();
         return;
     }
     
     if (!VALID_CLASSES.includes(className)) {
         showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận các lớp: ${VALID_CLASSES.join(', ')}.`);
-        classInput.focus();
+        if (classInput) classInput.focus();
         return;
     }
     
-    // Save to localStorage
-    localStorage.setItem('vstep_student_name', fullName);
-    localStorage.setItem('vstep_student_class', className);
-    localStorage.setItem('vstep_student_logged_in', 'true');
-    localStorage.setItem('vstep_student_login_time', new Date().toISOString());
+    // Save to sessionStorage only (Current tab/session only, NO localStorage persistence)
+    sessionStorage.setItem('vstep_student_name', fullName);
+    sessionStorage.setItem('vstep_student_class', className);
+    sessionStorage.setItem('vstep_student_logged_in', 'true');
+    
+    // Clear any localStorage
+    try {
+        localStorage.removeItem('vstep_student_name');
+        localStorage.removeItem('vstep_student_class');
+        localStorage.removeItem('vstep_student_logged_in');
+    } catch (e) {}
     
     // Send log to Google Form
     submitStudentLoginToGoogleForm(fullName, className);
@@ -1931,8 +1927,15 @@ function submitStudentLoginToGoogleForm(name, className) {
 }
 
 function checkStudentAuth() {
-    const studentName = localStorage.getItem('vstep_student_name');
-    const studentClass = localStorage.getItem('vstep_student_class');
+    // Clear localStorage to prevent remembering across sessions/reloads
+    try {
+        localStorage.removeItem('vstep_student_name');
+        localStorage.removeItem('vstep_student_class');
+        localStorage.removeItem('vstep_student_logged_in');
+    } catch (e) {}
+    
+    const studentName = sessionStorage.getItem('vstep_student_name');
+    const studentClass = sessionStorage.getItem('vstep_student_class');
     if (!studentName || !studentClass || !VALID_CLASSES.includes(studentClass.toUpperCase())) {
         showLoginModal();
     } else {
@@ -1945,21 +1948,25 @@ function checkStudentAuth() {
 }
 
 function renderStudentBadge() {
-    const studentName = localStorage.getItem('vstep_student_name');
-    const studentClass = localStorage.getItem('vstep_student_class');
+    const studentName = sessionStorage.getItem('vstep_student_name');
+    const studentClass = sessionStorage.getItem('vstep_student_class');
     const container = document.getElementById('vstep-user-badge-container');
     if (!container) return;
     
     if (studentName && studentClass && VALID_CLASSES.includes(studentClass.toUpperCase())) {
         container.innerHTML = `
             <div class="vstep-user-badge">
-                <span class="user-icon"><i class="fa-solid fa-user-graduate"></i></span>
-                <span class="user-text">Học viên: <strong>${studentName}</strong> (Lớp <strong>${studentClass}</strong>)</span>
-                <button type="button" class="btn-change-user" onclick="showLoginModal(true)" title="Đổi thông tin học viên"><i class="fa-solid fa-user-pen"></i> Đổi</button>
+                <i class="fa-solid fa-user-graduate" style="color: #5865f2; font-size: 15px;"></i>
+                <span class="user-text">Học viên: <strong>${studentName}</strong> (Lớp: <strong>${studentClass}</strong>)</span>
+                <button type="button" class="btn-change-user" onclick="showLoginModal()" title="Đổi thông tin học viên"><i class="fa-solid fa-user-pen"></i> Đổi</button>
             </div>
         `;
     } else {
-        container.innerHTML = '';
+        container.innerHTML = `
+            <button type="button" class="vstep-login-btn-top" onclick="showLoginModal()">
+                <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP HỌC VIÊN
+            </button>
+        `;
     }
 }
 
@@ -3244,8 +3251,8 @@ function autosaveSession() {
 
 // Start Exam
 function startExam() {
-    const savedName = localStorage.getItem('vstep_student_name');
-    const savedClass = localStorage.getItem('vstep_student_class');
+    const savedName = sessionStorage.getItem('vstep_student_name');
+    const savedClass = sessionStorage.getItem('vstep_student_class');
     if (!savedName || !savedClass || !VALID_CLASSES.includes(savedClass.toUpperCase())) {
         showLoginModal();
         return;
