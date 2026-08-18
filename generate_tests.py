@@ -34,7 +34,7 @@ html_template = """<!DOCTYPE html>
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css?v=1781555555">
+    <link rel="stylesheet" href="styles.css?v=1787032222">
 </head>
 <body>
     <!-- Mobile Header -->
@@ -362,10 +362,10 @@ html_template = """<!DOCTYPE html>
     </div>
 
     <!-- DB Scripts -->
-    <script src="../db.js?v=1781555555"></script>
-    <script src="../writing_data.js?v=1781555555"></script>
+    <script src="../db.js?v=1787032222"></script>
+    <script src="../writing_data.js?v=1787032222"></script>
     <!-- Core App logic script -->
-    <script src="app.js?v=1781555555"></script>
+    <script src="app.js?v=1787032222"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
