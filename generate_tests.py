@@ -26,7 +26,7 @@ html_template = """<!DOCTYPE html>
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VSTEP Writing Mock Test [TEST_NUM_STR] - Miss Nguyet</title>
+    <title>VSTEP WRITING MOCK TEST [TEST_NUM_STR]</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -101,15 +101,17 @@ html_template = """<!DOCTYPE html>
                         <div class="welcome-cat-gif">
                             <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Typing Cat" class="typing-cat-img">
                         </div>
-                        <h1>VSTEP Writing Practice</h1>
+                        <h1>VSTEP WRITING MOCK TEST</h1>
                         <div class="mock-test-pill" id="welcome-test-pill">WRITING MOCK TEST [TEST_NUM_STR]</div>
+                        <div id="vstep-user-badge-container" style="margin: 12px auto 0; display: flex; justify-content: center;"></div>
                         <p class="welcome-desc">Chào mừng bạn đến với hệ thống thi thử VSTEP WRITING MOCK TEST. Hệ thống tính giờ ngược 60 phút và lưu tự động bài viết của bạn.</p>
                         <p class="welcome-warning"><i class="fa-solid fa-triangle-exclamation"></i> <strong>LƯU Ý:</strong> Không sử dụng từ điển hay tài liệu trong suốt quá trình thi thử.</p>
                     </div>
 
                     <div class="student-name-section" style="max-width: 400px; margin: 25px auto; display: flex; flex-direction: column; gap: 8px;">
                         <label for="student-name" style="font-weight: 700; font-size: 14px; text-align: left; color: var(--text-dark);">Họ và tên Học viên:</label>
-                        <input type="text" id="student-name" class="student-input" placeholder="Nhập tên của bạn..." value="Học viên">
+                        <input type="text" id="student-name" class="student-input" placeholder="Nhập tên của bạn..." value="Học viên" readonly style="background:#f8fafc; cursor:pointer;" onclick="showLoginModal(true)" title="Nhấn để đổi Họ tên / Lớp">
+                        <div style="font-size: 12px; color: #64748b; text-align: left; margin-top: -2px;"><a href="javascript:void(0)" onclick="showLoginModal(true)" style="color: #5865f2; font-weight: 700; text-decoration: none;"><i class="fa-solid fa-user-pen"></i> Đổi Họ tên / Lớp học</a></div>
                     </div>
                     
                     <div class="test-outline">
@@ -372,6 +374,30 @@ html_template = """<!DOCTYPE html>
             overlay.classList.toggle('active');
         }
     </script>
+
+    <!-- Student Login / Registration Modal -->
+    <div id="vstep-login-overlay" class="vstep-modal-overlay" style="display: none;">
+        <div class="vstep-login-card">
+            <div class="vstep-login-icon-badge">
+                <svg class="pencil-icon" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+            </div>
+            <h2 class="vstep-login-title">CHÀO MỪNG BẠN ĐẾN VỚI LỚP HỌC CỦA MISS NGUYET</h2>
+            <p class="vstep-login-subtitle">Vui lòng điền Họ tên và Lớp học của bạn để bắt đầu học. Kết quả luyện tập sẽ được ghi nhận và gửi báo cáo cho giáo viên.</p>
+            
+            <form id="vstep-login-form" onsubmit="handleStudentLoginSubmit(event)" novalidate>
+                <div class="vstep-input-group">
+                    <input type="text" id="vstep-input-name" class="vstep-login-input" placeholder="HỌ VÀ TÊN" autocomplete="name" required>
+                    <input type="text" id="vstep-input-class" class="vstep-login-input" placeholder="LỚP HỌC" autocomplete="off" required>
+                </div>
+                <div id="vstep-login-error" class="vstep-login-error-msg"></div>
+                <button type="submit" id="vstep-login-submit-btn" class="vstep-login-submit-btn">BẮT ĐẦU HỌC NGAY</button>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>
 """
@@ -1062,6 +1088,208 @@ body {
     transform: none !important;
 }
 
+
+/* ==========================================
+   STUDENT LOGIN / REGISTRATION MODAL
+   ========================================== */
+.vstep-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.vstep-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.vstep-login-card {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 42px 32px 36px;
+    width: 100%;
+    max-width: 430px;
+    text-align: center;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+    position: relative;
+    transform: scale(0.92);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.vstep-modal-overlay.active .vstep-login-card {
+    transform: scale(1);
+}
+
+.vstep-login-icon-badge {
+    width: 68px;
+    height: 68px;
+    background: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 22px;
+    color: #ffffff;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
+}
+
+.vstep-login-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.35;
+    margin-bottom: 14px;
+    letter-spacing: -0.2px;
+    text-transform: uppercase;
+}
+
+.vstep-login-subtitle {
+    font-size: 13.5px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 26px;
+}
+
+.vstep-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.vstep-login-input {
+    width: 100%;
+    background: #f1f5f9;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.vstep-login-input::placeholder {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vstep-login-input:focus {
+    background: #ffffff;
+    border-color: #5865f2;
+    box-shadow: 0 0 0 4px rgba(88, 101, 242, 0.14);
+}
+
+.vstep-login-error-msg {
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: none;
+    line-height: 1.45;
+    padding: 9px 14px;
+    background: #fef2f2;
+    border-radius: 12px;
+    border: 1px solid #fee2e2;
+    text-align: center;
+}
+
+.vstep-login-submit-btn {
+    width: 100%;
+    background: #5865f2;
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 20px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 10px 20px -5px rgba(88, 101, 242, 0.45);
+    transition: all 0.2s ease;
+}
+
+.vstep-login-submit-btn:hover {
+    background: #4752c4;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 25px -5px rgba(88, 101, 242, 0.55);
+}
+
+.vstep-login-submit-btn:active {
+    transform: translateY(0);
+}
+
+@keyframes vstepShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.vstep-shake {
+    animation: vstepShake 0.4s ease;
+}
+
+.vstep-user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.vstep-user-badge .user-icon {
+    color: #5865f2;
+}
+
+.vstep-user-badge .btn-change-user {
+    background: #f1f5f9;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 4px;
+    transition: all 0.2s ease;
+}
+
+.vstep-user-badge .btn-change-user:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+
 /* Animations */
 @keyframes pulse {
     0% { transform: scale(1); }
@@ -1350,8 +1578,194 @@ const elements = {
     testId = pathMatch ? parseInt(pathMatch[1]) : 1;
 })();
 
+
+// ==========================================
+// STUDENT LOGIN & GOOGLE FORM LOGGING
+// ==========================================
+const VALID_CLASSES = ['CB201', 'CB202', 'CB196', 'B209'];
+const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
+const GOOGLE_FORM_ENTRY = 'entry.388968236';
+
+function showLoginModal(allowPrefill = false) {
+    const overlay = document.getElementById('vstep-login-overlay');
+    if (!overlay) return;
+    
+    const nameInput = document.getElementById('vstep-input-name');
+    const classInput = document.getElementById('vstep-input-class');
+    const errorEl = document.getElementById('vstep-login-error');
+    
+    if (errorEl) errorEl.style.display = 'none';
+    
+    if (allowPrefill) {
+        nameInput.value = localStorage.getItem('vstep_student_name') || '';
+        classInput.value = localStorage.getItem('vstep_student_class') || '';
+    } else {
+        nameInput.value = localStorage.getItem('vstep_student_name') || '';
+        classInput.value = localStorage.getItem('vstep_student_class') || '';
+    }
+    
+    overlay.style.display = 'flex';
+    void overlay.offsetHeight;
+    overlay.classList.add('active');
+    setTimeout(() => {
+        if (!nameInput.value) {
+            nameInput.focus();
+        } else {
+            classInput.focus();
+        }
+    }, 150);
+}
+
+function closeLoginModal() {
+    const overlay = document.getElementById('vstep-login-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('active');
+    setTimeout(() => {
+        overlay.style.display = 'none';
+    }, 300);
+}
+
+function handleStudentLoginSubmit(event) {
+    if (event) event.preventDefault();
+    const nameInput = document.getElementById('vstep-input-name');
+    const classInput = document.getElementById('vstep-input-class');
+    
+    const fullName = nameInput.value.trim();
+    const className = classInput.value.trim().toUpperCase();
+    
+    if (!fullName) {
+        showLoginError('Vui lòng nhập Họ và Tên của bạn.');
+        nameInput.focus();
+        return;
+    }
+    
+    if (!VALID_CLASSES.includes(className)) {
+        showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận các lớp: ${VALID_CLASSES.join(', ')}.`);
+        classInput.focus();
+        return;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('vstep_student_name', fullName);
+    localStorage.setItem('vstep_student_class', className);
+    localStorage.setItem('vstep_student_logged_in', 'true');
+    localStorage.setItem('vstep_student_login_time', new Date().toISOString());
+    
+    // Send log to Google Form
+    submitStudentLoginToGoogleForm(fullName, className);
+    
+    // Update badge in UI
+    renderStudentBadge();
+    
+    // Close modal
+    closeLoginModal();
+    
+    // If on a test page, update student name field
+    const testStudentInput = document.getElementById('student-name');
+    if (testStudentInput) {
+        testStudentInput.value = `${fullName} (${className})`;
+    }
+    const displayStudent = document.getElementById('display-student-name');
+    if (displayStudent) {
+        displayStudent.innerText = `Thí sinh: ${fullName} (${className})`;
+    }
+}
+
+function showLoginError(msg) {
+    const errorEl = document.getElementById('vstep-login-error');
+    const cardEl = document.querySelector('.vstep-login-card');
+    if (errorEl) {
+        errorEl.textContent = msg;
+        errorEl.style.display = 'block';
+    }
+    if (cardEl) {
+        cardEl.classList.remove('vstep-shake');
+        void cardEl.offsetWidth;
+        cardEl.classList.add('vstep-shake');
+    }
+}
+
+function submitStudentLoginToGoogleForm(name, className) {
+    const submissionText = `${name} - ${className}`;
+    
+    // Method 1: fetch with no-cors
+    try {
+        const formData = new FormData();
+        formData.append(GOOGLE_FORM_ENTRY, submissionText);
+        fetch(GOOGLE_FORM_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: formData
+        }).catch(err => console.log('Login form fetch notice:', err));
+    } catch (e) {}
+    
+    // Method 2: Hidden form submission via hidden iframe
+    try {
+        const iframeName = 'gform_sink_' + Date.now();
+        const iframe = document.createElement('iframe');
+        iframe.name = iframeName;
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        
+        const form = document.createElement('form');
+        form.action = GOOGLE_FORM_URL;
+        form.method = 'POST';
+        form.target = iframeName;
+        form.style.display = 'none';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = GOOGLE_FORM_ENTRY;
+        input.value = submissionText;
+        form.appendChild(input);
+        
+        document.body.appendChild(form);
+        form.submit();
+        
+        setTimeout(() => {
+            form.remove();
+            iframe.remove();
+        }, 5000);
+    } catch (e) {}
+}
+
+function checkStudentAuth() {
+    const studentName = localStorage.getItem('vstep_student_name');
+    const studentClass = localStorage.getItem('vstep_student_class');
+    if (!studentName || !studentClass || !VALID_CLASSES.includes(studentClass.toUpperCase())) {
+        showLoginModal();
+    } else {
+        renderStudentBadge();
+        const testStudentInput = document.getElementById('student-name');
+        if (testStudentInput) {
+            testStudentInput.value = `${studentName} (${studentClass})`;
+        }
+    }
+}
+
+function renderStudentBadge() {
+    const studentName = localStorage.getItem('vstep_student_name');
+    const studentClass = localStorage.getItem('vstep_student_class');
+    const container = document.getElementById('vstep-user-badge-container');
+    if (!container) return;
+    
+    if (studentName && studentClass && VALID_CLASSES.includes(studentClass.toUpperCase())) {
+        container.innerHTML = `
+            <div class="vstep-user-badge">
+                <span class="user-icon"><i class="fa-solid fa-user-graduate"></i></span>
+                <span class="user-text">Học viên: <strong>${studentName}</strong> (Lớp <strong>${studentClass}</strong>)</span>
+                <button type="button" class="btn-change-user" onclick="showLoginModal(true)" title="Đổi thông tin học viên"><i class="fa-solid fa-user-pen"></i> Đổi</button>
+            </div>
+        `;
+    } else {
+        container.innerHTML = '';
+    }
+}
+
+
 // Initialize Workspace on Load
 async function initializeApp() {
+    checkStudentAuth();
     // 1. Sync Sidebar navigation
     syncSidebarNavigation();
     
@@ -2629,7 +3043,14 @@ function autosaveSession() {
 
 // Start Exam
 function startExam() {
-    studentName = elements.studentNameInput.value.trim() || "Học viên";
+    const savedName = localStorage.getItem('vstep_student_name');
+    const savedClass = localStorage.getItem('vstep_student_class');
+    if (!savedName || !savedClass || !VALID_CLASSES.includes(savedClass.toUpperCase())) {
+        showLoginModal();
+        return;
+    }
+    studentName = `${savedName} (${savedClass})`;
+    elements.studentNameInput.value = studentName;
     elements.displayStudentName.innerText = `Thí sinh: ${studentName}`;
     
     // Switch Screen

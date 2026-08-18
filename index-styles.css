@@ -748,3 +748,204 @@ body {
     }
 }
 
+
+
+/* ==========================================
+   STUDENT LOGIN / REGISTRATION MODAL
+   ========================================== */
+.vstep-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.vstep-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.vstep-login-card {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 42px 32px 36px;
+    width: 100%;
+    max-width: 430px;
+    text-align: center;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+    position: relative;
+    transform: scale(0.92);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.vstep-modal-overlay.active .vstep-login-card {
+    transform: scale(1);
+}
+
+.vstep-login-icon-badge {
+    width: 68px;
+    height: 68px;
+    background: #2563eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 22px;
+    color: #ffffff;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
+}
+
+.vstep-login-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.35;
+    margin-bottom: 14px;
+    letter-spacing: -0.2px;
+    text-transform: uppercase;
+}
+
+.vstep-login-subtitle {
+    font-size: 13.5px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 26px;
+}
+
+.vstep-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.vstep-login-input {
+    width: 100%;
+    background: #f1f5f9;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.vstep-login-input::placeholder {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vstep-login-input:focus {
+    background: #ffffff;
+    border-color: #5865f2;
+    box-shadow: 0 0 0 4px rgba(88, 101, 242, 0.14);
+}
+
+.vstep-login-error-msg {
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: none;
+    line-height: 1.45;
+    padding: 9px 14px;
+    background: #fef2f2;
+    border-radius: 12px;
+    border: 1px solid #fee2e2;
+    text-align: center;
+}
+
+.vstep-login-submit-btn {
+    width: 100%;
+    background: #5865f2;
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 20px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 10px 20px -5px rgba(88, 101, 242, 0.45);
+    transition: all 0.2s ease;
+}
+
+.vstep-login-submit-btn:hover {
+    background: #4752c4;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 25px -5px rgba(88, 101, 242, 0.55);
+}
+
+.vstep-login-submit-btn:active {
+    transform: translateY(0);
+}
+
+@keyframes vstepShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.vstep-shake {
+    animation: vstepShake 0.4s ease;
+}
+
+.vstep-user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.vstep-user-badge .user-icon {
+    color: #5865f2;
+}
+
+.vstep-user-badge .btn-change-user {
+    background: #f1f5f9;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 4px;
+    transition: all 0.2s ease;
+}
+
+.vstep-user-badge .btn-change-user:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}

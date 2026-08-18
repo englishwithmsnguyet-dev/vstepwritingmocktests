@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+/* Inline Grammer Checking Highlights with Hover and Transition styling */
+.error-highlight-grammar {
+  border-bottom: 2px dashed #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.06) !important;
+  cursor: help !important;
+  position: relative !important;
+  padding: 0 2px !important;
+  border-radius: 2px !important;
+  transition: all 150ms ease-in-out !important;
+}
+.error-highlight-grammar:hover {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+}
+
+.error-highlight-vocabulary {
+  border-bottom: 2px dashed #f97316 !important;
+  background-color: rgba(249, 115, 22, 0.06) !important;
+  cursor: help !important;
+  position: relative !important;
+  padding: 0 2px !important;
+  border-radius: 2px !important;
+  transition: all 150ms ease-in-out !important;
+}
+.error-highlight-vocabulary:hover {
+  background-color: rgba(249, 115, 22, 0.12) !important;
+}
+
+.error-highlight-spelling {
+  border-bottom: 2px dashed #eab308 !important;
+  background-color: rgba(234, 179, 8, 0.06) !important;
+  cursor: help !important;
+  position: relative !important;
+  padding: 0 2px !important;
+  border-radius: 2px !important;
+  transition: all 150ms ease-in-out !important;
+}
+.error-highlight-spelling:hover {
+  background-color: rgba(234, 179, 8, 0.12) !important;
+}
+
+.error-highlight-cohesion {
+  border-bottom: 2px dashed #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.06) !important;
+  cursor: help !important;
+  position: relative !important;
+  padding: 0 2px !important;
+  border-radius: 2px !important;
+  transition: all 150ms ease-in-out !important;
+}
+.error-highlight-cohesion:hover {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}

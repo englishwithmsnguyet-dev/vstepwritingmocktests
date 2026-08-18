@@ -1,0 +1,8 @@
+.DS_Store
+*.pyc
+__pycache__/
+~$*.docx
+.env
+.env*.local
+*.log
+node_modules/
