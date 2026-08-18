@@ -2158,7 +2158,208 @@ function printStudentWork() {
                 .error-highlight { border-bottom: 2px dashed #ef4444 !important; background-color: rgba(239, 68, 68, 0.12) !important; padding: 0 2px !important; }
                 .word-count { font-size: 12px; font-weight: bold; text-align: right; color: #64748b; margin-top: 5px; }
             </style>
-        </head>
+        
+    <!-- Direct Student Login Modal Styles -->
+    <style id="vstep-login-styles">
+    .vstep-modal-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.75) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        z-index: 9999999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 20px !important;
+        opacity: 0;
+        transition: opacity 0.3s ease !important;
+        pointer-events: none;
+    }
+    .vstep-modal-overlay.active {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+    .vstep-login-card {
+        background: #ffffff !important;
+        border-radius: 28px !important;
+        padding: 44px 32px 36px !important;
+        width: 100% !important;
+        max-width: 440px !important;
+        text-align: center !important;
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4) !important;
+        position: relative !important;
+        transform: scale(0.92) !important;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        box-sizing: border-box !important;
+    }
+    .vstep-modal-overlay.active .vstep-login-card {
+        transform: scale(1) !important;
+    }
+    .vstep-login-icon-badge {
+        width: 72px !important;
+        height: 72px !important;
+        background: #2563eb !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto 22px !important;
+        color: #ffffff !important;
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4) !important;
+    }
+    .vstep-login-title {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 21px !important;
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        line-height: 1.35 !important;
+        margin-bottom: 14px !important;
+        letter-spacing: -0.2px !important;
+        text-transform: uppercase !important;
+    }
+    .vstep-login-subtitle {
+        font-size: 13.5px !important;
+        color: #64748b !important;
+        line-height: 1.6 !important;
+        margin-bottom: 26px !important;
+    }
+    .vstep-input-group {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 14px !important;
+        margin-bottom: 14px !important;
+    }
+    .vstep-login-input {
+        width: 100% !important;
+        background: #f1f5f9 !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        padding: 16px 20px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+        font-family: inherit !important;
+        transition: all 0.2s ease !important;
+        box-sizing: border-box !important;
+        outline: none !important;
+    }
+    .vstep-login-input::placeholder {
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+    .vstep-login-input:focus {
+        background: #ffffff !important;
+        border-color: #5865f2 !important;
+        box-shadow: 0 0 0 4px rgba(88, 101, 242, 0.15) !important;
+    }
+    .vstep-login-error-msg {
+        color: #ef4444 !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        margin-bottom: 14px !important;
+        display: none;
+        line-height: 1.45 !important;
+        padding: 10px 14px !important;
+        background: #fef2f2 !important;
+        border-radius: 12px !important;
+        border: 1px solid #fee2e2 !important;
+        text-align: center !important;
+    }
+    .vstep-login-submit-btn {
+        width: 100% !important;
+        background: #5865f2 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 14px !important;
+        padding: 16px 20px !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.6px !important;
+        text-transform: uppercase !important;
+        cursor: pointer !important;
+        font-family: inherit !important;
+        box-shadow: 0 10px 20px -5px rgba(88, 101, 242, 0.45) !important;
+        transition: all 0.2s ease !important;
+    }
+    .vstep-login-submit-btn:hover {
+        background: #4752c4 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 14px 25px -5px rgba(88, 101, 242, 0.55) !important;
+    }
+    .vstep-login-submit-btn:active {
+        transform: translateY(0) !important;
+    }
+    @keyframes vstepShake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-6px); }
+        40%, 80% { transform: translateX(6px); }
+    }
+    .vstep-shake {
+        animation: vstepShake 0.4s ease !important;
+    }
+    .vstep-user-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        padding: 7px 16px !important;
+        border-radius: 999px !important;
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+    }
+    .vstep-user-badge .btn-change-user {
+        background: #f1f5f9 !important;
+        border: none !important;
+        color: #475569 !important;
+        cursor: pointer !important;
+        padding: 4px 10px !important;
+        border-radius: 8px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        margin-left: 6px !important;
+        transition: all 0.2s ease !important;
+        font-family: inherit !important;
+    }
+    .vstep-user-badge .btn-change-user:hover {
+        background: #fee2e2 !important;
+        color: #ef4444 !important;
+    }
+    .vstep-login-btn-top {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        background: #5865f2 !important;
+        color: #ffffff !important;
+        border: none !important;
+        padding: 8px 18px !important;
+        border-radius: 999px !important;
+        font-size: 13.5px !important;
+        font-weight: 800 !important;
+        cursor: pointer !important;
+        box-shadow: 0 6px 15px rgba(88, 101, 242, 0.35) !important;
+        transition: all 0.2s ease !important;
+        font-family: inherit !important;
+    }
+    .vstep-login-btn-top:hover {
+        background: #4752c4 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 8px 20px rgba(88, 101, 242, 0.45) !important;
+    }
+    </style>
+
+</head>
         <body>
             <h1>WRITING PRACTICE REPORT - TEST ${testId.toString().padStart(2, '0')}</h1>
             <div class="metadata" style="font-size: 14px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">
