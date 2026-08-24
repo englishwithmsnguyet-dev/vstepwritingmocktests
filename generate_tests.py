@@ -34,7 +34,7 @@ html_template = """<!DOCTYPE html>
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css?v=1787034444">
+    <link rel="stylesheet" href="styles.css?v=1787035555">
 
     <!-- Direct Student Login Modal Styles -->
     <style id="vstep-login-styles">
@@ -563,10 +563,10 @@ html_template = """<!DOCTYPE html>
     </div>
 
     <!-- DB Scripts -->
-    <script src="../db.js?v=1787034444"></script>
-    <script src="../writing_data.js?v=1787034444"></script>
+    <script src="../db.js?v=1787035555"></script>
+    <script src="../writing_data.js?v=1787035555"></script>
     <!-- Core App logic script -->
-    <script src="app.js?v=1787034444"></script>
+    <script src="app.js?v=1787035555"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -592,6 +592,7 @@ html_template = """<!DOCTYPE html>
                 <div class="vstep-input-group">
                     <input type="text" id="vstep-input-name" class="vstep-login-input" placeholder="HỌ VÀ TÊN" autocomplete="name" required>
                     <input type="text" id="vstep-input-class" class="vstep-login-input" placeholder="LỚP HỌC" autocomplete="off" required>
+                    <input type="password" id="vstep-input-pass" class="vstep-login-input" placeholder="MẬT KHẨU" autocomplete="current-password" required>
                 </div>
                 <div id="vstep-login-error" class="vstep-login-error-msg"></div>
                 <button type="submit" id="vstep-login-submit-btn" class="vstep-login-submit-btn">BẮT ĐẦU HỌC NGAY</button>
@@ -1793,11 +1794,13 @@ function showLoginModal() {
     
     const nameInput = document.getElementById('vstep-input-name');
     const classInput = document.getElementById('vstep-input-class');
+    const passInput = document.getElementById('vstep-input-pass');
     const errorEl = document.getElementById('vstep-login-error');
     
     if (errorEl) errorEl.style.display = 'none';
     if (nameInput) nameInput.value = '';
     if (classInput) classInput.value = '';
+    if (passInput) passInput.value = '';
     
     overlay.style.display = 'flex';
     void overlay.offsetHeight;
@@ -1816,13 +1819,17 @@ function closeLoginModal() {
     }, 300);
 }
 
+const REQUIRED_PASSWORD = 'VSTEPSEPTEMBER';
+
 function handleStudentLoginSubmit(event) {
     if (event) event.preventDefault();
     const nameInput = document.getElementById('vstep-input-name');
     const classInput = document.getElementById('vstep-input-class');
+    const passInput = document.getElementById('vstep-input-pass');
     
     const fullName = nameInput ? nameInput.value.trim() : '';
     const className = classInput ? classInput.value.trim().toUpperCase() : '';
+    const pass = passInput ? passInput.value.trim() : '';
     
     if (!fullName) {
         showLoginError('Vui lòng nhập Họ và Tên của bạn.');
@@ -1833,6 +1840,21 @@ function handleStudentLoginSubmit(event) {
     if (!VALID_CLASSES.includes(className)) {
         showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận các lớp: ${VALID_CLASSES.join(', ')}.`);
         if (classInput) classInput.focus();
+        return;
+    }
+    
+    if (!pass) {
+        showLoginError('Vui lòng nhập Mật khẩu.');
+        if (passInput) passInput.focus();
+        return;
+    }
+    
+    if (pass.toUpperCase() !== REQUIRED_PASSWORD) {
+        showLoginError('Mật khẩu không chính xác. Vui lòng kiểm tra lại.');
+        if (passInput) {
+            passInput.focus();
+            passInput.select();
+        }
         return;
     }
     

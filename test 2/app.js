@@ -70,11 +70,13 @@ function showLoginModal() {
     
     const nameInput = document.getElementById('vstep-input-name');
     const classInput = document.getElementById('vstep-input-class');
+    const passInput = document.getElementById('vstep-input-pass');
     const errorEl = document.getElementById('vstep-login-error');
     
     if (errorEl) errorEl.style.display = 'none';
     if (nameInput) nameInput.value = '';
     if (classInput) classInput.value = '';
+    if (passInput) passInput.value = '';
     
     overlay.style.display = 'flex';
     void overlay.offsetHeight;
@@ -93,13 +95,17 @@ function closeLoginModal() {
     }, 300);
 }
 
+const REQUIRED_PASSWORD = 'VSTEPSEPTEMBER';
+
 function handleStudentLoginSubmit(event) {
     if (event) event.preventDefault();
     const nameInput = document.getElementById('vstep-input-name');
     const classInput = document.getElementById('vstep-input-class');
+    const passInput = document.getElementById('vstep-input-pass');
     
     const fullName = nameInput ? nameInput.value.trim() : '';
     const className = classInput ? classInput.value.trim().toUpperCase() : '';
+    const pass = passInput ? passInput.value.trim() : '';
     
     if (!fullName) {
         showLoginError('Vui lòng nhập Họ và Tên của bạn.');
@@ -110,6 +116,21 @@ function handleStudentLoginSubmit(event) {
     if (!VALID_CLASSES.includes(className)) {
         showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận các lớp: ${VALID_CLASSES.join(', ')}.`);
         if (classInput) classInput.focus();
+        return;
+    }
+    
+    if (!pass) {
+        showLoginError('Vui lòng nhập Mật khẩu.');
+        if (passInput) passInput.focus();
+        return;
+    }
+    
+    if (pass.toUpperCase() !== REQUIRED_PASSWORD) {
+        showLoginError('Mật khẩu không chính xác. Vui lòng kiểm tra lại.');
+        if (passInput) {
+            passInput.focus();
+            passInput.select();
+        }
         return;
     }
     
