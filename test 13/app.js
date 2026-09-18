@@ -60,7 +60,7 @@ const elements = {
 // ==========================================
 // STUDENT LOGIN & GOOGLE FORM LOGGING (NO REMEMBER / KHÔNG GHI NHỚ)
 // ==========================================
-const VALID_CLASSES = ['CB201', 'CB202', 'CB196', 'B209'];
+const VALID_CLASSES = ['CB206'];
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
 const GOOGLE_FORM_ENTRY = 'entry.388968236';
 
@@ -114,7 +114,7 @@ function handleStudentLoginSubmit(event) {
     }
     
     if (!VALID_CLASSES.includes(className)) {
-        showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận các lớp: ${VALID_CLASSES.join(', ')}.`);
+        showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận lớp: ${VALID_CLASSES.join(', ')}.`);
         if (classInput) classInput.focus();
         return;
     }
