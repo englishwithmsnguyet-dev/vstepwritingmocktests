@@ -326,7 +326,7 @@ function syncSidebarNavigation() {
         </li>
     `;
     
-    for (let i = 1; i <= 20; i++) {
+    for (let i = 1; i <= 10; i++) {
         const active = (i === testId);
         const testName = `WRITING TEST ${i.toString().padStart(2, '0')}`;
         const li = document.createElement('li');

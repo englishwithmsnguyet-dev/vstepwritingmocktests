@@ -31,7 +31,7 @@
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index-styles.css?v=1787037777">
+    <link rel="stylesheet" href="index-styles.css?v=1787038888">
 
     <!-- Direct Student Login Modal Styles -->
     <style id="vstep-login-styles">
@@ -345,7 +345,7 @@
                         </p>
                         <div class="progress-stats" id="progress-stats-container" style="font-weight: 700; font-size: 15px; color: var(--text-primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
                             <i class="fa-solid fa-circle-check" style="color: var(--color-green);"></i>
-                            <span>Đã mở khóa: <span id="unlocked-count">0/20</span> đề thi</span>
+                            <span>Đã mở khóa: <span id="unlocked-count">10/10</span> đề thi</span>
                         </div>
                         <div class="backup-actions-row" style="display: flex; gap: 12px; flex-wrap: wrap;">
                             <button class="lock-btn" id="btn-export-backup" style="background: linear-gradient(135deg, var(--color-violet) 0%, #6d28d9 100%); flex: 1; min-width: 120px; font-size: 13.5px; padding: 10px 14px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);">
@@ -384,8 +384,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="db.js?v=1787037777"></script>
-    <script src="writing_data.js?v=1787037777"></script>
+    <script src="db.js?v=1787038888"></script>
+    <script src="writing_data.js?v=1787038888"></script>
     <script>
         const TEST_PASSWORDS = {
             1: "VSTEPPASS",
@@ -409,7 +409,7 @@
             19: "VSTEPEXAM",
             20: "PASSED"
         };
-        const EXISTING_TESTS = Array.from({length: 20}, (_, i) => i + 1);
+        const EXISTING_TESTS = Array.from({length: 10}, (_, i) => i + 1);
 
         function isTestUnlocked(testId) {
             return true;
@@ -1742,7 +1742,7 @@
                 </li>
             `;
             
-            for (let i = 1; i <= 20; i++) {
+            for (let i = 1; i <= 10; i++) {
                 const unlocked = isTestUnlocked(i);
                 const testName = `WRITING TEST ${i.toString().padStart(2, '0')}`;
                 const li = document.createElement('li');
@@ -1780,7 +1780,7 @@
             const grid = document.getElementById('test-cards-grid');
             grid.innerHTML = '';
 
-            for (let i = 1; i <= 20; i++) {
+            for (let i = 1; i <= 10; i++) {
                 const unlocked = isTestUnlocked(i);
                 const testNum = i.toString().padStart(2, '0');
                 const testData = WRITING_TESTS_DATA[i];
@@ -2068,7 +2068,7 @@
                     let count = 0;
                     decoded.forEach(testId => {
                         const id = parseInt(testId);
-                        if (id >= 1 && id <= 20) {
+                        if (id >= 1 && id <= 10) {
                             sessionStorage.setItem('unlocked_writing_test_' + id, 'true');
                             count++;
                         }

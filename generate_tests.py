@@ -34,7 +34,7 @@ html_template = """<!DOCTYPE html>
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css?v=1787037777">
+    <link rel="stylesheet" href="styles.css?v=1787038888">
 
     <!-- Direct Student Login Modal Styles -->
     <style id="vstep-login-styles">
@@ -563,10 +563,10 @@ html_template = """<!DOCTYPE html>
     </div>
 
     <!-- DB Scripts -->
-    <script src="../db.js?v=1787037777"></script>
-    <script src="../writing_data.js?v=1787037777"></script>
+    <script src="../db.js?v=1787038888"></script>
+    <script src="../writing_data.js?v=1787038888"></script>
     <!-- Core App logic script -->
-    <script src="app.js?v=1787037777"></script>
+    <script src="app.js?v=1787038888"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -2050,7 +2050,7 @@ function syncSidebarNavigation() {
         </li>
     `;
     
-    for (let i = 1; i <= 20; i++) {
+    for (let i = 1; i <= 10; i++) {
         const active = (i === testId);
         const testName = `WRITING TEST ${i.toString().padStart(2, '0')}`;
         const li = document.createElement('li');
@@ -4193,7 +4193,7 @@ function printStudentWork() {
 print("Starting folder generation...")
 
 # Generate folders test 1 to 20
-for i in range(1, 21):
+for i in range(1, 11):
     folder_name = f"/Users/nguyetpham/Desktop/WEBSITE/WRITING MOCK TESTS/test {i}"
     os.makedirs(folder_name, exist_ok=True)
     
@@ -4215,4 +4215,4 @@ for i in range(1, 21):
     with open(css_file, "w", encoding="utf-8") as f:
         f.write(css_template)
 
-print("All 20 test folders generated successfully!")
+print("All 10 test folders generated successfully!")
