@@ -60,8 +60,8 @@ const elements = {
 // ==========================================
 // STUDENT LOGIN & GOOGLE FORM LOGGING
 // ==========================================
-const VALID_CLASSES = ['CB206', 'CB210'];
-const REQUIRED_PASSWORD = 'VSTEPSEPTEMBER';
+const VALID_CLASSES = ['CB206', 'CB210', 'GV'];
+const REQUIRED_PASSWORD = 'STUDYHARD';
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
 const GOOGLE_FORM_ENTRY = 'entry.388968236';
 
@@ -118,25 +118,35 @@ function handleStudentLoginSubmit(event) {
         return;
     }
     
+    const isTeacher = (fullName.toUpperCase() === 'PTMN' && className === 'GV');
+
+    if (className === 'GV' && !isTeacher) {
+        showLoginError('Mã lớp GV chỉ dành riêng cho tài khoản Giáo viên (PTMN)!');
+        if (nameInput) nameInput.focus();
+        return;
+    }
+
     if (!VALID_CLASSES.includes(className)) {
-        showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận lớp: ${VALID_CLASSES.join(', ')}.`);
+        showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận lớp: CB206, CB210.`);
         if (classInput) classInput.focus();
         return;
     }
     
-    if (!pass) {
-        showLoginError('Vui lòng nhập Mật khẩu.');
-        if (passInput) passInput.focus();
-        return;
-    }
-    
-    if (pass.toUpperCase() !== REQUIRED_PASSWORD) {
-        showLoginError('Mật khẩu không chính xác. Vui lòng kiểm tra lại.');
-        if (passInput) {
-            passInput.focus();
-            passInput.select();
+    if (!isTeacher) {
+        if (!pass) {
+            showLoginError('Vui lòng nhập Mật khẩu.');
+            if (passInput) passInput.focus();
+            return;
         }
-        return;
+        
+        if (pass.toUpperCase() !== REQUIRED_PASSWORD) {
+            showLoginError('Mật khẩu không chính xác. Vui lòng kiểm tra lại.');
+            if (passInput) {
+                passInput.focus();
+                passInput.select();
+            }
+            return;
+        }
     }
     
     // Save to BOTH localStorage and sessionStorage so switching tests does NOT require re-login
@@ -258,14 +268,26 @@ function renderStudentBadge() {
     const container = document.getElementById('vstep-user-badge-container');
     if (!container) return;
     
-    if (studentName && studentClass && VALID_CLASSES.includes(studentClass.toUpperCase())) {
-        container.innerHTML = `
-            <div class="vstep-user-badge">
-                <i class="fa-solid fa-user-graduate" style="color: #5865f2; font-size: 15px;"></i>
-                <span class="user-text">Học viên: <strong>${studentName}</strong> (Lớp: <strong>${studentClass}</strong>)</span>
-                <button type="button" class="btn-change-user" onclick="showLoginModal()" title="Đổi thông tin học viên"><i class="fa-solid fa-user-pen"></i> Đổi</button>
-            </div>
-        `;
+    const isTeacher = (studentName && studentClass && studentName.toUpperCase() === 'PTMN' && studentClass.toUpperCase() === 'GV');
+    
+    if (studentName && studentClass && (VALID_CLASSES.includes(studentClass.toUpperCase()) || isTeacher)) {
+        if (isTeacher) {
+            container.innerHTML = `
+                <div class="vstep-user-badge" style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4);">
+                    <i class="fa-solid fa-chalkboard-user" style="color: #eab308; font-size: 15px;"></i>
+                    <span class="user-text">Giáo viên: <strong>${studentName}</strong> (<strong>${studentClass}</strong>)</span>
+                    <button type="button" class="btn-change-user" onclick="showLoginModal()" title="Đổi thông tin"><i class="fa-solid fa-user-pen"></i> Đổi</button>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="vstep-user-badge">
+                    <i class="fa-solid fa-user-graduate" style="color: #5865f2; font-size: 15px;"></i>
+                    <span class="user-text">Học viên: <strong>${studentName}</strong> (Lớp: <strong>${studentClass}</strong>)</span>
+                    <button type="button" class="btn-change-user" onclick="showLoginModal()" title="Đổi thông tin học viên"><i class="fa-solid fa-user-pen"></i> Đổi</button>
+                </div>
+            `;
+        }
     } else {
         container.innerHTML = `
             <button type="button" class="vstep-login-btn-top" onclick="showLoginModal()">
