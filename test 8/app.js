@@ -60,7 +60,8 @@ const elements = {
 // ==========================================
 // STUDENT LOGIN & GOOGLE FORM LOGGING
 // ==========================================
-const VALID_CLASSES = ['CB201', 'CB202', 'CB196', 'CB206', 'CB210', 'CB211', 'CB213', 'CB219', 'CB220', 'ONB103', 'B209', 'B212', 'B220', 'GV'];
+const VALID_CLASSES = ['CB196', 'CB206', 'CB210', 'CB211', 'CB213', 'CB219', 'CB220', 'ONB103', 'B209', 'B212', 'GV'];
+const BANNED_CLASSES = ['CB201', 'CB202', 'B220'];
 const REQUIRED_PASSWORD = 'STUDYHARD';
 const VALID_PASSWORDS = ['STUDYHARD', 'VSTEPSEPTEMBER', 'PTMN2896', 'PTMN2412', 'PTMN2805'];
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
@@ -119,6 +120,11 @@ function handleStudentLoginSubmit(event) {
         return;
     }
     
+    if (BANNED_CLASSES.includes(className)) {
+        showLoginError();
+        if (classInput) classInput.focus();
+        return;
+    }
     if (!VALID_CLASSES.includes(className)) {
         showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận lớp: ${VALID_CLASSES.filter(c => c !== 'GV').join(', ')}.`);
         if (classInput) classInput.focus();
@@ -240,6 +246,13 @@ function checkStudentAuth() {
     const studentClass = sessionStorage.getItem('vstep_student_class');
     const isLoggedIn = sessionStorage.getItem('vstep_student_logged_in') === 'true';
     const isTeacher = (studentName && studentName.toUpperCase() === 'PTMN' && studentClass && studentClass.toUpperCase() === 'GV');
+    if (studentClass && BANNED_CLASSES.includes(studentClass.toUpperCase())) {
+        sessionStorage.removeItem('vstep_student_name');
+        sessionStorage.removeItem('vstep_student_class');
+        sessionStorage.removeItem('vstep_student_logged_in');
+        showLoginModal();
+        return;
+    }
     
     if (!isLoggedIn || !studentName || !studentClass || (!isTeacher && !VALID_CLASSES.includes(studentClass.toUpperCase()))) {
         showLoginModal();

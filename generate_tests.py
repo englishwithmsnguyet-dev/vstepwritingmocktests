@@ -1784,7 +1784,8 @@ const elements = {
 // ==========================================
 // STUDENT LOGIN & GOOGLE FORM LOGGING
 // ==========================================
-const VALID_CLASSES = ['CB206', 'CB210', 'GV'];
+const VALID_CLASSES = ['CB196', 'CB206', 'CB210', 'CB211', 'CB213', 'CB219', 'CB220', 'ONB103', 'B209', 'B212', 'GV'];
+const BANNED_CLASSES = ['CB201', 'CB202', 'B220'];
 const REQUIRED_PASSWORD = 'STUDYHARD';
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
 const GOOGLE_FORM_ENTRY = 'entry.388968236';
