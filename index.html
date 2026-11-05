@@ -3007,8 +3007,9 @@
 // ==========================================
 // STUDENT LOGIN & GOOGLE FORM LOGGING
 // ==========================================
-const VALID_CLASSES = ['CB206', 'CB210', 'GV'];
+const VALID_CLASSES = ['CB201', 'CB202', 'CB196', 'CB206', 'CB210', 'CB211', 'CB213', 'CB219', 'CB220', 'ONB103', 'B209', 'B212', 'B220', 'GV'];
 const REQUIRED_PASSWORD = 'STUDYHARD';
+const VALID_PASSWORDS = ['STUDYHARD', 'VSTEPSEPTEMBER', 'PTMN2896', 'PTMN2412', 'PTMN2805'];
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
 const GOOGLE_FORM_ENTRY = 'entry.388968236';
 
@@ -3022,8 +3023,8 @@ function showLoginModal() {
     const errorEl = document.getElementById('vstep-login-error');
     
     if (errorEl) errorEl.style.display = 'none';
-    if (nameInput) nameInput.value = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name') || '';
-    if (classInput) classInput.value = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class') || '';
+    if (nameInput) nameInput.value = sessionStorage.getItem('vstep_student_name') || localStorage.getItem('vstep_student_name') || '';
+    if (classInput) classInput.value = sessionStorage.getItem('vstep_student_class') || localStorage.getItem('vstep_student_class') || '';
     if (passInput) passInput.value = '';
     
     overlay.style.display = 'flex';
@@ -3085,7 +3086,7 @@ function handleStudentLoginSubmit(event) {
             return;
         }
         
-        if (pass.toUpperCase() !== REQUIRED_PASSWORD) {
+        if (!VALID_PASSWORDS.includes(pass.toUpperCase())) {
             showLoginError('Mật khẩu không chính xác. Vui lòng kiểm tra lại.');
             if (passInput) {
                 passInput.focus();
@@ -3182,20 +3183,15 @@ function submitStudentLoginToGoogleForm(name, className) {
 }
 
 function checkStudentAuth() {
-    const studentName = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name');
-    const studentClass = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class');
+    const studentName = sessionStorage.getItem('vstep_student_name');
+    const studentClass = sessionStorage.getItem('vstep_student_class');
+    const isLoggedIn = sessionStorage.getItem('vstep_student_logged_in') === 'true';
+    const isTeacher = (studentName && studentName.toUpperCase() === 'PTMN' && studentClass && studentClass.toUpperCase() === 'GV');
     
-    if (!studentName || !studentClass || !VALID_CLASSES.includes(studentClass.toUpperCase())) {
+    if (!isLoggedIn || !studentName || !studentClass || (!isTeacher && !VALID_CLASSES.includes(studentClass.toUpperCase()))) {
         showLoginModal();
     } else {
-        // Keep both storages synced
-        localStorage.setItem('vstep_student_name', studentName);
-        localStorage.setItem('vstep_student_class', studentClass);
-        localStorage.setItem('vstep_student_logged_in', 'true');
-        sessionStorage.setItem('vstep_student_name', studentName);
-        sessionStorage.setItem('vstep_student_class', studentClass);
-        sessionStorage.setItem('vstep_student_logged_in', 'true');
-        
+        closeLoginModal();
         renderStudentBadge();
         const testStudentInput = document.getElementById('student-name');
         if (testStudentInput) {
@@ -3267,7 +3263,7 @@ function renderStudentBadge() {
     </script>
 
         <!-- Student Login / Registration Modal -->
-    <div id="vstep-login-overlay" class="vstep-modal-overlay" style="display: none;">
+    <div id="vstep-login-overlay" class="vstep-modal-overlay active" style="display: flex;">
         <div class="vstep-login-card login-card-custom">
             <!-- Miss Nguyet Avatar Brand Ring -->
             <div class="login-teacher-avatar-wrap">
