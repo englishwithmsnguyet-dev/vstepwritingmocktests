@@ -34,7 +34,7 @@ html_template = """<!DOCTYPE html>
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css?v=1794899999">
+    <link rel="stylesheet" href="styles.css?v=1794900001">
 
     <!-- Direct Student Login Modal Styles -->
     <style id="vstep-login-styles">
@@ -495,6 +495,26 @@ html_template = """<!DOCTYPE html>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Detailed Sentence-by-Sentence Feedback Task 1 -->
+                            <div class="glass-card sentence-feedback-card" id="sentence-feedback-card-t1" style="display: none; padding: 18px 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); flex-direction: column; gap: 14px;">
+                                <div class="sf-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 14px;">
+                                    <div>
+                                        <h4 style="margin: 0 0 4px 0; color: #1e293b; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fa-solid fa-list-check" style="color: #6366f1;"></i> GÓP Ý & SỬA LỖI CHI TIẾT TỪNG CÂU
+                                        </h4>
+                                        <span style="font-size: 12.5px; color: #64748b;">Hệ thống phân tích cú pháp, độ dài, từ vựng và chỉ ra điểm cần cải thiện cho từng câu trong bài viết</span>
+                                    </div>
+                                    <div class="sf-stats" id="sf-stats-t1" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+                                </div>
+                                <div class="sf-filter-tabs" id="sf-filter-tabs-t1">
+                                    <button type="button" class="sf-tab-btn active" onclick="filterSentenceFeedback(1, 'all')">Tất cả (<span id="sf-count-all-t1">0</span>)</button>
+                                    <button type="button" class="sf-tab-btn sf-tab-good" onclick="filterSentenceFeedback(1, 'good')"><i class="fa-solid fa-circle-check"></i> Đạt chuẩn (<span id="sf-count-good-t1">0</span>)</button>
+                                    <button type="button" class="sf-tab-btn sf-tab-warn" onclick="filterSentenceFeedback(1, 'warning')"><i class="fa-solid fa-triangle-exclamation"></i> Cần lưu ý (<span id="sf-count-warn-t1">0</span>)</button>
+                                    <button type="button" class="sf-tab-btn sf-tab-err" onclick="filterSentenceFeedback(1, 'error')"><i class="fa-solid fa-circle-xmark"></i> Cần sửa lỗi (<span id="sf-count-err-t1">0</span>)</button>
+                                </div>
+                                <div class="sf-sentence-list" id="sf-sentence-list-t1"></div>
+                            </div>
                         </div>
 
                         <!-- TASK 2 PANEL -->
@@ -553,6 +573,26 @@ html_template = """<!DOCTYPE html>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Detailed Sentence-by-Sentence Feedback Task 2 -->
+                            <div class="glass-card sentence-feedback-card" id="sentence-feedback-card-t2" style="display: none; padding: 18px 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); flex-direction: column; gap: 14px;">
+                                <div class="sf-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 14px;">
+                                    <div>
+                                        <h4 style="margin: 0 0 4px 0; color: #1e293b; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fa-solid fa-list-check" style="color: #6366f1;"></i> GÓP Ý & SỬA LỖI CHI TIẾT TỪNG CÂU
+                                        </h4>
+                                        <span style="font-size: 12.5px; color: #64748b;">Hệ thống phân tích cú pháp, độ dài, từ vựng và chỉ ra điểm cần cải thiện cho từng câu trong bài luận</span>
+                                    </div>
+                                    <div class="sf-stats" id="sf-stats-t2" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+                                </div>
+                                <div class="sf-filter-tabs" id="sf-filter-tabs-t2">
+                                    <button type="button" class="sf-tab-btn active" onclick="filterSentenceFeedback(2, 'all')">Tất cả (<span id="sf-count-all-t2">0</span>)</button>
+                                    <button type="button" class="sf-tab-btn sf-tab-good" onclick="filterSentenceFeedback(2, 'good')"><i class="fa-solid fa-circle-check"></i> Đạt chuẩn (<span id="sf-count-good-t2">0</span>)</button>
+                                    <button type="button" class="sf-tab-btn sf-tab-warn" onclick="filterSentenceFeedback(2, 'warning')"><i class="fa-solid fa-triangle-exclamation"></i> Cần lưu ý (<span id="sf-count-warn-t2">0</span>)</button>
+                                    <button type="button" class="sf-tab-btn sf-tab-err" onclick="filterSentenceFeedback(2, 'error')"><i class="fa-solid fa-circle-xmark"></i> Cần sửa lỗi (<span id="sf-count-err-t2">0</span>)</button>
+                                </div>
+                                <div class="sf-sentence-list" id="sf-sentence-list-t2"></div>
+                            </div>
                         </div>
 
                     </div>
@@ -563,10 +603,10 @@ html_template = """<!DOCTYPE html>
     </div>
 
     <!-- DB Scripts -->
-    <script src="../db.js?v=1794899999"></script>
-    <script src="../writing_data.js?v=1794899999"></script>
+    <script src="../db.js?v=1794900001"></script>
+    <script src="../writing_data.js?v=1794900001"></script>
     <!-- Core App logic script -->
-    <script src="app.js?v=1794899999"></script>
+    <script src="app.js?v=1794900001"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -1719,6 +1759,209 @@ body {
         font-size: 14px;
         padding: 15px;
     }
+}
+
+/* ==========================================================================
+   Sentence-by-Sentence Feedback Component
+   ========================================================================== */
+.sentence-feedback-card {
+    transition: all 0.25s ease;
+}
+
+.sf-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.sf-pill-all {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+.sf-pill-good {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+.sf-pill-warn {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+.sf-pill-err {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.sf-filter-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.sf-tab-btn {
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+}
+.sf-tab-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+.sf-tab-btn.active {
+    background: #6366f1;
+    color: #ffffff;
+    border-color: #6366f1;
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
+}
+.sf-tab-btn.sf-tab-good.active {
+    background: #10b981;
+    border-color: #10b981;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+}
+.sf-tab-btn.sf-tab-warn.active {
+    background: #f59e0b;
+    border-color: #f59e0b;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+}
+.sf-tab-btn.sf-tab-err.active {
+    background: #ef4444;
+    border-color: #ef4444;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+}
+
+.sf-sentence-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sf-item {
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.sf-item.sf-status-good {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #10b981;
+}
+.sf-item.sf-status-warning {
+    background: #fffdf7;
+    border: 1px solid #fef3c7;
+    border-left: 5px solid #f59e0b;
+}
+.sf-item.sf-status-error {
+    background: #fffafa;
+    border: 1px solid #fee2e2;
+    border-left: 5px solid #ef4444;
+}
+
+.sf-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.sf-num-badge {
+    font-weight: 800;
+    font-size: 12px;
+    color: #1e293b;
+    background: #f1f5f9;
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+.sf-badge-status {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.sf-badge-good {
+    background: #d1fae5;
+    color: #065f46;
+}
+.sf-badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+.sf-badge-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sf-word-count {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sf-sentence-body {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #1e293b;
+    font-weight: 500;
+    background: #f8fafc;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #edf2f7;
+    font-style: italic;
+}
+
+.sf-diagnostics {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.sf-diag-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+.sf-diag-err {
+    color: #991b1b;
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
+}
+.sf-diag-warn {
+    color: #92400e;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+}
+.sf-diag-good {
+    color: #065f46;
+    background: #f0fdf4;
+    border-left: 3px solid #10b981;
 }
 """
 
@@ -3638,6 +3881,455 @@ function highlightGrammarErrors(text) {
             return tempText;
         }
 
+function escapeHtml(str) {
+    if (!str) return "";
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function analyzeSentences(text, isTask2) {
+    if (!text || !text.trim()) {
+        return { sentences: [], total: 0, goodCount: 0, warnCount: 0, errCount: 0 };
+    }
+
+    const cleanText = text.trim();
+    
+    // Protect abbreviations from premature splitting
+    const safeText = cleanText
+        .replace(/\\b(Mr|Mrs|Ms|Dr|Prof|Sr|Jr)\\./gi, '$1___DOT___')
+        .replace(/\\b(e\\.g|i\\.e|etc)\\./gi, '$1___DOT___')
+        .replace(/\\b(vs|vol|no|dept|univ)\\./gi, '$1___DOT___');
+
+    const paragraphs = safeText.split(/\\n+/);
+    const rawList = [];
+
+    paragraphs.forEach((para, pIdx) => {
+        const trimmed = para.trim();
+        if (!trimmed) return;
+        
+        // Match sentence segments
+        const matches = trimmed.match(/[^.!?]+(?:[.!?]+|$)/g);
+        if (matches) {
+            matches.forEach(m => {
+                let s = m.trim().replace(/___DOT___/g, '.');
+                if (s.length > 0) {
+                    rawList.push({
+                        text: s,
+                        paraIndex: pIdx + 1
+                    });
+                }
+            });
+        }
+    });
+
+    const analyzedSentences = [];
+    let goodCount = 0;
+    let warnCount = 0;
+    let errCount = 0;
+
+    const grammarRules = [
+        {
+            id: "subj_verb",
+            regex: /\\b(he|she|it|this|that|someone|somebody|everyone|everybody|anyone|anybody|noone|nobody)\\s+(have|do|go|want|like|think|say|hope|know|make|seem|take|get|come|find|contribute|lead|cause|help|reduce|increase|show|give|bring|create|provide|support|affect|improve|study|learn|work|use|live|play|watch|feel|see|hear|tell|ask|write|read|speak)\\b/gi,
+            message: (m) => `Lỗi hòa hợp chủ ngữ - vị ngữ: Chủ ngữ số ít đi với động từ nguyên mẫu ("${m[0]}"). Cần chia động từ số ít (-s/-es).`
+        },
+        {
+            id: "i_am_agree",
+            regex: /\\b(i\\s+am|i'm|he\\s+is|she\\s+is|they\\s+are|we\\s+are)\\s+agree\\b/gi,
+            message: (m) => `Dùng sai "be agree" ("${m[0]}"): "agree" là động từ thường. Sửa thành "${m[1].split(' ')[0]} agree".`
+        },
+        {
+            id: "modal_to",
+            regex: /\\b(can|could|should|must|will|would|may|might)\\s+to\\s+([a-z]+)/gi,
+            message: (m) => `Dùng thừa "to" sau động từ khuyết thiếu: Sửa "${m[0]}" thành "${m[1]} ${m[2]}".`
+        },
+        {
+            id: "plural_is",
+            regex: /\\b(people|students|children|teachers|parents|friends|we|they|prices|benefits|advantages|disadvantages|problems|ideas|aspects|countries|cities|factors|reasons|solutions|effects|results)\\s+(of\\s+[a-z]{1,20}?\\s+)?(is|was)\\b/gi,
+            message: (m) => `Lỗi hòa hợp chủ vị: Chủ ngữ số nhiều ("${m[1]}") đi với to be số ít ("${m[3]}"). Sửa thành "are" hoặc "were".`
+        },
+        {
+            id: "singular_are",
+            regex: /\\b(everyone|everybody|someone|somebody|noone|nobody|each|he|she|it)\\s+(are|were)\\b/gi,
+            message: (m) => `Lỗi hòa hợp chủ vị: Chủ ngữ số ít ("${m[1]}") đi với to be số nhiều ("${m[2]}"). Sửa thành "is" hoặc "was".`
+        },
+        {
+            id: "there_has",
+            regex: /\\bthere\\s+(has|have)\\b/gi,
+            message: (m) => `Dùng sai "there ${m[1]}": Diễn tả sự tồn tại dùng "There is / There are".`
+        },
+        {
+            id: "discuss_about",
+            regex: /\\b(discuss|mention)\\s+about\\b/gi,
+            message: (m) => `Dùng thừa giới từ "about": Động từ "${m[1]}" đi trực tiếp với tân ngữ, không có "about".`
+        },
+        {
+            id: "themself",
+            regex: /\\bthemself\\b/gi,
+            message: () => `Dùng sai từ phản thân "themself": Sửa thành "themselves".`
+        },
+        {
+            id: "lead_to_verb",
+            regex: /\\blead\\s+to\\s+(reduce|increase|protect|improve|cause|solve|create)\\b/gi,
+            message: (m) => `Sau "lead to" phải là danh từ hoặc V-ing. Sửa thành "lead to ${m[1]}ing".`
+        },
+        {
+            id: "double_comparison",
+            regex: /\\bmore\\s+(better|easier|faster|harder|safer|older|younger|taller|shorter|longer|bigger|smaller|cleaner|dirtier|healthier|busier)\\b/gi,
+            message: (m) => `Lỗi so sánh kép thừa "more" ("${m[0]}"): Đã có đuôi "-er" thì không dùng "more".`
+        },
+        {
+            id: "because_of_clause",
+            regex: /\\bbecause\\s+of\\s+(i|you|he|she|it|we|they)\\b/gi,
+            message: (m) => `Dùng sai "because of": Phía sau là mệnh đề thì dùng liên từ "because", không dùng "because of".`
+        },
+        {
+            id: "despite_clause",
+            regex: /\\b(despite|in\\s+spite\\s+of)\\s+(i|you|he|she|it|we|they)\\s+(is|are|was|were|have|has|had|do|does|did|go|goes|went|can|could|will|would|should|\\w+s\\b|\\w+ed\\b)\\b/gi,
+            message: (m) => `Dùng sai "${m[1]}": Phía sau là mệnh đề thì dùng "although" hoặc "even though".`
+        },
+        {
+            id: "word_form_convenience",
+            regex: /\\b(very|more|makes?\\s+[a-zA-Z]+\\s+more)\\s+(convenience|importance|safety|beauty|health)\\b/gi,
+            message: (m) => `Sai từ loại: Cần dùng tính từ (convenient, important, safe, beautiful, healthy) thay vì danh từ.`
+        },
+        {
+            id: "compound_any_things",
+            regex: /\\bany\\s+things\\b/gi,
+            message: () => `Sai chính tả: Viết liền thành "anything" hoặc viết là "any objects".`
+        },
+        {
+            id: "quantifier_many_singular",
+            regex: /\\bmany\\s+(child|person|student|teacher|book|car|problem|reason|country|city|house|friend|year|day|week|month|time|benefit|drawback|advantage|disadvantage)\\b/gi,
+            message: (m) => `Sau "many" phải là danh từ số nhiều đếm được: Sửa "many ${m[1]}" thành số nhiều.`
+        },
+        {
+            id: "quantifier_every_plural",
+            regex: /\\bevery\\s+(students|people|children|books|countries|years|days|weeks|months|problems|reasons|cities|houses|friends|benefits|drawbacks|advantages|disadvantages)\\b/gi,
+            message: (m) => `Sau "every" là danh từ đếm được số ít: Sửa "every ${m[1]}" thành số ít.`
+        },
+        {
+            id: "one_of_the_singular",
+            regex: /\\bone\\s+of\\s+the\\s+(([a-zA-Z]+\\s+){0,2})(reason|problem|country|city|student|child|person|factor|benefit|drawback|advantage|disadvantage)\\b/gi,
+            message: (m) => `Sau "one of the" phải là danh từ số nhiều: Sửa "${m[3]}" thành danh từ số nhiều.`
+        },
+        {
+            id: "comma_capitalization",
+            regex: /, +(?!(?:I|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December|Vietnam|English|Vietnamese|London|Hanoi)\\b)[A-Z][a-z]+/g,
+            message: (m) => `Lỗi viết hoa: Không viết hoa chữ cái đầu tiên sau dấu phẩy trừ danh từ riêng hoặc "I".`
+        }
+    ];
+
+    const academicWordsList = [
+        "significant", "substantial", "beneficial", "detrimental", "impact", "advocate", 
+        "facilitate", "consequence", "highlight", "challenge", "issue", "aspect", 
+        "perspective", "solution", "fundamental", "advantage", "disadvantage", "essential", 
+        "crucial", "contribute", "indicate", "various", "individual", "society", 
+        "environment", "traditional", "modern", "development", "economic", "influence"
+    ];
+
+    rawList.forEach((item, index) => {
+        const s = item.text;
+        const words = s.split(/\\s+/).filter(w => w.length > 0);
+        const wordCount = words.length;
+        const sLower = s.toLowerCase();
+
+        const errors = [];
+        const warnings = [];
+        const strengths = [];
+
+        // Check greeting / signoff in Task 1
+        let isGreeting = false;
+        let isSignoff = false;
+        let isPoliteOpener = false;
+
+        if (!isTask2) {
+            const greetings = ["dear", "hi", "hello"];
+            const startsGreeting = greetings.some(g => sLower.startsWith(g + " "));
+            if (startsGreeting && wordCount <= 4) {
+                isGreeting = true;
+                if (s.endsWith(",")) {
+                    strengths.push("Lời chào mở đầu thư chuẩn xác (Salutation).");
+                } else {
+                    warnings.push("Nên có dấu phẩy ',' ở cuối lời chào (ví dụ: 'Dear Jane,').");
+                }
+            }
+
+            const signoffs = ["best regards", "yours sincerely", "sincerely", "warm regards", "best wishes", "love", "yours truly"];
+            const isSignoffMatch = signoffs.some(so => sLower.startsWith(so) || sLower.includes(so));
+            if (isSignoffMatch && wordCount <= 5) {
+                isSignoff = true;
+                strengths.push("Lời kết thư chuẩn mực (Sign-off).");
+            }
+
+            const politeOpeners = ["thanks for your email", "thank you for your email", "how are you", "how have you been", "hope you are doing well", "hope you are well", "i hope this email finds you well", "it was great to hear from you"];
+            if (politeOpeners.some(p => sLower.includes(p))) {
+                isPoliteOpener = true;
+                strengths.push("Câu mở đầu hỏi thăm / cảm ơn lịch sự, tự nhiên trong văn phong viết thư.");
+            }
+        }
+
+        // 1. Length check & Fragment check
+        if (!isGreeting && !isSignoff) {
+            if (wordCount <= 2) {
+                errors.push(`Câu chưa hoàn chỉnh (Sentence fragment): Chỉ có ${wordCount} từ, chưa tạo thành mệnh đề hoàn chỉnh có đầy đủ chủ ngữ và vị ngữ.`);
+            } else if (!isPoliteOpener && wordCount < 5) {
+                warnings.push(`Câu khá ngắn (${wordCount} từ). Bạn có thể ghép câu hoặc bổ sung thêm thông tin.`);
+            } else if (wordCount > 28) {
+                warnings.push(`Câu khá dài (${wordCount} từ). Cân nhắc tách làm 2 câu để ý tứ rõ ràng, tránh run-on sentence.`);
+            }
+        }
+
+        // Check dangling trailing fragment (e.g. "...good, I")
+        if (/,\\s*[a-zA-Z]+$/.test(s.trim())) {
+            errors.push("Câu dở dang (Dangling fragment): Câu kết thúc bằng dấu phẩy và từ chưa hoàn tất ý.");
+        }
+
+        // 2. Capitalization check
+        if (!/^[A-Z"']/.test(s.trim())) {
+            errors.push("Chữ cái đầu câu chưa được viết hoa.");
+        }
+
+        // 3. Punctuation checks
+        if (!isGreeting && !isSignoff) {
+            if (!/[.!?]$/.test(s.trim())) {
+                warnings.push("Cuối câu chưa có dấu chấm ngắt câu (. ? !).");
+            }
+        }
+        if (/\\s+[.,?!]/.test(s)) {
+            errors.push("Thừa khoảng trắng trước dấu câu (ví dụ: 'word ,').");
+        }
+        if (/([a-zA-Z]+[.,?!])([a-zA-Z]+)/.test(s)) {
+            const m = s.match(/([a-zA-Z]+[.,?!])([a-zA-Z]+)/);
+            if (!/\\b(e\\.g|i\\.e)\\b/i.test(m[0])) {
+                errors.push("Thiếu khoảng trắng sau dấu câu (ví dụ: '" + m[0] + "').");
+            }
+        }
+
+        // 4. Grammar rules check
+        grammarRules.forEach(rule => {
+            const regex = new RegExp(rule.regex.source, rule.regex.flags);
+            let match;
+            while ((match = regex.exec(s)) !== null) {
+                errors.push(rule.message(match));
+            }
+        });
+
+        // 5. Spelling / Vocabulary mistakes check
+        const cleanWords = s.replace(/[^a-zA-Z\\s]/g, " ").split(/\\s+/).filter(w => w.length > 0);
+        cleanWords.forEach(w => {
+            const wLower = w.toLowerCase();
+            if (typeof commonMistakes !== 'undefined' && commonMistakes[wLower]) {
+                errors.push(`Lỗi chính tả/từ vựng: "${w}" -> ${commonMistakes[wLower]}.`);
+            }
+        });
+
+        // 6. Strengths / Bright spots check
+        const passiveRegex = /\\b(is|are|was|were|been|being|be)\\s+([a-z]+ed|done|written|made|taken|chosen|given|seen|known|built|developed|provided|created|solved|reduced|increased|required|suggested|discussed|addressed|caused|influenced|improved|established|accepted|considered|used|achieved|performed|affected|produced)\\b/i;
+        const passMatch = s.match(passiveRegex);
+        if (passMatch) {
+            strengths.push(`Sử dụng cấu trúc câu bị động (Passive voice): <em>"${passMatch[0]}"</em>.`);
+        }
+
+        const complexRegex = /\\b(although|even though|though|whereas|while|because|since|if|unless|provided that|so that|in order that)\\b/i;
+        const compMatch = s.match(complexRegex);
+        if (compMatch) {
+            strengths.push(`Sử dụng liên từ câu phức (Complex conjunction): <em>"${compMatch[0]}"</em>.`);
+        }
+
+        const relRegex = /\\b(which|who|whom|whose)\\b/i;
+        const relMatch = s.match(relRegex);
+        if (relMatch) {
+            strengths.push(`Sử dụng mệnh đề quan hệ (Relative clause) với: <em>"${relMatch[0]}"</em>.`);
+        }
+
+        const transRegex = /\\b(first of all|firstly|secondly|furthermore|moreover|in addition|besides|however|on the other hand|in contrast|therefore|as a result|consequently|for example|for instance|in conclusion|to sum up|all in all)\\b/i;
+        const transMatch = s.match(transRegex);
+        if (transMatch) {
+            strengths.push(`Có từ nối liên kết câu rõ ràng (Transition): <em>"${transMatch[0]}"</em>.`);
+        }
+
+        const academicFound = cleanWords.filter(w => academicWordsList.includes(w.toLowerCase()));
+        if (academicFound.length > 0) {
+            const unique = Array.from(new Set(academicFound.map(w => w.toLowerCase())));
+            strengths.push(`Từ vựng học thuật ghi điểm: <em>${unique.join(", ")}</em>.`);
+        }
+
+        // Determine status
+        let status = "good";
+        if (errors.length > 0) {
+            status = "error";
+            errCount++;
+        } else if (warnings.length > 0) {
+            status = "warning";
+            warnCount++;
+        } else {
+            goodCount++;
+        }
+
+        analyzedSentences.push({
+            index: index + 1,
+            paraIndex: item.paraIndex,
+            text: s,
+            wordCount: wordCount,
+            status: status,
+            errors: errors,
+            warnings: warnings,
+            strengths: strengths
+        });
+    });
+
+    return {
+        sentences: analyzedSentences,
+        total: analyzedSentences.length,
+        goodCount: goodCount,
+        warnCount: warnCount,
+        errCount: errCount
+    };
+}
+
+function renderSentenceFeedback(taskNum, analysisResult) {
+    const cardEl = document.getElementById(`sentence-feedback-card-t${taskNum}`);
+    if (!cardEl) return;
+
+    if (!analysisResult || analysisResult.total === 0) {
+        cardEl.style.display = 'none';
+        return;
+    }
+    cardEl.style.display = 'flex';
+
+    // Update filter counts
+    const countAllEl = document.getElementById(`sf-count-all-t${taskNum}`);
+    const countGoodEl = document.getElementById(`sf-count-good-t${taskNum}`);
+    const countWarnEl = document.getElementById(`sf-count-warn-t${taskNum}`);
+    const countErrEl = document.getElementById(`sf-count-err-t${taskNum}`);
+    if (countAllEl) countAllEl.innerText = analysisResult.total;
+    if (countGoodEl) countGoodEl.innerText = analysisResult.goodCount;
+    if (countWarnEl) countWarnEl.innerText = analysisResult.warnCount;
+    if (countErrEl) countErrEl.innerText = analysisResult.errCount;
+
+    // Summary stats pills
+    const statsEl = document.getElementById(`sf-stats-t${taskNum}`);
+    if (statsEl) {
+        statsEl.innerHTML = `
+            <span class="sf-pill sf-pill-all"><i class="fa-solid fa-list-ol"></i> <strong>${analysisResult.total}</strong> câu</span>
+            <span class="sf-pill sf-pill-good"><i class="fa-solid fa-circle-check"></i> <strong>${analysisResult.goodCount}</strong> Đạt chuẩn</span>
+            <span class="sf-pill sf-pill-warn"><i class="fa-solid fa-triangle-exclamation"></i> <strong>${analysisResult.warnCount}</strong> Cần lưu ý</span>
+            <span class="sf-pill sf-pill-err"><i class="fa-solid fa-circle-xmark"></i> <strong>${analysisResult.errCount}</strong> Cần sửa lỗi</span>
+        `;
+    }
+
+    const listEl = document.getElementById(`sf-sentence-list-t${taskNum}`);
+    if (!listEl) return;
+
+    let itemsHtml = '';
+    analysisResult.sentences.forEach(s => {
+        let statusBadge = '';
+        if (s.status === 'good') {
+            statusBadge = '<span class="sf-badge-status sf-badge-good"><i class="fa-solid fa-circle-check"></i> Đạt chuẩn</span>';
+        } else if (s.status === 'warning') {
+            statusBadge = '<span class="sf-badge-status sf-badge-warning"><i class="fa-solid fa-triangle-exclamation"></i> Cần lưu ý</span>';
+        } else {
+            statusBadge = '<span class="sf-badge-status sf-badge-error"><i class="fa-solid fa-circle-xmark"></i> Cần sửa lỗi</span>';
+        }
+
+        let diagHtml = '';
+        if (s.errors.length > 0) {
+            s.errors.forEach(err => {
+                diagHtml += `<div class="sf-diag-item sf-diag-err"><i class="fa-solid fa-circle-xmark" style="margin-top: 3px;"></i> <div><strong>Cần sửa:</strong> ${err}</div></div>`;
+            });
+        }
+        if (s.warnings.length > 0) {
+            s.warnings.forEach(warn => {
+                diagHtml += `<div class="sf-diag-item sf-diag-warn"><i class="fa-solid fa-triangle-exclamation" style="margin-top: 3px;"></i> <div><strong>Lưu ý:</strong> ${warn}</div></div>`;
+            });
+        }
+        if (s.strengths.length > 0) {
+            s.strengths.forEach(str => {
+                diagHtml += `<div class="sf-diag-item sf-diag-good"><i class="fa-solid fa-circle-check" style="margin-top: 3px;"></i> <div><strong>Điểm sáng:</strong> ${str}</div></div>`;
+            });
+        }
+        if (!diagHtml) {
+            diagHtml = `<div class="sf-diag-item sf-diag-good"><i class="fa-solid fa-circle-check" style="margin-top: 3px;"></i> <div><strong>Nhận xét:</strong> Câu viết tự nhiên, đúng ngữ pháp và cấu trúc.</div></div>`;
+        }
+
+        let displayText = escapeHtml(s.text);
+
+        itemsHtml += `
+            <div class="sf-item sf-status-${s.status}" data-status="${s.status}">
+                <div class="sf-item-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="sf-num-badge">Câu ${s.index}</span>
+                        ${statusBadge}
+                    </div>
+                    <span class="sf-word-count"><i class="fa-solid fa-pen-nib"></i> ${s.wordCount} từ</span>
+                </div>
+                <div class="sf-sentence-body">"${displayText}"</div>
+                <div class="sf-diagnostics">
+                    ${diagHtml}
+                </div>
+            </div>
+        `;
+    });
+
+    listEl.innerHTML = itemsHtml;
+}
+
+function filterSentenceFeedback(taskNum, filter) {
+    const listEl = document.getElementById(`sf-sentence-list-t${taskNum}`);
+    const tabsContainer = document.getElementById(`sf-filter-tabs-t${taskNum}`);
+    if (!listEl) return;
+
+    if (tabsContainer) {
+        const btns = tabsContainer.querySelectorAll('.sf-tab-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        const activeBtn = tabsContainer.querySelector(`.sf-tab-btn[onclick*="'${filter}'"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    const items = listEl.querySelectorAll('.sf-item');
+    items.forEach(item => {
+        const status = item.getAttribute('data-status');
+        if (filter === 'all' || status === filter) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function formatPrintSentences(res) {
+    if (!res || !res.sentences || res.sentences.length === 0) return '';
+    return res.sentences.map(s => {
+        let statusBadge = s.status === 'good' ? '<span style="color:#059669;font-weight:bold;">[ĐẠT CHUẨN]</span>' :
+                          s.status === 'warning' ? '<span style="color:#d97706;font-weight:bold;">[CẦN LƯU Ý]</span>' :
+                          '<span style="color:#dc2626;font-weight:bold;">[CẦN SỬA]</span>';
+        let diags = [];
+        s.errors.forEach(e => diags.push(`<li style="color:#b91c1c;"><strong>Lỗi:</strong> ${e}</li>`));
+        s.warnings.forEach(w => diags.push(`<li style="color:#b45309;"><strong>Lưu ý:</strong> ${w}</li>`));
+        s.strengths.forEach(st => diags.push(`<li style="color:#047857;"><strong>Điểm sáng:</strong> ${st}</li>`));
+        if (diags.length === 0) diags.push(`<li style="color:#047857;">Câu đúng ngữ pháp và cấu trúc.</li>`);
+
+        return `
+            <div style="margin-bottom: 10px; padding: 8px 12px; border-radius: 6px; background: #f8fafc; border-left: 3px solid ${s.status === 'good' ? '#10b981' : s.status === 'warning' ? '#f59e0b' : '#ef4444'}; font-size: 13px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <strong>Câu ${s.index} ${statusBadge}</strong>
+                    <span style="color:#64748b; font-size:11px;">${s.wordCount} từ</span>
+                </div>
+                <div style="font-style: italic; margin-bottom: 6px; color: #1e293b;">"${escapeHtml(s.text)}"</div>
+                <ul style="margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.4;">
+                    ${diags.join('')}
+                </ul>
+            </div>
+        `;
+    }).join('');
+}
+
+
 // Populate solutions
 function loadSolutions(name, t1, t2, w1, w2) {
     document.getElementById('sol-student-name').innerText = name;
@@ -3651,6 +4343,12 @@ function loadSolutions(name, t1, t2, w1, w2) {
     // Calculate and display evaluations using getDetailedSystemEvaluation
     const evalT1 = getDetailedSystemEvaluation(t1, 120, false);
     const evalT2 = getDetailedSystemEvaluation(t2, 250, true);
+    
+    // Calculate and render sentence-by-sentence feedback
+    const sfResultT1 = analyzeSentences(t1, false);
+    const sfResultT2 = analyzeSentences(t2, true);
+    renderSentenceFeedback(1, sfResultT1);
+    renderSentenceFeedback(2, sfResultT2);
     
     // Update overall VSTEP predicted score & badge
     const score1 = evalT1.scores ? evalT1.scores.average : 0;
@@ -3901,6 +4599,8 @@ function printStudentWork() {
     
     const evalT1 = getDetailedSystemEvaluation(task1Text, 120, false);
     const evalT2 = getDetailedSystemEvaluation(task2Text, 250, true);
+    const sfResultT1 = analyzeSentences(task1Text, false);
+    const sfResultT2 = analyzeSentences(task2Text, true);
     
     const score1 = evalT1.scores ? evalT1.scores.average : 0;
     const score2 = evalT2.scores ? evalT2.scores.average : 0;
@@ -4164,6 +4864,16 @@ function printStudentWork() {
                 </div>
             </div>
 
+            ${sfResultT1.total > 0 ? `
+            <div class="box" style="background:#ffffff; border:1.5px solid #cbd5e1; border-left: 4px solid #6366f1; padding: 15px; margin-bottom: 20px;">
+                <h4 style="margin:0 0 8px 0; color:#4338ca; font-size:14px;"><i class="fa-solid fa-list-check"></i> PHÂN TÍCH TỪNG CÂU (TASK 1: ${sfResultT1.total} CÂU)</h4>
+                <div style="font-size:12px; margin-bottom:10px; color:#64748b;">
+                    Đạt chuẩn: <strong style="color:#059669;">${sfResultT1.goodCount}</strong> câu | Cần lưu ý: <strong style="color:#d97706;">${sfResultT1.warnCount}</strong> câu | Cần sửa: <strong style="color:#dc2626;">${sfResultT1.errCount}</strong> câu
+                </div>
+                ${formatPrintSentences(sfResultT1)}
+            </div>
+            ` : ''}
+
             <h3>BÀI GIẢI MẪU B1 LEVEL (${countWordsHTML(data.task1.solutionB1)} từ)</h3>
             <div class="box box-solution">${data.task1.solutionB1}</div>
             ${data.task1.translationB1 ? `<div class="box box-solution" style="background:#fff7ed; border-color:#fdba74; margin-top:10px;"><strong>Bản dịch tiếng Việt:</strong><br><br>${data.task1.translationB1}</div>` : ''}
@@ -4198,6 +4908,16 @@ function printStudentWork() {
                     <strong>NHẬN XÉT CỦA GIÁO VIÊN:</strong> ${comment2}
                 </div>
             </div>
+
+            ${sfResultT2.total > 0 ? `
+            <div class="box" style="background:#ffffff; border:1.5px solid #cbd5e1; border-left: 4px solid #6366f1; padding: 15px; margin-bottom: 20px;">
+                <h4 style="margin:0 0 8px 0; color:#4338ca; font-size:14px;"><i class="fa-solid fa-list-check"></i> PHÂN TÍCH TỪNG CÂU (TASK 2: ${sfResultT2.total} CÂU)</h4>
+                <div style="font-size:12px; margin-bottom:10px; color:#64748b;">
+                    Đạt chuẩn: <strong style="color:#059669;">${sfResultT2.goodCount}</strong> câu | Cần lưu ý: <strong style="color:#d97706;">${sfResultT2.warnCount}</strong> câu | Cần sửa: <strong style="color:#dc2626;">${sfResultT2.errCount}</strong> câu
+                </div>
+                ${formatPrintSentences(sfResultT2)}
+            </div>
+            ` : ''}
 
             <h3>BÀI GIẢI MẪU B1 LEVEL (${countWordsHTML(data.task2.solutionB1)} từ)</h3>
             <div class="box box-solution">${data.task2.solutionB1}</div>

@@ -949,3 +949,207 @@ body {
     background: #fee2e2;
     color: #ef4444;
 }
+
+
+/* ==========================================================================
+   Sentence-by-Sentence Feedback Component
+   ========================================================================== */
+.sentence-feedback-card {
+    transition: all 0.25s ease;
+}
+
+.sf-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.sf-pill-all {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+.sf-pill-good {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+.sf-pill-warn {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+.sf-pill-err {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.sf-filter-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.sf-tab-btn {
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+}
+.sf-tab-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+.sf-tab-btn.active {
+    background: #6366f1;
+    color: #ffffff;
+    border-color: #6366f1;
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
+}
+.sf-tab-btn.sf-tab-good.active {
+    background: #10b981;
+    border-color: #10b981;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+}
+.sf-tab-btn.sf-tab-warn.active {
+    background: #f59e0b;
+    border-color: #f59e0b;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+}
+.sf-tab-btn.sf-tab-err.active {
+    background: #ef4444;
+    border-color: #ef4444;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+}
+
+.sf-sentence-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sf-item {
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.sf-item.sf-status-good {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #10b981;
+}
+.sf-item.sf-status-warning {
+    background: #fffdf7;
+    border: 1px solid #fef3c7;
+    border-left: 5px solid #f59e0b;
+}
+.sf-item.sf-status-error {
+    background: #fffafa;
+    border: 1px solid #fee2e2;
+    border-left: 5px solid #ef4444;
+}
+
+.sf-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.sf-num-badge {
+    font-weight: 800;
+    font-size: 12px;
+    color: #1e293b;
+    background: #f1f5f9;
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+.sf-badge-status {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.sf-badge-good {
+    background: #d1fae5;
+    color: #065f46;
+}
+.sf-badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+.sf-badge-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sf-word-count {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sf-sentence-body {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: #1e293b;
+    font-weight: 500;
+    background: #f8fafc;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #edf2f7;
+    font-style: italic;
+}
+
+.sf-diagnostics {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.sf-diag-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+.sf-diag-err {
+    color: #991b1b;
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
+}
+.sf-diag-warn {
+    color: #92400e;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+}
+.sf-diag-good {
+    color: #065f46;
+    background: #f0fdf4;
+    border-left: 3px solid #10b981;
+}
