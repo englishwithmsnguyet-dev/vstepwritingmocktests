@@ -783,6 +783,17 @@
         }
     };
 
+    // Intercept clicks on start buttons if room is closed
+    document.addEventListener("click", function(e) {
+        const btn = e.target.closest && e.target.closest("#btn-start-test, #btn-start-exam, .btn-practice-cbt, .btn-start");
+        if (!btn) return;
+        if (typeof window.VstepExamRoom !== "undefined" && !window.VstepExamRoom.canStudentStartExam()) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            alert("⛔ PHÒNG THI HIỆN ĐANG ĐÓNG!\n\nVui lòng chờ Giáo viên (Cô Nguyệt) mở phòng để vào làm bài.");
+        }
+    }, true);
+
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initFirebase);
     } else {
