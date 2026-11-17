@@ -34,7 +34,7 @@ html_template = """<!DOCTYPE html>
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css?v=1787038888">
+    <link rel="stylesheet" href="styles.css?v=1794899999">
 
     <!-- Direct Student Login Modal Styles -->
     <style id="vstep-login-styles">
@@ -387,14 +387,14 @@ html_template = """<!DOCTYPE html>
                         
                         <div class="editors-container">
                             <div class="editor-area active" id="editor-task1">
-                                <textarea id="textarea-task1" class="writing-editor" placeholder="Nhập bài viết thư của bạn tại đây (ít nhất 120 từ)..." oninput="handleTextareaInput(1)"></textarea>
+                                <textarea id="textarea-task1" class="writing-editor" placeholder="Nhập bài viết thư của bạn tại đây (ít nhất 120 từ)..." oninput="handleTextareaInput(1)" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off"></textarea>
                                 <div class="editor-footer">
                                     <span class="word-counter" id="words-t1">Số từ: 0 từ</span>
                                     <span class="autosave-indicator" id="save-t1"><i class="fa-solid fa-cloud"></i> Đã lưu</span>
                                 </div>
                             </div>
                             <div class="editor-area" id="editor-task2" style="display: none;">
-                                <textarea id="textarea-task2" class="writing-editor" placeholder="Nhập bài viết luận của bạn tại đây (ít nhất 250 từ)..." oninput="handleTextareaInput(2)"></textarea>
+                                <textarea id="textarea-task2" class="writing-editor" placeholder="Nhập bài viết luận của bạn tại đây (ít nhất 250 từ)..." oninput="handleTextareaInput(2)" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off"></textarea>
                                 <div class="editor-footer">
                                     <span class="word-counter" id="words-t2">Số từ: 0 từ</span>
                                     <span class="autosave-indicator" id="save-t2"><i class="fa-solid fa-cloud"></i> Đã lưu</span>
@@ -563,10 +563,10 @@ html_template = """<!DOCTYPE html>
     </div>
 
     <!-- DB Scripts -->
-    <script src="../db.js?v=1787038888"></script>
-    <script src="../writing_data.js?v=1787038888"></script>
+    <script src="../db.js?v=1794899999"></script>
+    <script src="../writing_data.js?v=1794899999"></script>
     <!-- Core App logic script -->
-    <script src="app.js?v=1787038888"></script>
+    <script src="app.js?v=1794899999"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -2033,6 +2033,12 @@ async function initializeApp() {
 
     // 3. Bind Welcome start button
     elements.btnStartTest.addEventListener('click', startExam);
+    
+    // Disable spellcheck across all textareas and inputs
+    document.querySelectorAll('textarea, input').forEach(el => {
+        el.setAttribute('spellcheck', 'false');
+        el.spellcheck = false;
+    });
     
     // 4. Try loading autosaved session
     try {

@@ -63,7 +63,6 @@ const elements = {
 const VALID_CLASSES = ['CB196', 'CB206', 'CB210', 'CB211', 'CB213', 'CB219', 'CB220', 'ONB103', 'B209', 'B212', 'GV'];
 const BANNED_CLASSES = ['CB201', 'CB202', 'B220'];
 const REQUIRED_PASSWORD = 'STUDYHARD';
-const VALID_PASSWORDS = ['STUDYHARD', 'VSTEPSEPTEMBER', 'PTMN2896', 'PTMN2412', 'PTMN2805'];
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
 const GOOGLE_FORM_ENTRY = 'entry.388968236';
 
@@ -77,8 +76,8 @@ function showLoginModal() {
     const errorEl = document.getElementById('vstep-login-error');
     
     if (errorEl) errorEl.style.display = 'none';
-    if (nameInput) nameInput.value = sessionStorage.getItem('vstep_student_name') || localStorage.getItem('vstep_student_name') || '';
-    if (classInput) classInput.value = sessionStorage.getItem('vstep_student_class') || localStorage.getItem('vstep_student_class') || '';
+    if (nameInput) nameInput.value = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name') || '';
+    if (classInput) classInput.value = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class') || '';
     if (passInput) passInput.value = '';
     
     overlay.style.display = 'flex';
@@ -120,11 +119,6 @@ function handleStudentLoginSubmit(event) {
         return;
     }
     
-    if (BANNED_CLASSES.includes(className)) {
-        showLoginError();
-        if (classInput) classInput.focus();
-        return;
-    }
     if (!VALID_CLASSES.includes(className)) {
         showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận lớp: ${VALID_CLASSES.filter(c => c !== 'GV').join(', ')}.`);
         if (classInput) classInput.focus();
@@ -145,7 +139,7 @@ function handleStudentLoginSubmit(event) {
             return;
         }
         
-        if (!VALID_PASSWORDS.includes(pass.toUpperCase())) {
+        if (pass.toUpperCase() !== REQUIRED_PASSWORD) {
             showLoginError('Mật khẩu không chính xác. Vui lòng kiểm tra lại.');
             if (passInput) {
                 passInput.focus();
@@ -242,22 +236,12 @@ function submitStudentLoginToGoogleForm(name, className) {
 }
 
 function checkStudentAuth() {
-    const studentName = sessionStorage.getItem('vstep_student_name');
-    const studentClass = sessionStorage.getItem('vstep_student_class');
-    const isLoggedIn = sessionStorage.getItem('vstep_student_logged_in') === 'true';
-    const isTeacher = (studentName && studentName.toUpperCase() === 'PTMN' && studentClass && studentClass.toUpperCase() === 'GV');
-    if (studentClass && BANNED_CLASSES.includes(studentClass.toUpperCase())) {
-        sessionStorage.removeItem('vstep_student_name');
-        sessionStorage.removeItem('vstep_student_class');
-        sessionStorage.removeItem('vstep_student_logged_in');
-        showLoginModal();
-        return;
-    }
+    const studentName = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name');
+    const studentClass = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class');
     
-    if (!isLoggedIn || !studentName || !studentClass || (!isTeacher && !VALID_CLASSES.includes(studentClass.toUpperCase()))) {
+    if (!studentName || !studentClass || !VALID_CLASSES.includes(studentClass.toUpperCase())) {
         showLoginModal();
     } else {
-        closeLoginModal();
         // Keep both storages synced
         localStorage.setItem('vstep_student_name', studentName);
         localStorage.setItem('vstep_student_class', studentClass);
@@ -325,6 +309,12 @@ async function initializeApp() {
 
     // 3. Bind Welcome start button
     elements.btnStartTest.addEventListener('click', startExam);
+    
+    // Disable spellcheck across all textareas and inputs
+    document.querySelectorAll('textarea, input').forEach(el => {
+        el.setAttribute('spellcheck', 'false');
+        el.spellcheck = false;
+    });
     
     // 4. Try loading autosaved session
     try {
