@@ -780,6 +780,10 @@ html_template = """<!DOCTYPE html>
     <!-- DB Scripts -->
     <script src="../db.js?v=1794900001"></script>
     <script src="../writing_data.js?v=1794900001"></script>
+    <!-- Firebase SDK (Compat) & Realtime Exam Room Control -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="../exam_room.js?v=1794930001"></script>
     <!-- Core App logic script -->
     <script src="app.js?v=1794900001"></script>
     <script>
@@ -2778,6 +2782,11 @@ function handleStudentLoginSubmit(event) {
     if (displayStudent) {
         displayStudent.innerText = `Thí sinh: ${matchedFullName} (${className})`;
     }
+    
+    // Refresh Exam Room UI (e.g. show Teacher Panel if teacher logged in)
+    if (typeof VstepExamRoom !== "undefined") {
+        VstepExamRoom.refreshUI();
+    }
 }
 
 function showLoginError(msg) {
@@ -2873,6 +2882,11 @@ function checkStudentAuth() {
         const displayStudent = document.getElementById("display-student-name");
         if (displayStudent) {
             displayStudent.innerText = `Thí sinh: ${validResult.matchedName} (${validResult.className})`;
+        }
+        
+        // Refresh Exam Room UI
+        if (typeof VstepExamRoom !== "undefined") {
+            VstepExamRoom.refreshUI();
         }
     }
 }
@@ -4200,7 +4214,7 @@ function startExam() {
     const savedName = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name');
     const savedClass = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class');
     
-    if (isStudentLocked(savedName)) {
+    if (isStudentLocked(savedName, savedClass)) {
         showLockoutModal(savedName, savedClass);
         return;
     }
@@ -4210,6 +4224,13 @@ function startExam() {
         showLoginModal();
         return;
     }
+
+    // Check Exam Room Access (unless Teacher)
+    if (typeof VstepExamRoom !== 'undefined' && !VstepExamRoom.canStudentStartExam()) {
+        alert("⛔ PHÒNG THI HIỆN ĐANG ĐÓNG hoặc đề thi này chưa được mở! Vui lòng chờ Giáo viên (Cô Nguyệt) mở phòng thi để bắt đầu làm bài.");
+        return;
+    }
+
     studentName = `${validResult.matchedName} (${validResult.className})`;
     elements.studentNameInput.value = studentName;
     elements.displayStudentName.innerText = `Thí sinh: ${studentName}`;

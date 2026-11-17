@@ -579,6 +579,11 @@ function handleStudentLoginSubmit(event) {
     if (displayStudent) {
         displayStudent.innerText = `Thí sinh: ${matchedFullName} (${className})`;
     }
+    
+    // Refresh Exam Room UI (e.g. show Teacher Panel if teacher logged in)
+    if (typeof VstepExamRoom !== "undefined") {
+        VstepExamRoom.refreshUI();
+    }
 }
 
 function showLoginError(msg) {
@@ -674,6 +679,11 @@ function checkStudentAuth() {
         const displayStudent = document.getElementById("display-student-name");
         if (displayStudent) {
             displayStudent.innerText = `Thí sinh: ${validResult.matchedName} (${validResult.className})`;
+        }
+        
+        // Refresh Exam Room UI
+        if (typeof VstepExamRoom !== "undefined") {
+            VstepExamRoom.refreshUI();
         }
     }
 }
@@ -2001,7 +2011,7 @@ function startExam() {
     const savedName = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name');
     const savedClass = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class');
     
-    if (isStudentLocked(savedName)) {
+    if (isStudentLocked(savedName, savedClass)) {
         showLockoutModal(savedName, savedClass);
         return;
     }
@@ -2011,6 +2021,13 @@ function startExam() {
         showLoginModal();
         return;
     }
+
+    // Check Exam Room Access (unless Teacher)
+    if (typeof VstepExamRoom !== 'undefined' && !VstepExamRoom.canStudentStartExam()) {
+        alert("⛔ PHÒNG THI HIỆN ĐANG ĐÓNG hoặc đề thi này chưa được mở! Vui lòng chờ Giáo viên (Cô Nguyệt) mở phòng thi để bắt đầu làm bài.");
+        return;
+    }
+
     studentName = `${validResult.matchedName} (${validResult.className})`;
     elements.studentNameInput.value = studentName;
     elements.displayStudentName.innerText = `Thí sinh: ${studentName}`;
