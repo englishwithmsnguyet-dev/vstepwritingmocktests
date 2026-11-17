@@ -2327,15 +2327,24 @@ function checkIsGiaTue(nameInput) {
     return norm.includes("gia tue") || norm.replace(/\s+/g, "").includes("giatue");
 }
 
-function validateStudentIdentity(fullName, className) {
-    const nameUpper = (fullName || "").trim().toUpperCase();
-    const classUpper = (className || "").trim().toUpperCase();
-    const isTeacher = (nameUpper === "PTMN" && classUpper === "GV") || 
-                      (classUpper === "GV" && /^(cô nguyệt|co nguyet|giáo viên|giao vien|ptmn)$/i.test((fullName || "").trim()));
-    if (isTeacher) return { ok: true, matchedName: "Cô Nguyệt (PTMN)", className: "GV" };
+function isTeacherUser(name, className) {
+    const n = String(name || "").trim().toLowerCase();
+    const c = String(className || "").trim().toUpperCase();
+    if (c === "GV") return true;
+    if (/^(ptmn|gv|cô nguyệt|co nguyet|phạm thị minh nguyệt|pham thi minh nguyet|giáo viên|giao vien|teacher|miss nguyet)$/i.test(n)) return true;
+    if (n.includes("ptmn") || n.includes("cô nguyệt") || n.includes("co nguyet") || n.includes("giáo viên") || n.includes("giao vien") || n.includes("teacher")) return true;
+    return false;
+}
 
+function validateStudentIdentity(fullName, className) {
+    const cleanName = (fullName || "").trim();
     let cleanClass = (className || "").replace(/^(LỚP|LOP|CLASS)\s*/i, "").trim().toUpperCase();
-    if (checkIsGiaTue(fullName) && (!cleanClass || cleanClass === "B2")) {
+
+    if (isTeacherUser(cleanName, cleanClass)) {
+        return { ok: true, matchedName: "Cô Nguyệt (PTMN)", className: "GV" };
+    }
+
+    if (checkIsGiaTue(cleanName) && (!cleanClass || cleanClass === "B2" || cleanClass === "CB206")) {
         cleanClass = "B2";
     }
 
@@ -2347,7 +2356,7 @@ function validateStudentIdentity(fullName, className) {
     }
 
     if (cleanClass === "B2") {
-        if (!checkIsGiaTue(fullName)) {
+        if (!checkIsGiaTue(cleanName)) {
             return { 
                 ok: false, 
                 error: "Mã lớp B2 hiện chỉ dành riêng cho học viên Gia Tuệ (B2)! Vui lòng kiểm tra lại Họ tên hoặc Mã lớp." 
@@ -2364,7 +2373,7 @@ function validateStudentIdentity(fullName, className) {
     }
 
     const roster = VALID_STUDENTS[cleanClass] || [];
-    const normInput = normalizeVietnameseName(fullName);
+    const normInput = normalizeVietnameseName(cleanName);
     const noToneInput = removeVietnameseTones(normInput);
 
     const found = roster.find(st => {
@@ -2374,12 +2383,12 @@ function validateStudentIdentity(fullName, className) {
     });
 
     if (!found) {
-        if (checkIsGiaTue(fullName)) {
+        if (checkIsGiaTue(cleanName)) {
             return { ok: true, matchedName: "Gia Tuệ", className: "B2" };
         }
         return { 
             ok: false, 
-            error: `Họ và tên "${fullName}" không có trong danh sách lớp ${cleanClass}. Vui lòng kiểm tra lại chính xác họ tên và mã lớp!` 
+            error: `Họ và tên "${cleanName}" không có trong danh sách lớp ${cleanClass}. Vui lòng kiểm tra lại chính xác họ tên và mã lớp!` 
         };
     }
 
@@ -2399,17 +2408,16 @@ function getStudentLockKey(name) {
     return "vstep_locked_" + removeVietnameseTones(normalizeVietnameseName(name)).replace(/[^a-z0-9]/g, "");
 }
 
-function isStudentLocked(name) {
+function isStudentLocked(name, className) {
     if (!name) return false;
-    const isTeacher = (name.toUpperCase().includes("PTMN") || name.toUpperCase() === "GV");
-    if (isTeacher) return false;
+    const cleanClass = className || localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
+    if (isTeacherUser(name, cleanClass)) return false;
     const key = getStudentLockKey(name);
     return localStorage.getItem(key) === "true" || localStorage.getItem("vstep_current_user_locked") === "true";
 }
 
 function lockStudentAccount(name, className, reason) {
-    const isTeacher = (name && (name.toUpperCase().includes("PTMN") || className === "GV"));
-    if (isTeacher) return;
+    if (isTeacherUser(name, className)) return;
 
     const key = getStudentLockKey(name);
     localStorage.setItem(key, "true");
@@ -2529,7 +2537,7 @@ function handleTeacherUnlockSubmit() {
 function handleCheatingViolation(reason) {
     const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
     const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
-    const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+    const isTeacher = isTeacherUser(studentName, studentClass);
     
     // TÀI KHOẢN GIÁO VIÊN HOÀN TOÀN KHÔNG BỊ HẠN CHẾ
     if (isTeacher) return;
@@ -2565,7 +2573,7 @@ function setupAntiCheatListeners() {
         document.addEventListener(eventType, function(e) {
             const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
             const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
-            const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+            const isTeacher = isTeacherUser(studentName, studentClass);
             if (isTeacher) return; // GV không bị giới hạn
 
             if (isExamRunning) {
@@ -2580,7 +2588,7 @@ function setupAntiCheatListeners() {
     document.addEventListener("keydown", function(e) {
         const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
         const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
-        const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+        const isTeacher = isTeacherUser(studentName, studentClass);
         if (isTeacher) return; // GV không bị giới hạn
 
         if (isExamRunning) {
@@ -2598,7 +2606,7 @@ function setupAntiCheatListeners() {
     document.addEventListener("contextmenu", function(e) {
         const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
         const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
-        const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+        const isTeacher = isTeacherUser(studentName, studentClass);
         if (isTeacher) return; // GV không bị giới hạn
 
         if (isExamRunning) {
@@ -2612,7 +2620,7 @@ function setupAntiCheatListeners() {
     document.addEventListener("visibilitychange", function() {
         const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
         const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
-        const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+        const isTeacher = isTeacherUser(studentName, studentClass);
         if (isTeacher) return; // GV không bị giới hạn
 
         if (isExamRunning) {
@@ -2629,9 +2637,22 @@ function setupAntiCheatListeners() {
 }
 
 
-function showLoginModal() {
+function showLoginModal(force = false) {
     const overlay = document.getElementById("vstep-login-overlay");
     if (!overlay) return;
+    
+    // Nếu không phải thao tác bấm 'Đổi' (force = false), kiểm tra xem người dùng đã đăng nhập chưa
+    if (!force) {
+        const sName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name");
+        const sClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class");
+        if (sName && sClass) {
+            const check = validateStudentIdentity(sName, sClass);
+            if (check.ok) {
+                closeLoginModal(true);
+                return;
+            }
+        }
+    }
     
     const nameInput = document.getElementById("vstep-input-name");
     const classInput = document.getElementById("vstep-input-class");
@@ -2657,13 +2678,17 @@ function showLoginModal() {
     }, 150);
 }
 
-function closeLoginModal() {
+function closeLoginModal(immediate = false) {
     const overlay = document.getElementById("vstep-login-overlay");
     if (!overlay) return;
     overlay.classList.remove("active");
-    setTimeout(() => {
+    if (immediate) {
         overlay.style.display = "none";
-    }, 300);
+    } else {
+        setTimeout(() => {
+            overlay.style.display = "none";
+        }, 300);
+    }
 }
 
 function handleStudentLoginSubmit(event) {
@@ -2689,7 +2714,7 @@ function handleStudentLoginSubmit(event) {
     }
 
     // Check if account is locked due to cheating
-    if (isStudentLocked(fullName)) {
+    if (isStudentLocked(fullName, className)) {
         showLoginError(`Tài khoản "${fullName}" hiện đang bị KHÓA do vi phạm quy chế thi 3 lần! Vui lòng liên hệ Giáo viên để mở khóa.`);
         showLockoutModal(fullName, className, "Vi phạm quy chế thi 3 lần (chuyển tab hoặc sao chép/dán)");
         return;
@@ -2705,8 +2730,8 @@ function handleStudentLoginSubmit(event) {
     const matchedFullName = validation.matchedName;
     className = validation.className;
 
-    const isTeacher = (className === "GV");
-    const isGiaTue = (className === "B2");
+    const isTeacher = isTeacherUser(matchedFullName, className);
+    const isGiaTue = (className === "B2" || checkIsGiaTue(matchedFullName));
     
     if (!isTeacher && !isGiaTue) {
         if (!pass) {
@@ -2729,9 +2754,11 @@ function handleStudentLoginSubmit(event) {
     localStorage.setItem("vstep_student_name", matchedFullName);
     localStorage.setItem("vstep_student_class", className);
     localStorage.setItem("vstep_student_logged_in", "true");
+    localStorage.setItem("vstep_user_logged_in", "true");
     sessionStorage.setItem("vstep_student_name", matchedFullName);
     sessionStorage.setItem("vstep_student_class", className);
     sessionStorage.setItem("vstep_student_logged_in", "true");
+    sessionStorage.setItem("vstep_user_logged_in", "true");
     
     // Send log to Google Form
     submitStudentLoginToGoogleForm(matchedFullName, className);
@@ -2739,8 +2766,8 @@ function handleStudentLoginSubmit(event) {
     // Update badge in UI
     renderStudentBadge();
     
-    // Close modal
-    closeLoginModal();
+    // Close modal immediately
+    closeLoginModal(true);
     
     // If on a test page, update student name field
     const testStudentInput = document.getElementById("student-name");
@@ -2815,7 +2842,7 @@ function checkStudentAuth() {
     const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name");
     const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class");
     
-    if (isStudentLocked(studentName)) {
+    if (isStudentLocked(studentName, studentClass)) {
         showLockoutModal(studentName, studentClass, "Vi phạm quy chế thi 3 lần (chuyển tab hoặc sao chép/dán)");
         return;
     }
@@ -2823,15 +2850,20 @@ function checkStudentAuth() {
     const validResult = (studentName && studentClass) ? validateStudentIdentity(studentName, studentClass) : { ok: false };
     
     if (!validResult.ok) {
-        showLoginModal();
+        showLoginModal(false);
     } else {
-        // Keep both storages synced
+        // Đóng ngay modal nếu đang mở để tránh hiện popup
+        closeLoginModal(true);
+
+        // Đồng bộ cả 2 kho lưu trữ (localStorage & sessionStorage) để chuyển test không bao giờ bị hỏi lại
         localStorage.setItem("vstep_student_name", validResult.matchedName);
         localStorage.setItem("vstep_student_class", validResult.className);
         localStorage.setItem("vstep_student_logged_in", "true");
+        localStorage.setItem("vstep_user_logged_in", "true");
         sessionStorage.setItem("vstep_student_name", validResult.matchedName);
         sessionStorage.setItem("vstep_student_class", validResult.className);
         sessionStorage.setItem("vstep_student_logged_in", "true");
+        sessionStorage.setItem("vstep_user_logged_in", "true");
         
         renderStudentBadge();
         const testStudentInput = document.getElementById("student-name");
