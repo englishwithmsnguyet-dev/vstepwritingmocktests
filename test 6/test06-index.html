@@ -231,6 +231,181 @@
         transform: translateY(-1px) !important;
         box-shadow: 0 8px 20px rgba(88, 101, 242, 0.45) !important;
     }
+    
+    /* Anti-Cheat Modals Styles */
+    .vstep-cheat-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.88) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        z-index: 99999999 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .vstep-cheat-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 20px;
+        padding: 30px 25px;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+        border: 2px solid #f97316;
+        animation: vstepPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+    .vstep-cheat-card.locked {
+        border-color: #dc2626;
+        max-width: 540px;
+    }
+    .vstep-cheat-icon-badge {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        margin: 0 auto 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+    .vstep-cheat-icon-badge.warning {
+        background: #fff7ed;
+        color: #ea580c;
+        border: 2px solid #fed7aa;
+    }
+    .vstep-cheat-icon-badge.locked {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 2px solid #fecaca;
+    }
+    .vstep-violation-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        background: #fff7ed;
+        color: #ea580c;
+        border: 1px solid #fdba74;
+        margin-bottom: 10px;
+    }
+    .vstep-violation-badge.locked {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fca5a5;
+    }
+    .vstep-cheat-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0 0 10px;
+    }
+    .vstep-cheat-desc {
+        font-size: 14.5px;
+        color: #475569;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+    .vstep-cheat-notice-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        text-align: left;
+        font-size: 13.5px;
+        color: #334155;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+    .vstep-cheat-notice-box.locked {
+        background: #fff1f2;
+        border-color: #fecdd3;
+        color: #9f1239;
+    }
+    .vstep-cheat-notice-box ul {
+        margin: 8px 0;
+        padding-left: 20px;
+    }
+    .vstep-cheat-notice-box .penalty-warning {
+        margin: 8px 0 0;
+        color: #dc2626;
+        font-weight: 700;
+        font-size: 13px;
+    }
+    .vstep-locked-info {
+        background: #f1f5f9;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 14px;
+        font-size: 14px;
+        text-align: left;
+    }
+    .vstep-locked-info p {
+        margin: 4px 0;
+    }
+    .btn-cheat-dismiss {
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #ea580c, #c2410c);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+    }
+    .btn-cheat-dismiss:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(234, 88, 12, 0.45);
+    }
+    .vstep-teacher-unlock-section {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px dashed #cbd5e1;
+    }
+    .btn-toggle-unlock {
+        background: none;
+        border: none;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 6px 12px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    .btn-toggle-unlock:hover {
+        color: #2563eb;
+        background: #eff6ff;
+    }
+    .btn-confirm-unlock {
+        width: 100%;
+        padding: 11px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .btn-confirm-unlock:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+    }
+
     </style>
 
 </head>
@@ -636,6 +811,63 @@
             </form>
         </div>
     </div>
+
+    <!-- Anti-Cheat Warning Modal -->
+    <div id="vstep-cheat-warning-modal" class="vstep-cheat-overlay" style="display: none;">
+        <div class="vstep-cheat-card vstep-shake">
+            <div class="vstep-cheat-icon-badge warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div id="vstep-cheat-badge" class="vstep-violation-badge">CẢNH BÁO LẦN 1/3</div>
+            <h3 class="vstep-cheat-title">CẢNH BÁO VI PHẠM QUY CHẾ THI</h3>
+            <p id="vstep-cheat-reason" class="vstep-cheat-desc">Phát hiện hành vi sao chép/dán nội dung hoặc chuyển tab trình duyệt!</p>
+            <div class="vstep-cheat-notice-box">
+                <p><strong>QUY ĐỊNH BẮT BUỘC:</strong> Trong thời gian làm bài, bạn <strong>KHÔNG ĐƯỢC PHÉP</strong>:</p>
+                <ul>
+                    <li>Sao chép (Copy), Cắt (Cut), hoặc Dán (Paste) nội dung.</li>
+                    <li>Chuyển tab trình duyệt, thu nhỏ cửa sổ hoặc mở ứng dụng khác.</li>
+                </ul>
+                <p class="penalty-warning">⚠️ Nếu vi phạm đủ <strong>3 lần</strong>, bài thi sẽ bị đình chỉ và <strong>TÀI KHOẢN SẼ BỊ KHÓA NGAY LẬP TỨC</strong>!</p>
+            </div>
+            <button type="button" class="btn-cheat-dismiss" onclick="dismissCheatWarning()">
+                <i class="fa-solid fa-check"></i> Tôi Đã Hiểu & Tiếp Tục Làm Bài
+            </button>
+        </div>
+    </div>
+
+    <!-- Anti-Cheat Lockout Modal -->
+    <div id="vstep-lockout-modal" class="vstep-cheat-overlay" style="display: none;">
+        <div class="vstep-cheat-card locked vstep-shake">
+            <div class="vstep-cheat-icon-badge locked">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="vstep-violation-badge locked">ĐÃ BỊ KHÓA DO GIAN LẬN</div>
+            <h3 class="vstep-cheat-title" style="color: #dc2626;">TÀI KHOẢN ĐÃ BỊ ĐÌNH CHỈ & KHÓA</h3>
+            <div class="vstep-locked-info">
+                <p>Thí sinh: <strong id="vstep-locked-student-display">Học viên</strong></p>
+                <p>Lý do: <span id="vstep-locked-reason-display" style="color: #b91c1c; font-weight: 600;">Vi phạm quy chế thi 3 lần (chuyển tab hoặc sao chép/dán)</span></p>
+            </div>
+            <div class="vstep-cheat-notice-box locked">
+                <p>⛔ Bạn đã vi phạm quy chế thi <strong>quá 3 lần</strong>. Toàn bộ quyền truy cập và làm bài thi của bạn đã bị khóa.</p>
+                <p>👉 <strong>Vui lòng liên hệ trực tiếp Giáo viên (Cô Nguyệt) để được xác minh và mở khóa tài khoản!</strong></p>
+            </div>
+            
+            <!-- Teacher Unlock Button & Form -->
+            <div class="vstep-teacher-unlock-section">
+                <button type="button" class="btn-toggle-unlock" onclick="toggleTeacherUnlockForm()">
+                    <i class="fa-solid fa-key"></i> Dành Cho Giáo Viên Mở Khóa
+                </button>
+                <div id="vstep-teacher-unlock-form" style="display: none; margin-top: 15px;">
+                    <input type="password" id="vstep-teacher-unlock-pass" class="vstep-login-input" placeholder="Nhập Mật khẩu Giáo viên..." style="margin-bottom: 10px; text-align: center;">
+                    <div id="vstep-unlock-error" style="display: none; color: #ef4444; font-size: 13px; font-weight: 600; margin-bottom: 8px;"></div>
+                    <button type="button" class="btn-confirm-unlock" onclick="handleTeacherUnlockSubmit()">
+                        <i class="fa-solid fa-unlock"></i> Xác Nhận Mở Khóa Tài Khoản
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 </body>
 </html>

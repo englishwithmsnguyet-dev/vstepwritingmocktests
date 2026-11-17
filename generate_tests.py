@@ -234,6 +234,181 @@ html_template = """<!DOCTYPE html>
         transform: translateY(-1px) !important;
         box-shadow: 0 8px 20px rgba(88, 101, 242, 0.45) !important;
     }
+    
+    /* Anti-Cheat Modals Styles */
+    .vstep-cheat-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.88) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        z-index: 99999999 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .vstep-cheat-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 20px;
+        padding: 30px 25px;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+        border: 2px solid #f97316;
+        animation: vstepPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+    .vstep-cheat-card.locked {
+        border-color: #dc2626;
+        max-width: 540px;
+    }
+    .vstep-cheat-icon-badge {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        margin: 0 auto 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+    .vstep-cheat-icon-badge.warning {
+        background: #fff7ed;
+        color: #ea580c;
+        border: 2px solid #fed7aa;
+    }
+    .vstep-cheat-icon-badge.locked {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 2px solid #fecaca;
+    }
+    .vstep-violation-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        background: #fff7ed;
+        color: #ea580c;
+        border: 1px solid #fdba74;
+        margin-bottom: 10px;
+    }
+    .vstep-violation-badge.locked {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fca5a5;
+    }
+    .vstep-cheat-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0 0 10px;
+    }
+    .vstep-cheat-desc {
+        font-size: 14.5px;
+        color: #475569;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+    .vstep-cheat-notice-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        text-align: left;
+        font-size: 13.5px;
+        color: #334155;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+    .vstep-cheat-notice-box.locked {
+        background: #fff1f2;
+        border-color: #fecdd3;
+        color: #9f1239;
+    }
+    .vstep-cheat-notice-box ul {
+        margin: 8px 0;
+        padding-left: 20px;
+    }
+    .vstep-cheat-notice-box .penalty-warning {
+        margin: 8px 0 0;
+        color: #dc2626;
+        font-weight: 700;
+        font-size: 13px;
+    }
+    .vstep-locked-info {
+        background: #f1f5f9;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 14px;
+        font-size: 14px;
+        text-align: left;
+    }
+    .vstep-locked-info p {
+        margin: 4px 0;
+    }
+    .btn-cheat-dismiss {
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, #ea580c, #c2410c);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+    }
+    .btn-cheat-dismiss:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(234, 88, 12, 0.45);
+    }
+    .vstep-teacher-unlock-section {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px dashed #cbd5e1;
+    }
+    .btn-toggle-unlock {
+        background: none;
+        border: none;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 6px 12px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    .btn-toggle-unlock:hover {
+        color: #2563eb;
+        background: #eff6ff;
+    }
+    .btn-confirm-unlock {
+        width: 100%;
+        padding: 11px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .btn-confirm-unlock:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+    }
+
     </style>
 
 </head>
@@ -639,6 +814,63 @@ html_template = """<!DOCTYPE html>
             </form>
         </div>
     </div>
+
+    <!-- Anti-Cheat Warning Modal -->
+    <div id="vstep-cheat-warning-modal" class="vstep-cheat-overlay" style="display: none;">
+        <div class="vstep-cheat-card vstep-shake">
+            <div class="vstep-cheat-icon-badge warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div id="vstep-cheat-badge" class="vstep-violation-badge">CẢNH BÁO LẦN 1/3</div>
+            <h3 class="vstep-cheat-title">CẢNH BÁO VI PHẠM QUY CHẾ THI</h3>
+            <p id="vstep-cheat-reason" class="vstep-cheat-desc">Phát hiện hành vi sao chép/dán nội dung hoặc chuyển tab trình duyệt!</p>
+            <div class="vstep-cheat-notice-box">
+                <p><strong>QUY ĐỊNH BẮT BUỘC:</strong> Trong thời gian làm bài, bạn <strong>KHÔNG ĐƯỢC PHÉP</strong>:</p>
+                <ul>
+                    <li>Sao chép (Copy), Cắt (Cut), hoặc Dán (Paste) nội dung.</li>
+                    <li>Chuyển tab trình duyệt, thu nhỏ cửa sổ hoặc mở ứng dụng khác.</li>
+                </ul>
+                <p class="penalty-warning">⚠️ Nếu vi phạm đủ <strong>3 lần</strong>, bài thi sẽ bị đình chỉ và <strong>TÀI KHOẢN SẼ BỊ KHÓA NGAY LẬP TỨC</strong>!</p>
+            </div>
+            <button type="button" class="btn-cheat-dismiss" onclick="dismissCheatWarning()">
+                <i class="fa-solid fa-check"></i> Tôi Đã Hiểu & Tiếp Tục Làm Bài
+            </button>
+        </div>
+    </div>
+
+    <!-- Anti-Cheat Lockout Modal -->
+    <div id="vstep-lockout-modal" class="vstep-cheat-overlay" style="display: none;">
+        <div class="vstep-cheat-card locked vstep-shake">
+            <div class="vstep-cheat-icon-badge locked">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="vstep-violation-badge locked">ĐÃ BỊ KHÓA DO GIAN LẬN</div>
+            <h3 class="vstep-cheat-title" style="color: #dc2626;">TÀI KHOẢN ĐÃ BỊ ĐÌNH CHỈ & KHÓA</h3>
+            <div class="vstep-locked-info">
+                <p>Thí sinh: <strong id="vstep-locked-student-display">Học viên</strong></p>
+                <p>Lý do: <span id="vstep-locked-reason-display" style="color: #b91c1c; font-weight: 600;">Vi phạm quy chế thi 3 lần (chuyển tab hoặc sao chép/dán)</span></p>
+            </div>
+            <div class="vstep-cheat-notice-box locked">
+                <p>⛔ Bạn đã vi phạm quy chế thi <strong>quá 3 lần</strong>. Toàn bộ quyền truy cập và làm bài thi của bạn đã bị khóa.</p>
+                <p>👉 <strong>Vui lòng liên hệ trực tiếp Giáo viên (Cô Nguyệt) để được xác minh và mở khóa tài khoản!</strong></p>
+            </div>
+            
+            <!-- Teacher Unlock Button & Form -->
+            <div class="vstep-teacher-unlock-section">
+                <button type="button" class="btn-toggle-unlock" onclick="toggleTeacherUnlockForm()">
+                    <i class="fa-solid fa-key"></i> Dành Cho Giáo Viên Mở Khóa
+                </button>
+                <div id="vstep-teacher-unlock-form" style="display: none; margin-top: 15px;">
+                    <input type="password" id="vstep-teacher-unlock-pass" class="vstep-login-input" placeholder="Nhập Mật khẩu Giáo viên..." style="margin-bottom: 10px; text-align: center;">
+                    <div id="vstep-unlock-error" style="display: none; color: #ef4444; font-size: 13px; font-weight: 600; margin-bottom: 8px;"></div>
+                    <button type="button" class="btn-confirm-unlock" onclick="handleTeacherUnlockSubmit()">
+                        <i class="fa-solid fa-unlock"></i> Xác Nhận Mở Khóa Tài Khoản
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 </body>
 </html>
@@ -2027,29 +2259,393 @@ const elements = {
 // ==========================================
 // STUDENT LOGIN & GOOGLE FORM LOGGING
 // ==========================================
-const VALID_CLASSES = ['CB196', 'CB206', 'CB210', 'CB211', 'CB213', 'CB219', 'CB220', 'ONB103', 'B209', 'B212', 'GV'];
-const BANNED_CLASSES = ['CB201', 'CB202', 'B220'];
-const REQUIRED_PASSWORD = 'STUDYHARD';
-const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
-const GOOGLE_FORM_ENTRY = 'entry.388968236';
+const VALID_STUDENTS = {
+    "CB210": [
+        "Nguyễn Võ Thành Đạt", "Lê Huỳnh Thanh Duy", "Nguyễn Cao Kỳ Duyên", "Đào Ngọc Hân", 
+        "Trần Văn Hữu", "Trần Văn Kim Khoa", "Nguyễn Thanh Nâng", "Huỳnh Kỳ Nguyên", 
+        "Võ Thị Kim Nguyên", "Võ Hùng Sanh", "Tiền Thị Thanh Thảo", "Trần Thị Thanh Thảo", 
+        "Đặng Thị Kim Thoa", "Trần Thị Tiên Tiên", "Lê Kim Tuyền"
+    ],
+    "CB211": [
+        "Hồ Anh Quân", "Lê Thành Nghiệp", "Lê Khánh Lâm", "Huỳnh Thị Ngọc Thắm", 
+        "Mai Trần Xuân Mai", "Lê Thị Uyển Nhi", "Nguyễn Thụy Thanh Trúc"
+    ],
+    "CB213": [
+        "Nguyễn Quốc Anh", "Hoàng Hợp Minh Châu", "Đặng Châu Gia Huy", "Trần Minh Tuệ Mẩn", 
+        "Trần Minh Tuệẫn", "Đặng Thị Trúc Măng", "Trương Thị Kha My", "Ngô Diễm My", 
+        "Chiêm Chúc Ngân", "Huỳnh Thị Yến Nhi", "Phạm Nguyễn Tâm Như", "Phạm Nhựt Tiến", 
+        "Phạm Nhật Tiến", "Lê Thị Tú Trinh", "Trần Ngọc Vinh"
+    ],
+    "ONB103": [
+        "Nguyễn Thị Duy", "Phạm Trần Mỹ Hân", "Trịnh Thị Thu Hiền", "Nguyễn Hoàng Kha", 
+        "Phạm Thị Út Lụa", "Phạm Thị Út Lua", "Lê Huỳnh Diễm My", "Nguyễn Thị Ngọc Mỹ", 
+        "Huỳnh Thị Kim Ngân", "Trần Thị Kim Ngân", "Nguyễn Thị Tiểu Phụng", "Trần Yến Phụng", 
+        "Phạm Ngọc Thạch", "Cao Thị Thu Trang", "Nguyễn Thị Thanh Tuyền", "Trần Phạm Phương Uyên", 
+        "Trần Ngô Mỹ Vy"
+    ],
+    "B212": [
+        "Nguyễn Duy Hồng Anh", "Nguyễn Ngọc Minh Anh", "Nguyễn Lê Mỹ Hân", "Nguyễn Hồng Minh Huy", 
+        "Nguyễn Quốc Khải", "Đoàn Nguyễn Đình Khang", "Lê Nguyễn Gia Khánh", "Nguyễn Hữu Khánh", 
+        "Hồ Thị Ngọc Lan", "Trần Thị Hồng Lỉnh", "Trần Thị Hồng Lĩnh", "Võ Thị Triệu Minh", 
+        "Hứa Đình Nghi", "Võ Thị Bảo Ngọc", "Lê Tiến Phát", "Nguyễn Hoàng Thông", 
+        "Trần Hoàng Thông", "Nguyễn Kim Tiền", "Lê Thị Bảo Trân", "Võ Thị Diễm Trinh", 
+        "Nguyễn Tấn Trung", "Nguyễn Tiến Trung", "Trần Thị Ánh Tuyết", "Đặng Nguyễn Khánh Uyên", 
+        "Nguyễn Thị Chúc Yến"
+    ],
+    "B2": [
+        "Gia Tuệ", "Trương Gia Tuệ", "Gia Tuê", "Nguyễn Gia Tuệ", "Trần Gia Tuệ", "Lê Gia Tuệ"
+    ]
+};
+
+const VALID_CLASSES = ["CB210", "CB211", "CB213", "ONB103", "B212", "B2", "GV"];
+const BANNED_CLASSES = ["CB196", "CB201", "CB202", "CB206", "CB219", "CB220", "B209"];
+const REQUIRED_PASSWORD = "VSTEPSEPTEMBER";
+const VALID_PASSWORDS = ["VSTEPSEPTEMBER", "STUDYHARD", "B2", "GIATUE", "PTMN2896", "PTMN2412", "PTMN2805"];
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse";
+const GOOGLE_FORM_ENTRY = "entry.388968236";
+
+function removeVietnameseTones(str) {
+    if (!str) return "";
+    return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d").replace(/Đ/g, "D");
+}
+
+function normalizeVietnameseName(str) {
+    if (!str) return "";
+    return str
+        .normalize("NFC")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+}
+
+function checkIsGiaTue(nameInput) {
+    if (!nameInput) return false;
+    const norm = removeVietnameseTones(normalizeVietnameseName(nameInput));
+    return norm.includes("gia tue") || norm.replace(/\s+/g, "").includes("giatue");
+}
+
+function validateStudentIdentity(fullName, className) {
+    const nameUpper = (fullName || "").trim().toUpperCase();
+    const classUpper = (className || "").trim().toUpperCase();
+    const isTeacher = (nameUpper === "PTMN" && classUpper === "GV") || 
+                      (classUpper === "GV" && /^(cô nguyệt|co nguyet|giáo viên|giao vien|ptmn)$/i.test((fullName || "").trim()));
+    if (isTeacher) return { ok: true, matchedName: "Cô Nguyệt (PTMN)", className: "GV" };
+
+    let cleanClass = (className || "").replace(/^(LỚP|LOP|CLASS)\s*/i, "").trim().toUpperCase();
+    if (checkIsGiaTue(fullName) && (!cleanClass || cleanClass === "B2")) {
+        cleanClass = "B2";
+    }
+
+    if (!VALID_CLASSES.includes(cleanClass)) {
+        return { 
+            ok: false, 
+            error: `Lớp "${className}" không hợp lệ hoặc đã kết thúc! Hệ thống hiện chỉ nhận các lớp: CB210, CB211, CB213, ONB103, B212 và học viên Gia Tuệ (B2).` 
+        };
+    }
+
+    if (cleanClass === "B2") {
+        if (!checkIsGiaTue(fullName)) {
+            return { 
+                ok: false, 
+                error: "Mã lớp B2 hiện chỉ dành riêng cho học viên Gia Tuệ (B2)! Vui lòng kiểm tra lại Họ tên hoặc Mã lớp." 
+            };
+        }
+        return { ok: true, matchedName: "Gia Tuệ", className: "B2" };
+    }
+
+    if (cleanClass === "GV") {
+        return { 
+            ok: false, 
+            error: "Mã lớp GV chỉ dành riêng cho tài khoản Giáo viên (PTMN)!" 
+        };
+    }
+
+    const roster = VALID_STUDENTS[cleanClass] || [];
+    const normInput = normalizeVietnameseName(fullName);
+    const noToneInput = removeVietnameseTones(normInput);
+
+    const found = roster.find(st => {
+        const normSt = normalizeVietnameseName(st);
+        const noToneSt = removeVietnameseTones(normSt);
+        return normSt === normInput || noToneSt === noToneInput;
+    });
+
+    if (!found) {
+        if (checkIsGiaTue(fullName)) {
+            return { ok: true, matchedName: "Gia Tuệ", className: "B2" };
+        }
+        return { 
+            ok: false, 
+            error: `Họ và tên "${fullName}" không có trong danh sách lớp ${cleanClass}. Vui lòng kiểm tra lại chính xác họ tên và mã lớp!` 
+        };
+    }
+
+    return { ok: true, matchedName: found, className: cleanClass };
+}
+
+
+// ==========================================
+// ANTI-CHEAT & PROCTORING SYSTEM
+// ==========================================
+let isExamRunning = false;
+let lastCheatWarningTime = 0;
+const TEACHER_UNLOCK_PASSWORDS = ["PTMN2896", "PTMN2412", "PTMN2805", "PTMN", "VSTEPSEPTEMBER", "STUDYHARD"];
+
+function getStudentLockKey(name) {
+    if (!name) return "vstep_locked_generic";
+    return "vstep_locked_" + removeVietnameseTones(normalizeVietnameseName(name)).replace(/[^a-z0-9]/g, "");
+}
+
+function isStudentLocked(name) {
+    if (!name) return false;
+    const isTeacher = (name.toUpperCase().includes("PTMN") || name.toUpperCase() === "GV");
+    if (isTeacher) return false;
+    const key = getStudentLockKey(name);
+    return localStorage.getItem(key) === "true" || localStorage.getItem("vstep_current_user_locked") === "true";
+}
+
+function lockStudentAccount(name, className, reason) {
+    const isTeacher = (name && (name.toUpperCase().includes("PTMN") || className === "GV"));
+    if (isTeacher) return;
+
+    const key = getStudentLockKey(name);
+    localStorage.setItem(key, "true");
+    localStorage.setItem("vstep_current_user_locked", "true");
+    localStorage.setItem("vstep_locked_student_name", name);
+    localStorage.setItem("vstep_locked_student_class", className);
+    localStorage.setItem("vstep_locked_reason", reason || "Vi phạm quy chế thi 3 lần (chuyển tab hoặc sao chép/dán)");
+    localStorage.setItem("vstep_locked_time", new Date().toLocaleString("vi-VN"));
+    
+    showLockoutModal(name, className, reason);
+}
+
+function showCheatingWarningModal(count, reason) {
+    const modal = document.getElementById("vstep-cheat-warning-modal");
+    if (!modal) return;
+    
+    const badgeEl = document.getElementById("vstep-cheat-badge");
+    const reasonEl = document.getElementById("vstep-cheat-reason");
+    
+    if (badgeEl) {
+        if (count === 1) {
+            badgeEl.className = "vstep-violation-badge";
+            badgeEl.textContent = "CẢNH BÁO LẦN 1/3";
+        } else if (count === 2) {
+            badgeEl.className = "vstep-violation-badge locked";
+            badgeEl.textContent = "CẢNH BÁO LẦN 2/3 (NGUY CƠ BỊ KHÓA!)";
+        }
+    }
+    if (reasonEl && reason) {
+        reasonEl.textContent = reason;
+    }
+    
+    modal.style.display = "flex";
+    const card = modal.querySelector(".vstep-cheat-card");
+    if (card) {
+        card.classList.remove("vstep-shake");
+        void card.offsetWidth;
+        card.classList.add("vstep-shake");
+    }
+}
+
+function dismissCheatWarning() {
+    const modal = document.getElementById("vstep-cheat-warning-modal");
+    if (modal) modal.style.display = "none";
+}
+
+function showLockoutModal(name, className, reason) {
+    const modal = document.getElementById("vstep-lockout-modal");
+    if (!modal) return;
+    
+    dismissCheatWarning();
+    
+    const sName = name || localStorage.getItem("vstep_student_name") || "Học viên";
+    const sClass = className || localStorage.getItem("vstep_student_class") || "";
+    const sReason = reason || localStorage.getItem("vstep_locked_reason") || "Vi phạm quy chế thi 3 lần (chuyển tab hoặc sao chép/dán)";
+    
+    const nameEl = document.getElementById("vstep-locked-student-display");
+    const reasonEl = document.getElementById("vstep-locked-reason-display");
+    if (nameEl) nameEl.textContent = `${sName} (${sClass})`;
+    if (reasonEl) reasonEl.textContent = sReason;
+    
+    modal.style.display = "flex";
+}
+
+function toggleTeacherUnlockForm() {
+    const form = document.getElementById("vstep-teacher-unlock-form");
+    if (!form) return;
+    if (form.style.display === "none" || !form.style.display) {
+        form.style.display = "block";
+        const input = document.getElementById("vstep-teacher-unlock-pass");
+        if (input) input.focus();
+    } else {
+        form.style.display = "none";
+    }
+}
+
+function unlockStudentAccount(passwordInput) {
+    const pass = (passwordInput || "").trim().toUpperCase();
+    if (!TEACHER_UNLOCK_PASSWORDS.includes(pass)) {
+        return { ok: false, error: "Mật khẩu Giáo viên không chính xác!" };
+    }
+    const studentName = localStorage.getItem("vstep_locked_student_name") || localStorage.getItem("vstep_student_name") || "";
+    if (studentName) {
+        localStorage.removeItem(getStudentLockKey(studentName));
+    }
+    localStorage.removeItem("vstep_current_user_locked");
+    localStorage.removeItem("vstep_locked_student_name");
+    localStorage.removeItem("vstep_locked_student_class");
+    localStorage.removeItem("vstep_locked_reason");
+    localStorage.removeItem("vstep_locked_time");
+    sessionStorage.removeItem("vstep_cheat_violations");
+    
+    const lockModal = document.getElementById("vstep-lockout-modal");
+    if (lockModal) lockModal.style.display = "none";
+    return { ok: true };
+}
+
+function handleTeacherUnlockSubmit() {
+    const passInput = document.getElementById("vstep-teacher-unlock-pass");
+    const errorEl = document.getElementById("vstep-unlock-error");
+    const pass = passInput ? passInput.value.trim().toUpperCase() : "";
+    
+    const res = unlockStudentAccount(pass);
+    if (!res.ok) {
+        if (errorEl) {
+            errorEl.textContent = res.error;
+            errorEl.style.display = "block";
+        }
+        if (passInput) passInput.focus();
+        return;
+    }
+    
+    alert("✅ ĐÃ MỞ KHÓA THÀNH CÔNG! Tài khoản học viên đã được mở khóa. Thí sinh có thể tiếp tục thao tác.");
+    location.reload();
+}
+
+function handleCheatingViolation(reason) {
+    const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
+    const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
+    const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+    
+    // TÀI KHOẢN GIÁO VIÊN HOÀN TOÀN KHÔNG BỊ HẠN CHẾ
+    if (isTeacher) return;
+    if (!isExamRunning) return;
+
+    // Debounce 2 seconds
+    const now = Date.now();
+    if (now - lastCheatWarningTime < 2000) return;
+    lastCheatWarningTime = now;
+
+    let count = parseInt(sessionStorage.getItem("vstep_cheat_violations") || "0", 10) + 1;
+    sessionStorage.setItem("vstep_cheat_violations", count.toString());
+
+    if (count >= 3) {
+        // LOCK ACCOUNT
+        isExamRunning = false;
+        if (typeof timerInterval !== "undefined" && timerInterval) clearInterval(timerInterval);
+        
+        if (typeof elements !== "undefined") {
+            if (elements.textareaTask1) elements.textareaTask1.readOnly = true;
+            if (elements.textareaTask2) elements.textareaTask2.readOnly = true;
+        }
+        
+        lockStudentAccount(studentName, studentClass, reason);
+    } else {
+        showCheatingWarningModal(count, reason);
+    }
+}
+
+function setupAntiCheatListeners() {
+    // 1. Prevent Copy / Cut / Paste on exam textareas
+    ["copy", "cut", "paste"].forEach(eventType => {
+        document.addEventListener(eventType, function(e) {
+            const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
+            const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
+            const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+            if (isTeacher) return; // GV không bị giới hạn
+
+            if (isExamRunning) {
+                e.preventDefault();
+                const actionName = eventType === "paste" ? "Dán văn bản (Paste)" : (eventType === "copy" ? "Sao chép (Copy)" : "Cắt văn bản (Cut)");
+                handleCheatingViolation(`Hành vi ${actionName} bị nghiêm cấm trong quá trình làm bài thi!`);
+            }
+        }, true);
+    });
+
+    // 2. Prevent Keyboard Shortcuts (Ctrl+C, Ctrl+V, Ctrl+X, Cmd+C, Cmd+V, Cmd+X)
+    document.addEventListener("keydown", function(e) {
+        const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
+        const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
+        const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+        if (isTeacher) return; // GV không bị giới hạn
+
+        if (isExamRunning) {
+            const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+            const key = (e.key || "").toLowerCase();
+            if (isCtrlOrCmd && (key === "c" || key === "v" || key === "x")) {
+                e.preventDefault();
+                const actionName = key === "v" ? "Dán văn bản (Ctrl+V)" : (key === "c" ? "Sao chép (Ctrl+C)" : "Cắt văn bản (Ctrl+X)");
+                handleCheatingViolation(`Phím tắt ${actionName} bị nghiêm cấm trong quá trình làm bài thi!`);
+            }
+        }
+    }, true);
+
+    // 3. Prevent Context Menu (Right Click) during exam
+    document.addEventListener("contextmenu", function(e) {
+        const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
+        const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
+        const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+        if (isTeacher) return; // GV không bị giới hạn
+
+        if (isExamRunning) {
+            e.preventDefault();
+            handleCheatingViolation("Thao tác mở menu chuột phải bị cấm trong quá trình thi!");
+        }
+    }, true);
+
+    // 4. Detect Tab Switching / Leaving the Test Screen
+    let tabLeaveTime = 0;
+    document.addEventListener("visibilitychange", function() {
+        const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
+        const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
+        const isTeacher = (studentName.toUpperCase().includes("PTMN") || studentClass === "GV");
+        if (isTeacher) return; // GV không bị giới hạn
+
+        if (isExamRunning) {
+            if (document.hidden) {
+                tabLeaveTime = Date.now();
+            } else {
+                if (tabLeaveTime > 0) {
+                    tabLeaveTime = 0;
+                    handleCheatingViolation("Hành vi rời khỏi màn hình bài thi hoặc chuyển tab trình duyệt bị nghiêm cấm!");
+                }
+            }
+        }
+    });
+}
+
 
 function showLoginModal() {
-    const overlay = document.getElementById('vstep-login-overlay');
+    const overlay = document.getElementById("vstep-login-overlay");
     if (!overlay) return;
     
-    const nameInput = document.getElementById('vstep-input-name');
-    const classInput = document.getElementById('vstep-input-class');
-    const passInput = document.getElementById('vstep-input-pass');
-    const errorEl = document.getElementById('vstep-login-error');
+    const nameInput = document.getElementById("vstep-input-name");
+    const classInput = document.getElementById("vstep-input-class");
+    const passInput = document.getElementById("vstep-input-pass");
+    const errorEl = document.getElementById("vstep-login-error");
     
-    if (errorEl) errorEl.style.display = 'none';
-    if (nameInput) nameInput.value = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name') || '';
-    if (classInput) classInput.value = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class') || '';
-    if (passInput) passInput.value = '';
+    if (errorEl) errorEl.style.display = "none";
+    if (nameInput) nameInput.value = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name") || "";
+    if (classInput) classInput.value = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
+    if (passInput) passInput.value = "";
     
-    overlay.style.display = 'flex';
+    overlay.style.display = "flex";
     void overlay.offsetHeight;
-    overlay.classList.add('active');
+    overlay.classList.add("active");
     setTimeout(() => {
         if (!nameInput.value) {
             nameInput.focus();
@@ -2062,52 +2658,65 @@ function showLoginModal() {
 }
 
 function closeLoginModal() {
-    const overlay = document.getElementById('vstep-login-overlay');
+    const overlay = document.getElementById("vstep-login-overlay");
     if (!overlay) return;
-    overlay.classList.remove('active');
+    overlay.classList.remove("active");
     setTimeout(() => {
-        overlay.style.display = 'none';
+        overlay.style.display = "none";
     }, 300);
 }
 
 function handleStudentLoginSubmit(event) {
     if (event) event.preventDefault();
-    const nameInput = document.getElementById('vstep-input-name');
-    const classInput = document.getElementById('vstep-input-class');
-    const passInput = document.getElementById('vstep-input-pass');
+    const nameInput = document.getElementById("vstep-input-name");
+    const classInput = document.getElementById("vstep-input-class");
+    const passInput = document.getElementById("vstep-input-pass");
     
-    const fullName = nameInput ? nameInput.value.trim() : '';
-    const className = classInput ? classInput.value.trim().toUpperCase() : '';
-    const pass = passInput ? passInput.value.trim() : '';
+    const fullName = nameInput ? nameInput.value.trim() : "";
+    let className = classInput ? classInput.value.trim().toUpperCase() : "";
+    const pass = passInput ? passInput.value.trim() : "";
     
     if (!fullName) {
-        showLoginError('Vui lòng nhập Họ và Tên của bạn.');
+        showLoginError("Vui lòng nhập Họ và Tên của bạn.");
         if (nameInput) nameInput.focus();
         return;
     }
-    
-    if (!VALID_CLASSES.includes(className)) {
-        showLoginError(`Lớp học không hợp lệ. Hệ thống chỉ nhận lớp: ${VALID_CLASSES.filter(c => c !== 'GV').join(', ')}.`);
+
+    if (!className) {
+        showLoginError("Vui lòng nhập Mã lớp của bạn (VD: CB210, CB211, CB213, ONB103, B212, B2).");
         if (classInput) classInput.focus();
         return;
     }
 
-    const isTeacher = (fullName.toUpperCase() === 'PTMN' && className === 'GV');
-    if (className === 'GV' && !isTeacher) {
-        showLoginError('Mã lớp GV chỉ dành riêng cho tài khoản Giáo viên (PTMN)!');
-        if (nameInput) nameInput.focus();
+    // Check if account is locked due to cheating
+    if (isStudentLocked(fullName)) {
+        showLoginError(`Tài khoản "${fullName}" hiện đang bị KHÓA do vi phạm quy chế thi 3 lần! Vui lòng liên hệ Giáo viên để mở khóa.`);
+        showLockoutModal(fullName, className, "Vi phạm quy chế thi 3 lần (chuyển tab hoặc sao chép/dán)");
         return;
     }
+
+    const validation = validateStudentIdentity(fullName, className);
+    if (!validation.ok) {
+        showLoginError(validation.error);
+        if (classInput) classInput.focus();
+        return;
+    }
+
+    const matchedFullName = validation.matchedName;
+    className = validation.className;
+
+    const isTeacher = (className === "GV");
+    const isGiaTue = (className === "B2");
     
-    if (!isTeacher) {
+    if (!isTeacher && !isGiaTue) {
         if (!pass) {
-            showLoginError('Vui lòng nhập Mật khẩu.');
+            showLoginError("Vui lòng nhập Mật khẩu.");
             if (passInput) passInput.focus();
             return;
         }
         
-        if (pass.toUpperCase() !== REQUIRED_PASSWORD) {
-            showLoginError('Mật khẩu không chính xác. Vui lòng kiểm tra lại.');
+        if (!VALID_PASSWORDS.includes(pass.toUpperCase())) {
+            showLoginError("Mật khẩu không chính xác. Vui lòng kiểm tra lại.");
             if (passInput) {
                 passInput.focus();
                 passInput.select();
@@ -2117,15 +2726,15 @@ function handleStudentLoginSubmit(event) {
     }
     
     // Save to BOTH localStorage and sessionStorage so switching tests does NOT require re-login
-    localStorage.setItem('vstep_student_name', fullName);
-    localStorage.setItem('vstep_student_class', className);
-    localStorage.setItem('vstep_student_logged_in', 'true');
-    sessionStorage.setItem('vstep_student_name', fullName);
-    sessionStorage.setItem('vstep_student_class', className);
-    sessionStorage.setItem('vstep_student_logged_in', 'true');
+    localStorage.setItem("vstep_student_name", matchedFullName);
+    localStorage.setItem("vstep_student_class", className);
+    localStorage.setItem("vstep_student_logged_in", "true");
+    sessionStorage.setItem("vstep_student_name", matchedFullName);
+    sessionStorage.setItem("vstep_student_class", className);
+    sessionStorage.setItem("vstep_student_logged_in", "true");
     
     // Send log to Google Form
-    submitStudentLoginToGoogleForm(fullName, className);
+    submitStudentLoginToGoogleForm(matchedFullName, className);
     
     // Update badge in UI
     renderStudentBadge();
@@ -2134,27 +2743,27 @@ function handleStudentLoginSubmit(event) {
     closeLoginModal();
     
     // If on a test page, update student name field
-    const testStudentInput = document.getElementById('student-name');
+    const testStudentInput = document.getElementById("student-name");
     if (testStudentInput) {
-        testStudentInput.value = `${fullName} (${className})`;
+        testStudentInput.value = `${matchedFullName} (${className})`;
     }
-    const displayStudent = document.getElementById('display-student-name');
+    const displayStudent = document.getElementById("display-student-name");
     if (displayStudent) {
-        displayStudent.innerText = `Thí sinh: ${fullName} (${className})`;
+        displayStudent.innerText = `Thí sinh: ${matchedFullName} (${className})`;
     }
 }
 
 function showLoginError(msg) {
-    const errorEl = document.getElementById('vstep-login-error');
-    const cardEl = document.querySelector('.vstep-login-card');
+    const errorEl = document.getElementById("vstep-login-error");
+    const cardEl = document.querySelector(".vstep-login-card");
     if (errorEl) {
         errorEl.textContent = msg;
-        errorEl.style.display = 'block';
+        errorEl.style.display = "block";
     }
     if (cardEl) {
-        cardEl.classList.remove('vstep-shake');
+        cardEl.classList.remove("vstep-shake");
         void cardEl.offsetWidth;
-        cardEl.classList.add('vstep-shake');
+        cardEl.classList.add("vstep-shake");
     }
 }
 
@@ -2166,28 +2775,28 @@ function submitStudentLoginToGoogleForm(name, className) {
         const formData = new FormData();
         formData.append(GOOGLE_FORM_ENTRY, submissionText);
         fetch(GOOGLE_FORM_URL, {
-            method: 'POST',
-            mode: 'no-cors',
+            method: "POST",
+            mode: "no-cors",
             body: formData
-        }).catch(err => console.log('Login form fetch notice:', err));
+        }).catch(err => console.log("Login form fetch notice:", err));
     } catch (e) {}
     
     // Method 2: Hidden form submission via hidden iframe
     try {
-        const iframeName = 'gform_sink_' + Date.now();
-        const iframe = document.createElement('iframe');
+        const iframeName = "gform_sink_" + Date.now();
+        const iframe = document.createElement("iframe");
         iframe.name = iframeName;
-        iframe.style.display = 'none';
+        iframe.style.display = "none";
         document.body.appendChild(iframe);
         
-        const form = document.createElement('form');
+        const form = document.createElement("form");
         form.action = GOOGLE_FORM_URL;
-        form.method = 'POST';
+        form.method = "POST";
         form.target = iframeName;
-        form.style.display = 'none';
+        form.style.display = "none";
         
-        const input = document.createElement('input');
-        input.type = 'hidden';
+        const input = document.createElement("input");
+        input.type = "hidden";
         input.name = GOOGLE_FORM_ENTRY;
         input.value = submissionText;
         form.appendChild(input);
@@ -2203,46 +2812,53 @@ function submitStudentLoginToGoogleForm(name, className) {
 }
 
 function checkStudentAuth() {
-    const studentName = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name');
-    const studentClass = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class');
+    const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name");
+    const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class");
     
-    if (!studentName || !studentClass || !VALID_CLASSES.includes(studentClass.toUpperCase())) {
+    if (isStudentLocked(studentName)) {
+        showLockoutModal(studentName, studentClass, "Vi phạm quy chế thi 3 lần (chuyển tab hoặc sao chép/dán)");
+        return;
+    }
+
+    const validResult = (studentName && studentClass) ? validateStudentIdentity(studentName, studentClass) : { ok: false };
+    
+    if (!validResult.ok) {
         showLoginModal();
     } else {
         // Keep both storages synced
-        localStorage.setItem('vstep_student_name', studentName);
-        localStorage.setItem('vstep_student_class', studentClass);
-        localStorage.setItem('vstep_student_logged_in', 'true');
-        sessionStorage.setItem('vstep_student_name', studentName);
-        sessionStorage.setItem('vstep_student_class', studentClass);
-        sessionStorage.setItem('vstep_student_logged_in', 'true');
+        localStorage.setItem("vstep_student_name", validResult.matchedName);
+        localStorage.setItem("vstep_student_class", validResult.className);
+        localStorage.setItem("vstep_student_logged_in", "true");
+        sessionStorage.setItem("vstep_student_name", validResult.matchedName);
+        sessionStorage.setItem("vstep_student_class", validResult.className);
+        sessionStorage.setItem("vstep_student_logged_in", "true");
         
         renderStudentBadge();
-        const testStudentInput = document.getElementById('student-name');
+        const testStudentInput = document.getElementById("student-name");
         if (testStudentInput) {
-            testStudentInput.value = `${studentName} (${studentClass})`;
+            testStudentInput.value = `${validResult.matchedName} (${validResult.className})`;
         }
-        const displayStudent = document.getElementById('display-student-name');
+        const displayStudent = document.getElementById("display-student-name");
         if (displayStudent) {
-            displayStudent.innerText = `Thí sinh: ${studentName} (${studentClass})`;
+            displayStudent.innerText = `Thí sinh: ${validResult.matchedName} (${validResult.className})`;
         }
     }
 }
 
 function renderStudentBadge() {
-    const studentName = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name');
-    const studentClass = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class');
-    const container = document.getElementById('vstep-user-badge-container');
+    const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name");
+    const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class");
+    const container = document.getElementById("vstep-user-badge-container");
     if (!container) return;
     
-    const isTeacher = (studentName && studentClass && studentName.toUpperCase() === 'PTMN' && studentClass.toUpperCase() === 'GV');
+    const validResult = (studentName && studentClass) ? validateStudentIdentity(studentName, studentClass) : { ok: false };
     
-    if (studentName && studentClass && (VALID_CLASSES.includes(studentClass.toUpperCase()) || isTeacher)) {
-        if (isTeacher) {
+    if (validResult.ok) {
+        if (validResult.className === "GV") {
             container.innerHTML = `
                 <div class="vstep-user-badge" style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4);">
                     <i class="fa-solid fa-chalkboard-user" style="color: #eab308; font-size: 15px;"></i>
-                    <span class="user-text">Giáo viên: <strong>${studentName}</strong> (<strong>${studentClass}</strong>)</span>
+                    <span class="user-text">Giáo viên: <strong>${validResult.matchedName}</strong> (<strong>${validResult.className}</strong>)</span>
                     <button type="button" class="btn-change-user" onclick="showLoginModal()" title="Đổi thông tin"><i class="fa-solid fa-user-pen"></i> Đổi</button>
                 </div>
             `;
@@ -2250,7 +2866,7 @@ function renderStudentBadge() {
             container.innerHTML = `
                 <div class="vstep-user-badge">
                     <i class="fa-solid fa-user-graduate" style="color: #5865f2; font-size: 15px;"></i>
-                    <span class="user-text">Học viên: <strong>${studentName}</strong> (Lớp: <strong>${studentClass}</strong>)</span>
+                    <span class="user-text">Học viên: <strong>${validResult.matchedName}</strong> (Lớp: <strong>${validResult.className}</strong>)</span>
                     <button type="button" class="btn-change-user" onclick="showLoginModal()" title="Đổi thông tin học viên"><i class="fa-solid fa-user-pen"></i> Đổi</button>
                 </div>
             `;
@@ -2267,7 +2883,17 @@ function renderStudentBadge() {
 
 // Initialize Workspace on Load
 async function initializeApp() {
-    checkStudentAuth();
+    const savedName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name");
+    const savedClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class");
+    if (isStudentLocked(savedName)) {
+        showLockoutModal(savedName, savedClass);
+    } else {
+        checkStudentAuth();
+    }
+    
+    // Setup anti-cheat proctoring listeners
+    setupAntiCheatListeners();
+    
     // 1. Sync Sidebar navigation
     syncSidebarNavigation();
     
@@ -3541,11 +4167,18 @@ function autosaveSession() {
 function startExam() {
     const savedName = localStorage.getItem('vstep_student_name') || sessionStorage.getItem('vstep_student_name');
     const savedClass = localStorage.getItem('vstep_student_class') || sessionStorage.getItem('vstep_student_class');
-    if (!savedName || !savedClass || !VALID_CLASSES.includes(savedClass.toUpperCase())) {
+    
+    if (isStudentLocked(savedName)) {
+        showLockoutModal(savedName, savedClass);
+        return;
+    }
+    
+    const validResult = (savedName && savedClass) ? validateStudentIdentity(savedName, savedClass) : { ok: false };
+    if (!validResult.ok) {
         showLoginModal();
         return;
     }
-    studentName = `${savedName} (${savedClass})`;
+    studentName = `${validResult.matchedName} (${validResult.className})`;
     elements.studentNameInput.value = studentName;
     elements.displayStudentName.innerText = `Thí sinh: ${studentName}`;
     
@@ -3556,6 +4189,9 @@ function startExam() {
     // Active timeline step
     elements.stepWelcome.className = 'timeline-step';
     elements.stepWriting.className = 'timeline-step active';
+    
+    // Activate proctoring / anti-cheat monitoring
+    isExamRunning = true;
     
     // Start countdown
     startTimer();
@@ -3582,6 +4218,9 @@ function resumeExam(session) {
     
     elements.stepWelcome.className = 'timeline-step';
     elements.stepWriting.className = 'timeline-step active';
+    
+    // Activate proctoring / anti-cheat monitoring
+    isExamRunning = true;
     
     startTimer();
 }
@@ -3638,6 +4277,7 @@ async function submitTest(force = false) {
     }
     
     isSubmitted = true;
+    isExamRunning = false;
     if (timerInterval) clearInterval(timerInterval);
     
     // Disable Textareas
