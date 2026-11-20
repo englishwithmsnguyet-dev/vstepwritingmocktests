@@ -8,7 +8,7 @@
   const VSTEP_AI_ENDPOINT =
     'https://script.google.com/macros/s/AKfycbwUNnMInGfNlI4QqWVqqrhOXEYpwRVJ8FFFCdeBtQl8cA4AmoftBDdWnO13DxCnwgjWvg/exec';
 
-  const CACHE_PREFIX = 'vstep_ai_cache_v2_';
+  const CACHE_PREFIX = 'vstep_ai_cache_v3_';
 
   function escHtml(str) {
     return String(str == null ? '' : str)
@@ -527,9 +527,13 @@
 
       ${vocabUp.length ? `
         <div style="margin-top:10px;">
-          <div class="vai-panel-title">💎 Từ vựng & Collocations nâng cấp cho bài viết này</div>
+          <div class="vai-panel-title">${String(data.targetLevel || '').toUpperCase() === 'B1' ? '💎 Từ vựng & Cụm từ chuẩn B1 nên dùng cho bài viết này' : '💎 Gợi ý nâng cấp từ vựng từ mức B1 lên chuẩn B2'}</div>
           <table class="vai-table">
-            <thead><tr><th>Cách dùng hiện tại / Cơ bản</th><th>Nâng cấp chuẩn B2–C1</th><th>Nghĩa tiếng Việt</th></tr></thead>
+            <thead><tr>
+              <th>${String(data.targetLevel || '').toUpperCase() === 'B1' ? 'Cách diễn đạt cơ bản / vụng' : 'Cụm từ mức B1 học viên dùng'}</th>
+              <th>${String(data.targetLevel || '').toUpperCase() === 'B1' ? 'Cụm từ chuẩn B1 tự nhiên' : 'Nâng cấp chuẩn B2'}</th>
+              <th>Nghĩa tiếng Việt</th>
+            </tr></thead>
             <tbody>${vocabUp.map(v => `<tr><td>${escHtml(v.basic)}</td><td><strong>${escHtml(v.upgraded)}</strong></td><td>${escHtml(v.meaning)}</td></tr>`).join('')}</tbody>
           </table>
         </div>
@@ -537,11 +541,11 @@
 
       ${sentUp.length ? `
         <div style="margin-top:14px;">
-          <div class="vai-panel-title">✨ Câu viết lại mẫu nâng Band (giữ nguyên ý của bạn)</div>
+          <div class="vai-panel-title">${String(data.targetLevel || '').toUpperCase() === 'B1' ? '✨ Câu viết lại chuẩn B1 rõ ràng, chuẩn ngữ pháp' : '✨ Câu viết lại nâng Band B2 (giữ nguyên ý của bạn)'}</div>
           <div class="vai-corr-list">${sentUp.map(u => `
             <div class="vai-corr-item">
               <div class="vai-corr-orig" style="background:#f8fafc;border-left-color:#64748b;color:#334155;"><strong>Câu gốc:</strong> ${escHtml(u.original)}</div>
-              <div class="vai-corr-fix"><strong>✨ Phiên bản nâng Band:</strong> ${escHtml(u.upgraded)}</div>
+              <div class="vai-corr-fix"><strong>✨ Phiên bản hoàn thiện:</strong> ${escHtml(u.upgraded)}</div>
               ${u.note ? `<div class="vai-corr-exp"><strong>Ghi chú:</strong> ${escHtml(u.note)}</div>` : ''}
             </div>
           `).join('')}</div>
@@ -581,6 +585,7 @@
       if (!forceRefresh) {
         const cached = readCache(cacheKey);
         if (cached) {
+          cached.targetLevel = cached.targetLevel || targetLevel;
           renderResult(cached);
           return;
         }
@@ -608,6 +613,7 @@
 
       try {
         const data = await callGraderApi({ taskType, targetLevel, prompt, essay });
+        data.targetLevel = data.targetLevel || targetLevel;
         writeCache(cacheKey, data);
         renderResult(data);
         if (typeof options.onGraded === 'function') options.onGraded(data);
