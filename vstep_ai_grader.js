@@ -8,7 +8,7 @@
   const VSTEP_AI_ENDPOINT =
     'https://script.google.com/macros/s/AKfycbwUNnMInGfNlI4QqWVqqrhOXEYpwRVJ8FFFCdeBtQl8cA4AmoftBDdWnO13DxCnwgjWvg/exec';
 
-  const CACHE_PREFIX = 'vstep_ai_cache_v1_';
+  const CACHE_PREFIX = 'vstep_ai_cache_v2_';
 
   function escHtml(str) {
     return String(str == null ? '' : str)
@@ -495,6 +495,8 @@
           <div class="vai-metric-sub">${wordOk ? `✓ Đạt chuẩn (≥${data.minWords} từ)` : `⚠️ Thiếu ${data.minWords - data.wordCount} từ (yêu cầu ≥${data.minWords})`}</div>
         </div>
       </div>
+
+      ${data.wordPenaltyNote ? `<div style="margin:10px 0 14px 0;background:#fff1f2;border:1.5px solid #fecdd3;border-radius:10px;padding:10px 14px;color:#9f1239;font-size:0.86rem;line-height:1.5;"><strong>⚠️ Quy chế khống chế trần điểm:</strong> ${escHtml(data.wordPenaltyNote)}</div>` : ""}
 
       <div class="vai-sec-title">📊 1. Phân tích chi tiết 4 tiêu chí VSTEP (Analytic Scoring)</div>
       <div class="vai-criteria-grid">${critHtml}</div>
