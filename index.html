@@ -528,7 +528,16 @@
     <!-- Sidebar Navigation -->
     <nav class="test-sidebar">
         <div class="sidebar-header">
-            <i class="fa-solid fa-file-pen"></i> <span>VSTEP WRITING</span>
+            <a href="https://www.facebook.com/nguyetpham28" target="_blank" class="brand" title="Ghé thăm Facebook: English with Miss Nguyet">
+                <div class="brand-avatar-box">
+                    <img src="miss_nguyet.jpg" alt="English with Miss Nguyet" class="brand-avatar-img">
+                    <span class="brand-verified-dot" title="Giáo viên xác thực"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <div class="brand-info-group">
+                    <div class="brand-author-name">MISS NGUYET</div>
+                    <div class="brand-course-badge">VSTEP WRITING MOCK TESTS</div>
+                </div>
+            </a>
         </div>
         <div id="vstep-sidebar-user-card"></div>
         <ul class="test-list" id="sidebar-test-list">
@@ -540,10 +549,19 @@
             </li>
             <!-- Sidebar items will be dynamically generated/synced -->
         </ul>
-        <a href="https://www.facebook.com/nguyetpham28" target="_blank" class="sidebar-brand-bottom">
-            <span class="brand-icon"><i class="fa-solid fa-graduation-cap"></i></span>
-            <span class="brand-text galaxy-text">ENGLISH WITH MISS NGUYET</span>
-        </a>
+        <div class="sidebar-footer">
+            <a href="https://www.facebook.com/nguyetpham28" target="_blank" class="sidebar-footer-brand" title="Ghé thăm Facebook: English with Miss Nguyet">
+                <div class="sf-avatar-wrap">
+                    <img src="miss_nguyet.jpg" alt="Miss Nguyet" class="sidebar-footer-avatar">
+                    <span class="sf-verified-dot"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <div class="sidebar-footer-text">
+                    <span class="sf-title">Giảng dạy &amp; Thiết kế</span>
+                    <strong class="sf-name">English with Miss Nguyet</strong>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square sf-arrow"></i>
+            </a>
+        </div>
     </nav>
 
     <!-- App Wrapper -->
@@ -4273,38 +4291,80 @@ function checkStudentAuth() {
     }
 }
 
+function logoutStudent() {
+    if (confirm("Bạn có chắc chắn muốn đăng xuất tài khoản không?")) {
+        localStorage.removeItem("vstep_student_name");
+        localStorage.removeItem("vstep_student_class");
+        localStorage.removeItem("vstep_student_logged_in");
+        localStorage.removeItem("vstep_user_logged_in");
+        sessionStorage.removeItem("vstep_student_name");
+        sessionStorage.removeItem("vstep_student_class");
+        sessionStorage.removeItem("vstep_student_logged_in");
+        sessionStorage.removeItem("vstep_user_logged_in");
+        renderStudentBadge();
+        showLoginModal(true);
+    }
+}
+window.logoutStudent = logoutStudent;
+
 function renderStudentBadge() {
     const studentName = localStorage.getItem("vstep_student_name") || sessionStorage.getItem("vstep_student_name");
     const studentClass = localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class");
     const container = document.getElementById("vstep-user-badge-container");
-    if (!container) return;
+    const sidebarContainer = document.getElementById("vstep-sidebar-user-card");
     
     const validResult = (studentName && studentClass) ? validateStudentIdentity(studentName, studentClass) : { ok: false };
     
     if (validResult.ok) {
-        if (validResult.className === "GV") {
+        const isT = validResult.className === "GV";
+        if (container) {
             container.innerHTML = `
-                <div class="vstep-user-badge" style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4);">
-                    <i class="fa-solid fa-chalkboard-user" style="color: #eab308; font-size: 15px;"></i>
-                    <span class="user-text">Giáo viên: <strong>${validResult.matchedName}</strong> (<strong>${validResult.className}</strong>)</span>
-                    <button type="button" class="btn-change-user" onclick="showLoginModal()" title="Đổi thông tin"><i class="fa-solid fa-user-pen"></i> Đổi</button>
+                <div class="vstep-user-badge" style="${isT ? 'background: rgba(234, 179, 8, 0.15); border: 1.5px solid rgba(234, 179, 8, 0.4);' : ''}">
+                    <i class="fa-solid ${isT ? 'fa-chalkboard-user' : 'fa-user-graduate'}" style="color: ${isT ? '#eab308' : '#5865f2'}; font-size: 15px;"></i>
+                    <span class="user-text">${isT ? 'Giáo viên' : 'Học viên'}: <strong>${validResult.matchedName}</strong> (${isT ? '' : 'Lớp: '}<strong>${validResult.className}</strong>)</span>
+                    <button type="button" class="btn-change-user" onclick="showLoginModal(true)" title="Đổi thông tin"><i class="fa-solid fa-user-pen"></i> Đổi</button>
+                    <button type="button" class="btn-logout-user" onclick="logoutStudent()" title="Đăng xuất"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</button>
                 </div>
             `;
-        } else {
-            container.innerHTML = `
-                <div class="vstep-user-badge">
-                    <i class="fa-solid fa-user-graduate" style="color: #5865f2; font-size: 15px;"></i>
-                    <span class="user-text">Học viên: <strong>${validResult.matchedName}</strong> (Lớp: <strong>${validResult.className}</strong>)</span>
-                    <button type="button" class="btn-change-user" onclick="showLoginModal()" title="Đổi thông tin học viên"><i class="fa-solid fa-user-pen"></i> Đổi</button>
+        }
+        if (sidebarContainer) {
+            sidebarContainer.innerHTML = `
+                <div class="sidebar-user-card" style="padding: 12px 14px; background: ${isT ? 'rgba(234, 179, 8, 0.12)' : 'rgba(99, 102, 241, 0.08)'}; border-radius: 12px; margin: 10px 14px 14px; border: 1px solid ${isT ? 'rgba(234, 179, 8, 0.35)' : 'rgba(99, 102, 241, 0.18)'}; text-align: left;">
+                    <div style="font-size: 11px; font-weight: 800; color: ${isT ? '#ca8a04' : '#6366f1'}; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid ${isT ? 'fa-chalkboard-user' : 'fa-user-graduate'}"></i>
+                        <span>${isT ? 'Giáo viên' : 'Học viên'} (Lớp ${validResult.className})</span>
+                    </div>
+                    <div style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin: 4px 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${validResult.matchedName}
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button type="button" onclick="showLoginModal(true)" style="flex: 1; padding: 5px 8px; font-size: 11.5px; font-weight: 700; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; color: #334155; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                            <i class="fa-solid fa-user-pen"></i> Đổi
+                        </button>
+                        <button type="button" onclick="logoutStudent()" style="flex: 1; padding: 5px 8px; font-size: 11.5px; font-weight: 700; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; cursor: pointer; color: #ef4444; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                        </button>
+                    </div>
                 </div>
             `;
         }
     } else {
-        container.innerHTML = `
-            <button type="button" class="vstep-login-btn-top" onclick="showLoginModal()">
-                <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP HỌC VIÊN
-            </button>
-        `;
+        if (container) {
+            container.innerHTML = `
+                <button type="button" class="vstep-login-btn-top" onclick="showLoginModal(true)">
+                    <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP HỌC VIÊN
+                </button>
+            `;
+        }
+        if (sidebarContainer) {
+            sidebarContainer.innerHTML = `
+                <div style="padding: 10px 14px;">
+                    <button type="button" onclick="showLoginModal(true)" style="width: 100%; padding: 8px 12px; font-size: 12px; font-weight: 700; background: #5865f2; color: #fff; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP
+                    </button>
+                </div>
+            `;
+        }
     }
 }
 
