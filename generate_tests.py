@@ -4,25 +4,48 @@ import os
 html_template = """<!DOCTYPE html>
 <html lang="vi">
 <head>
-    <!-- Global JS Error Diagnostic Tool -->
+    <!-- Global JS Error Diagnostic Tool & Early Utilities -->
     <script>
         window.onerror = function(message, source, lineno, colno, error) {
-            const div = document.createElement('div');
-            div.style.position = 'fixed';
-            div.style.top = '0';
-            div.style.left = '0';
-            div.style.width = '100vw';
-            div.style.background = '#ef4444';
-            div.style.color = '#ffffff';
-            div.style.padding = '15px 20px';
-            div.style.zIndex = '99999';
-            div.style.fontFamily = 'monospace';
-            div.style.fontSize = '14px';
-            div.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-            div.innerHTML = '<strong>[HỆ THỐNG MOCK TEST] BÁO LỖI JS:</strong> ' + message + ' <br><small>Tệp: ' + source + ' | Dòng: ' + lineno + ' | Cột: ' + colno + '</small>';
-            document.body.appendChild(div);
+            console.error("[HỆ THỐNG MOCK TEST] BÁO LỖI JS:", message, source, lineno, colno, error);
+            const showBanner = () => {
+                if (!document.body || document.getElementById('vstep-global-js-error-banner')) return;
+                const div = document.createElement('div');
+                div.id = 'vstep-global-js-error-banner';
+                div.style.position = 'fixed';
+                div.style.top = '0';
+                div.style.left = '0';
+                div.style.width = '100vw';
+                div.style.background = '#ef4444';
+                div.style.color = '#ffffff';
+                div.style.padding = '15px 20px';
+                div.style.zIndex = '9999999';
+                div.style.fontFamily = 'monospace';
+                div.style.fontSize = '14px';
+                div.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                div.innerHTML = '<strong>[HỆ THỐNG MOCK TEST] BÁO LỖI JS:</strong> ' + message + ' <br><small>Tệp: ' + source + ' | Dòng: ' + lineno + ' | Cột: ' + colno + '</small>';
+                document.body.appendChild(div);
+            };
+            if (document.body) showBanner();
+            else window.addEventListener('DOMContentLoaded', showBanner);
             return false;
         };
+
+        function toggleVstepLoginPassword() {
+            const passInput = document.getElementById("vstep-input-pass");
+            const icon = document.getElementById("vstep-toggle-pwd-icon");
+            if (!passInput) return;
+            const isPassword = passInput.type === "password";
+            passInput.type = isPassword ? "text" : "password";
+            if (icon) {
+                if (isPassword) {
+                    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+                } else {
+                    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+                }
+            }
+        }
+        window.toggleVstepLoginPassword = toggleVstepLoginPassword;
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -829,6 +852,9 @@ html_template = """<!DOCTYPE html>
                                 </div>
                             </div>
 
+                            <!-- Post-Submission Idea Bank & Detailed Guidelines Task 1 -->
+                            <div class="glass-card idea-guide-card" id="idea-guide-card-t1" style="display: none; padding: 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);"></div>
+
                             <!-- Detailed Sentence-by-Sentence Feedback Task 1 -->
                             <div class="glass-card sentence-feedback-card" id="sentence-feedback-card-t1" style="display: none; padding: 18px 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); flex-direction: column; gap: 14px;">
                                 <div class="sf-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 14px;">
@@ -906,6 +932,9 @@ html_template = """<!DOCTYPE html>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Post-Submission Idea Bank & Detailed Guidelines Task 2 -->
+                            <div class="glass-card idea-guide-card" id="idea-guide-card-t2" style="display: none; padding: 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);"></div>
 
                             <!-- Detailed Sentence-by-Sentence Feedback Task 2 -->
                             <div class="glass-card sentence-feedback-card" id="sentence-feedback-card-t2" style="display: none; padding: 18px 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); flex-direction: column; gap: 14px;">
@@ -2573,6 +2602,26 @@ body {
     color: #065f46;
     background: #f0fdf4;
     border-left: 3px solid #10b981;
+}
+
+/* Post-Submission Idea Bank & Detailed Guidelines */
+.idea-guide-card {
+    transition: all 0.3s ease;
+}
+.idea-guide-wrapper {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1e293b;
+}
+.idea-guide-header h3 {
+    margin: 0;
+    font-size: 16.5px;
+    font-weight: 800;
+}
+.req-box {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.req-box:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 """
 
@@ -6120,6 +6169,17 @@ function renderSolution(taskNum) {
         vocabContainer.style.display = 'block';
     } else {
         vocabContainer.style.display = 'none';
+    }
+
+    // Render Idea Bank & Guidelines post-submission if available
+    const guideCard = document.getElementById(`idea-guide-card-t${taskNum}`);
+    if (guideCard) {
+        if (taskData && taskData.ideaGuide && taskData.ideaGuide.trim() !== '') {
+            guideCard.innerHTML = taskData.ideaGuide;
+            guideCard.style.display = 'block';
+        } else {
+            guideCard.style.display = 'none';
+        }
     }
 }
 

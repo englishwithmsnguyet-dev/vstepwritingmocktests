@@ -1306,3 +1306,23 @@ body {
     background: #f0fdf4;
     border-left: 3px solid #10b981;
 }
+
+/* Post-Submission Idea Bank & Detailed Guidelines */
+.idea-guide-card {
+    transition: all 0.3s ease;
+}
+.idea-guide-wrapper {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1e293b;
+}
+.idea-guide-header h3 {
+    margin: 0;
+    font-size: 16.5px;
+    font-weight: 800;
+}
+.req-box {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.req-box:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}

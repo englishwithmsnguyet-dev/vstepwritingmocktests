@@ -950,6 +950,9 @@
                             allRoomsState[sk] = data;
                             applyRoomState();
                         }
+                    }, err => {
+                        // Resilient cancel/error callback to prevent uncaught exceptions on locked rules
+                        console.warn("RTDB listen permission/network note:", sk, err ? err.message : err);
                     });
                 });
             } catch (e) {
@@ -968,9 +971,12 @@
 
     function fetchAllRoomsREST() {
         fetch(`${RTDB_BASE}/.json`, { cache: "no-store" })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                return res.json();
+            })
             .then(data => {
-                if (!data) return;
+                if (!data || typeof data !== 'object') return;
                 Object.keys(SKILLS_CONFIG).forEach(sk => {
                     const nodeName = SKILLS_CONFIG[sk].node;
                     if (data[nodeName]) {

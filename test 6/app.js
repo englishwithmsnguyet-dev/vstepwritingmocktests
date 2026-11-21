@@ -3543,6 +3543,17 @@ function renderSolution(taskNum) {
     } else {
         vocabContainer.style.display = 'none';
     }
+
+    // Render Idea Bank & Guidelines post-submission if available
+    const guideCard = document.getElementById(`idea-guide-card-t${taskNum}`);
+    if (guideCard) {
+        if (taskData && taskData.ideaGuide && taskData.ideaGuide.trim() !== '') {
+            guideCard.innerHTML = taskData.ideaGuide;
+            guideCard.style.display = 'block';
+        } else {
+            guideCard.style.display = 'none';
+        }
+    }
 }
 
 // Switch Solution Level B1/B2

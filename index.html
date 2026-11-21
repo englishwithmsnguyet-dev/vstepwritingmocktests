@@ -4,25 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VSTEP WRITING MOCK TESTS</title>
-    <!-- Global JS Error Diagnostic Tool -->
+    <!-- Global JS Error Diagnostic Tool & Early Utilities -->
     <script>
         window.onerror = function(message, source, lineno, colno, error) {
-            const div = document.createElement('div');
-            div.style.position = 'fixed';
-            div.style.top = '0';
-            div.style.left = '0';
-            div.style.width = '100vw';
-            div.style.background = '#ef4444';
-            div.style.color = '#ffffff';
-            div.style.padding = '15px 20px';
-            div.style.zIndex = '99999';
-            div.style.fontFamily = 'monospace';
-            div.style.fontSize = '14px';
-            div.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-            div.innerHTML = '<strong>[HỆ THỐNG MOCK TEST] BÁO LỖI JS:</strong> ' + message + ' <br><small>Tệp: ' + source + ' | Dòng: ' + lineno + ' | Cột: ' + colno + '</small>';
-            document.body.appendChild(div);
+            console.error("[HỆ THỐNG MOCK TEST] BÁO LỖI JS:", message, source, lineno, colno, error);
+            const showBanner = () => {
+                if (!document.body || document.getElementById('vstep-global-js-error-banner')) return;
+                const div = document.createElement('div');
+                div.id = 'vstep-global-js-error-banner';
+                div.style.position = 'fixed';
+                div.style.top = '0';
+                div.style.left = '0';
+                div.style.width = '100vw';
+                div.style.background = '#ef4444';
+                div.style.color = '#ffffff';
+                div.style.padding = '15px 20px';
+                div.style.zIndex = '9999999';
+                div.style.fontFamily = 'monospace';
+                div.style.fontSize = '14px';
+                div.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+                div.innerHTML = '<strong>[HỆ THỐNG MOCK TEST] BÁO LỖI JS:</strong> ' + message + ' <br><small>Tệp: ' + source + ' | Dòng: ' + lineno + ' | Cột: ' + colno + '</small>';
+                document.body.appendChild(div);
+            };
+            if (document.body) showBanner();
+            else window.addEventListener('DOMContentLoaded', showBanner);
             return false;
         };
+
+        function toggleVstepLoginPassword() {
+            const passInput = document.getElementById("vstep-input-pass");
+            const icon = document.getElementById("vstep-toggle-pwd-icon");
+            if (!passInput) return;
+            const isPassword = passInput.type === "password";
+            passInput.type = isPassword ? "text" : "password";
+            if (icon) {
+                if (isPassword) {
+                    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+                } else {
+                    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+                }
+            }
+        }
+        window.toggleVstepLoginPassword = toggleVstepLoginPassword;
     </script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2334,128 +2357,136 @@
 
         // Initialize elements
         function initSidebarAndGrid() {
-            // Render Sidebar
-            const sidebarList = document.getElementById('sidebar-test-list');
-            sidebarList.innerHTML = `
-                <li class="test-item active">
-                    <a href="index.html">
-                        <span class="test-icon"><i class="fa-solid fa-house"></i></span>
-                        <span class="test-name">TRANG CHỦ</span>
-                    </a>
-                </li>
-            `;
-            
-            for (let i = 1; i <= 10; i++) {
-                const unlocked = isTestUnlocked(i);
-                const testName = `WRITING TEST ${i.toString().padStart(2, '0')}`;
-                const li = document.createElement('li');
-                li.className = 'test-item';
-                
-                const a = document.createElement('a');
-                a.href = 'javascript:void(0)';
-                a.setAttribute('data-test-id', i);
-                
-                if (unlocked) {
-                    a.className = '';
-                    a.innerHTML = `
-                        <span class="test-icon"><i class="fa-solid fa-file-signature"></i></span>
-                        <span class="test-name">${testName}</span>
+            try {
+                // Render Sidebar
+                const sidebarList = document.getElementById('sidebar-test-list');
+                if (sidebarList) {
+                    sidebarList.innerHTML = `
+                        <li class="test-item active">
+                            <a href="index.html">
+                                <span class="test-icon"><i class="fa-solid fa-house"></i></span>
+                                <span class="test-name">TRANG CHỦ</span>
+                            </a>
+                        </li>
                     `;
-                    a.onclick = () => {
-                        window.location.href = `test ${i}/test${i.toString().padStart(2, '0')}-index.html`;
-                    };
-                } else {
-                    a.className = 'locked';
-                    a.innerHTML = `
-                        <span class="test-icon"><i class="fa-solid fa-lock"></i></span>
-                        <span class="test-name">${testName}</span>
-                    `;
-                    a.onclick = (e) => {
-                        e.preventDefault();
-                        showPasswordPrompt(i);
-                    };
-                }
-                li.appendChild(a);
-                sidebarList.appendChild(li);
-            }
-
-            // Render Grid Cards
-            const grid = document.getElementById('test-cards-grid');
-            grid.innerHTML = '';
-
-            for (let i = 1; i <= 10; i++) {
-                const unlocked = isTestUnlocked(i);
-                const testNum = i.toString().padStart(2, '0');
-                const testData = WRITING_TESTS_DATA[i];
-                const card = document.createElement('div');
-                card.id = `card-test-${i}`;
-                
-                let topicsHtml = '';
-                if (testData && testData.desc) {
-                    let task1Desc = '';
-                    let task2Desc = '';
-                    const desc = testData.desc;
-                    if (desc.includes(';')) {
-                        const parts = desc.split(';');
-                        task1Desc = parts[0].trim();
-                        task2Desc = (parts[1] || '').trim();
-                    } else {
-                        const andRegex = /\s+và\s+/i;
-                        if (andRegex.test(desc)) {
-                            const parts = desc.split(andRegex);
-                            task1Desc = parts[0].trim();
-                            task2Desc = (parts[1] || '').trim();
+                    
+                    for (let i = 1; i <= 10; i++) {
+                        const unlocked = typeof isTestUnlocked === 'function' ? isTestUnlocked(i) : true;
+                        const testName = `WRITING TEST ${i.toString().padStart(2, '0')}`;
+                        const li = document.createElement('li');
+                        li.className = 'test-item';
+                        
+                        const a = document.createElement('a');
+                        a.href = 'javascript:void(0)';
+                        a.setAttribute('data-test-id', i);
+                        
+                        if (unlocked) {
+                            a.className = '';
+                            a.innerHTML = `
+                                <span class="test-icon"><i class="fa-solid fa-file-signature"></i></span>
+                                <span class="test-name">${testName}</span>
+                            `;
+                            a.onclick = () => {
+                                window.location.href = `test ${i}/test${i.toString().padStart(2, '0')}-index.html`;
+                            };
                         } else {
-                            task1Desc = desc.trim();
-                            task2Desc = '';
+                            a.className = 'locked';
+                            a.innerHTML = `
+                                <span class="test-icon"><i class="fa-solid fa-lock"></i></span>
+                                <span class="test-name">${testName}</span>
+                            `;
+                            a.onclick = (e) => {
+                                e.preventDefault();
+                                showPasswordPrompt(i);
+                            };
                         }
-                    }
-                    
-                    const task1Text = task1Desc ? `Task 01: ${task1Desc}` : '';
-                    const task2Text = task2Desc ? `Task 02: ${task2Desc}` : '';
-                    
-                    if (task1Text || task2Text) {
-                        topicsHtml = `
-                            <div class="test-topics-list">
-                                ${task1Text ? `<span class="topic-bullet"><i class="fa-solid fa-envelope"></i> ${task1Text}</span>` : ''}
-                                ${task2Text ? `<span class="topic-bullet"><i class="fa-solid fa-file-lines"></i> ${task2Text}</span>` : ''}
-                            </div>
-                        `;
+                        li.appendChild(a);
+                        sidebarList.appendChild(li);
                     }
                 }
 
-                if (unlocked) {
-                    card.className = 'test-card is-unlocked';
-                    card.innerHTML = `
-                        <div class="test-card-header">
-                            <span class="test-card-title">WRITING TEST ${testNum}</span>
-                            <span class="status-badge unlocked"><i class="fa-solid fa-lock-open"></i> Sẵn sàng</span> <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:rgba(99,102,241,0.12);color:#4f46e5;border:1px solid rgba(99,102,241,0.3);padding:2px 8px;border-radius:999px;margin-left:4px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Chấm thi AI</span>
-                        </div>
-                        <div class="test-card-body">
-                            <p class="test-card-desc">${testData ? testData.desc : 'Đề luyện viết VSTEP Writing.'}</p>
-                            ${topicsHtml}
-                        </div>
-                        <div class="test-card-action">
-                            <button class="btn-card-action btn-start" onclick="window.location.href='test ${i}/test${testNum}-index.html'">Vào thi thử <i class="fa-solid fa-arrow-right"></i></button>
-                        </div>
-                    `;
-                } else {
-                    card.className = 'test-card is-locked';
-                    card.innerHTML = `
-                        <div class="test-card-header">
-                            <span class="test-card-title">WRITING TEST ${testNum}</span>
-                            <span class="status-badge locked"><i class="fa-solid fa-lock"></i> Đang khóa</span>
-                        </div>
-                        <div class="test-card-body">
-                            <p class="test-card-desc">${testData ? testData.desc : 'Đề luyện viết VSTEP Writing.'}</p>
-                            ${topicsHtml}
-                        </div>
-                        <div class="test-card-action">
-                            <button class="btn-card-action btn-unlock" onclick="showPasswordPrompt(${i})">Mở khóa <i class="fa-solid fa-key"></i></button>
-                        </div>
-                    `;
+                // Render Grid Cards
+                const grid = document.getElementById('test-cards-grid');
+                if (grid) {
+                    grid.innerHTML = '';
+
+                    for (let i = 1; i <= 10; i++) {
+                        const unlocked = typeof isTestUnlocked === 'function' ? isTestUnlocked(i) : true;
+                        const testNum = i.toString().padStart(2, '0');
+                        const testData = (typeof WRITING_TESTS_DATA !== 'undefined' && WRITING_TESTS_DATA[i]) ? WRITING_TESTS_DATA[i] : null;
+                        const card = document.createElement('div');
+                        card.id = `card-test-${i}`;
+                        
+                        let topicsHtml = '';
+                        if (testData && testData.desc) {
+                            let task1Desc = '';
+                            let task2Desc = '';
+                            const desc = testData.desc;
+                            if (desc.includes(';')) {
+                                const parts = desc.split(';');
+                                task1Desc = parts[0].trim();
+                                task2Desc = (parts[1] || '').trim();
+                            } else {
+                                const andRegex = /\s+và\s+/i;
+                                if (andRegex.test(desc)) {
+                                    const parts = desc.split(andRegex);
+                                    task1Desc = parts[0].trim();
+                                    task2Desc = (parts[1] || '').trim();
+                                } else {
+                                    task1Desc = desc.trim();
+                                    task2Desc = '';
+                                }
+                            }
+                            
+                            const task1Text = task1Desc ? `Task 01: ${task1Desc}` : '';
+                            const task2Text = task2Desc ? `Task 02: ${task2Desc}` : '';
+                            
+                            if (task1Text || task2Text) {
+                                topicsHtml = `
+                                    <div class="test-topics-list">
+                                        ${task1Text ? `<span class="topic-bullet"><i class="fa-solid fa-envelope"></i> ${task1Text}</span>` : ''}
+                                        ${task2Text ? `<span class="topic-bullet"><i class="fa-solid fa-file-lines"></i> ${task2Text}</span>` : ''}
+                                    </div>
+                                `;
+                            }
+                        }
+
+                        if (unlocked) {
+                            card.className = 'test-card is-unlocked';
+                            card.innerHTML = `
+                                <div class="test-card-header">
+                                    <span class="test-card-title">WRITING TEST ${testNum}</span>
+                                    <span class="status-badge unlocked"><i class="fa-solid fa-lock-open"></i> Sẵn sàng</span> <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:rgba(99,102,241,0.12);color:#4f46e5;border:1px solid rgba(99,102,241,0.3);padding:2px 8px;border-radius:999px;margin-left:4px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Chấm thi AI</span>
+                                </div>
+                                <div class="test-card-body">
+                                    <p class="test-card-desc">${testData ? testData.desc : 'Đề luyện viết VSTEP Writing.'}</p>
+                                    ${topicsHtml}
+                                </div>
+                                <div class="test-card-action">
+                                    <button class="btn-card-action btn-start" onclick="window.location.href='test ${i}/test${testNum}-index.html'">Vào thi thử <i class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            `;
+                        } else {
+                            card.className = 'test-card is-locked';
+                            card.innerHTML = `
+                                <div class="test-card-header">
+                                    <span class="test-card-title">WRITING TEST ${testNum}</span>
+                                    <span class="status-badge locked"><i class="fa-solid fa-lock"></i> Đang khóa</span>
+                                </div>
+                                <div class="test-card-body">
+                                    <p class="test-card-desc">${testData ? testData.desc : 'Đề luyện viết VSTEP Writing.'}</p>
+                                    ${topicsHtml}
+                                </div>
+                                <div class="test-card-action">
+                                    <button class="btn-card-action btn-unlock" onclick="showPasswordPrompt(${i})">Mở khóa <i class="fa-solid fa-key"></i></button>
+                                </div>
+                            `;
+                        }
+                        grid.appendChild(card);
+                    }
                 }
-                grid.appendChild(card);
+            } catch (err) {
+                console.error("Lỗi khi render danh sách bài thi:", err);
             }
         }
 
@@ -3610,6 +3641,9 @@ function filterSentenceFeedbackReview(taskNum, filter) {
                                 </div>
                             </div>
 
+                            <!-- Post-Submission Idea Bank & Detailed Guidelines Task 1 -->
+                            <div class="glass-card idea-guide-card" id="idea-guide-card-t1-review" style="${testData.task1 && testData.task1.ideaGuide ? 'display: block;' : 'display: none;'} padding: 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">${testData.task1 && testData.task1.ideaGuide ? testData.task1.ideaGuide : ''}</div>
+
                             <!-- Detailed Sentence-by-Sentence Feedback Task 1 -->
                             <div class="glass-card sentence-feedback-card" id="sentence-feedback-card-t1-review" style="display: none; padding: 18px 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); flex-direction: column; gap: 14px;">
                                 <div class="sf-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 14px;">
@@ -3680,6 +3714,9 @@ function filterSentenceFeedbackReview(taskNum, filter) {
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Post-Submission Idea Bank & Detailed Guidelines Task 2 -->
+                            <div class="glass-card idea-guide-card" id="idea-guide-card-t2-review" style="${testData.task2 && testData.task2.ideaGuide ? 'display: block;' : 'display: none;'} padding: 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">${testData.task2 && testData.task2.ideaGuide ? testData.task2.ideaGuide : ''}</div>
 
                             <!-- Detailed Sentence-by-Sentence Feedback Task 2 -->
                             <div class="glass-card sentence-feedback-card" id="sentence-feedback-card-t2-review" style="display: none; padding: 18px 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); flex-direction: column; gap: 14px;">
