@@ -568,7 +568,12 @@
     if (!slot) {
       slot = document.createElement('div');
       slot.className = 'vai-mount-slot';
-      hostEl.prepend(slot);
+      const header = hostEl.querySelector('div[style*="justify-content: space-between"]');
+      if (header && header.nextSibling) {
+        hostEl.insertBefore(slot, header.nextSibling);
+      } else {
+        hostEl.prepend(slot);
+      }
     }
 
     const titleLabel = taskType === 'task2'
@@ -691,7 +696,12 @@
     if (!slot) {
       slot = document.createElement('div');
       slot.className = 'vai-mount-slot';
-      hostEl.prepend(slot);
+      const header = hostEl.querySelector('div[style*="justify-content: space-between"]');
+      if (header && header.nextSibling) {
+        hostEl.insertBefore(slot, header.nextSibling);
+      } else {
+        hostEl.prepend(slot);
+      }
     }
 
     if (w1 < 10 && w2 < 10) {

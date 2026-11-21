@@ -941,10 +941,11 @@ html_template = """<!DOCTYPE html>
     <!-- Firebase SDK (Compat) & Realtime Exam Room Control -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="../exam_room.js?v=1794930001"></script>
+    <script>window.VSTEP_ROOM_SKILL = 'writing';</script>
+    <script src="../exam_room.js?v=2026112102"></script>
     <!-- Core App logic script -->
     <script src="../vstep_ai_grader.js?v=2026112102"></script>
-    <script src="app.js?v=1794900001"></script>
+    <script src="app.js?v=2026112102"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -3514,6 +3515,24 @@ const DICTIONARY_WORDS = "a aa aaa aal aalii aam aani aardvark aardwolf aaron aa
 const dictionary = new Set(DICTIONARY_WORDS.split(" "));
 
 const commonMistakes = {
+        "recieve": "Viết sai quy tắc i trước e: đúng là 'receive'",
+    "recieved": "Viết sai quy tắc i trước e: đúng là 'received'",
+    "beleive": "Viết sai chính tả: đúng là 'believe'",
+    "beleived": "Viết sai chính tả: đúng là 'believed'",
+    "truely": "Viết sai chính tả: đúng là 'truly'",
+    "wich": "Viết sai chính tả: đúng là 'which'",
+    "nowaday": "Viết sai chính tả: đúng là 'nowadays'",
+    "advices": "'advice' là danh từ không đếm được, không dùng số nhiều 'advices'",
+    "homeworks": "'homework' là danh từ không đếm được, không dùng số nhiều 'homeworks'",
+    "informations": "'information' là danh từ không đếm được, không dùng số nhiều 'informations'",
+    "furnitures": "'furniture' là danh từ không đếm được, không dùng số nhiều 'furnitures'",
+    "luggages": "'luggage' là danh từ không đếm được, không dùng số nhiều 'luggages'",
+    "baggages": "'baggage' là danh từ không đếm được, không dùng số nhiều 'baggages'",
+    "knowledges": "'knowledge' là danh từ không đếm được, không dùng số nhiều 'knowledges'",
+    "equipments": "'equipment' là danh từ không đếm được, không dùng số nhiều 'equipments'",
+    "feedbacks": "'feedback' là danh từ không đếm được, không dùng số nhiều 'feedbacks'",
+    "evidences": "'evidence' là danh từ không đếm được, không dùng số nhiều 'evidences'",
+    "researches": "'research' thường là danh từ không đếm được, dùng 'pieces of research' hoặc động từ 'do research'",
     "enviroment": "Viết sai chính tả, đúng là 'environment'",
     "enviroments": "Viết sai chính tả, đúng là 'environments'",
     "goverment": "Viết sai chính tả, đúng là 'government'",
@@ -4272,6 +4291,146 @@ function getDetailedSystemEvaluation(text, target, isTask2) {
             // Regex grammar errors checking
             const grammarErrors = [
                 {
+                    id: "although_but",
+                    regex: /\balthough\b[^.!?]*\bbut\b/gi,
+                    desc: "Lỗi liên từ kép: Đã dùng 'Although' thì không dùng 'but' trong cùng một câu ghép."
+                },
+                {
+                    id: "because_so",
+                    regex: /\bbecause\b[^.!?]*\bso\b/gi,
+                    desc: "Lỗi liên từ kép: Đã dùng 'Because' thì không dùng 'so' trong cùng một câu ghép."
+                },
+                {
+                    id: "look_forward_verb",
+                    regex: /\blook(?:s|ed|ing)?\s+forward\s+to\s+([a-z]+(?<!ing))\b/gi,
+                    desc: "Sau 'look forward to' phải là V-ing (ví dụ: 'look forward to hearing from you')."
+                },
+                {
+                    id: "enjoy_suggest_verb",
+                    regex: /\b(enjoy|enjoys|enjoyed|avoid|avoids|avoided|suggest|suggests|suggested|recommend|recommends|recommended|practice|practices|practiced|mind|minds|minded)\s+to\s+([a-z]+)\b/gi,
+                    desc: "Động từ này đi trực tiếp với V-ing (không dùng 'to V')."
+                },
+                {
+                    id: "make_let_verb",
+                    regex: /\b(make|makes|made|let|lets)\s+([a-zA-Z]+)\s+to\s+([a-z]+)\b/gi,
+                    desc: "Cấu trúc 'make/let someone do something': Động từ nguyên thể không có 'to'."
+                },
+                {
+                    id: "spend_time_verb",
+                    regex: /\b(spend|spends|spent|spending)\s+([a-zA-Z0-9\s]{1,15}?)\s+to\s+([a-z]+)\b/gi,
+                    desc: "Cấu trúc 'spend time doing something': Dùng V-ing thay vì 'to V'."
+                },
+                {
+                    id: "prefer_than",
+                    regex: /\bprefer\s+([a-zA-Z0-9\s]{1,20}?)\s+than\s+([a-zA-Z0-9\s]{1,20}?)\b/gi,
+                    desc: "Cấu trúc so sánh sở thích: Dùng 'prefer ... to ...' thay vì 'than'."
+                },
+                {
+                    id: "uncountable_plural",
+                    regex: /\b(advices|informations|equipments|feedbacks|furnitures|knowledges|homeworks|houseworks|traffics|researches|evidences|accommodations)\b/gi,
+                    desc: "Danh từ không đếm được: Không thêm đuôi -s/-es."
+                },
+                {
+                    id: "a_uncountable",
+                    regex: /\b(a|an)\s+([a-zA-Z]+\s+)?(advice|information|equipment|feedback|furniture|knowledge|traffic|research|evidence|accommodation|homework)\b/gi,
+                    desc: "Danh từ không đếm được không đi trực tiếp với 'a/an'. Hãy dùng 'a piece of...' hoặc bỏ 'a/an'."
+                },
+                {
+                    id: "many_uncountable",
+                    regex: /\bmany\s+([a-zA-Z]+\s+)?(advice|advices|information|informations|equipment|equipments|feedback|feedbacks|furniture|furnitures|knowledge|knowledges|traffic|traffics|homework|homeworks)\b/gi,
+                    desc: "Danh từ không đếm được không dùng 'many'. Hãy dùng 'much' hoặc 'a lot of'."
+                },
+                {
+                    id: "depend_rely_of",
+                    regex: /\b(depend|depends|depended|depending|rely|relies|relied|relying)\s+of\b/gi,
+                    desc: "Dùng sai giới từ: Đi với 'depend/rely' phải là 'on' hoặc 'upon', không dùng 'of'."
+                },
+                {
+                    id: "interested_prep",
+                    regex: /\binterested\s+(for|about|at|with)\b/gi,
+                    desc: "Dùng sai giới từ: Cụm chuẩn là 'interested in'."
+                },
+                {
+                    id: "good_bad_prep",
+                    regex: /\b(good|bad|clever|skilled|terrible)\s+(in|for)\s+([a-z]+ing)\b/gi,
+                    desc: "Dùng sai giới từ chỉ năng khiếu: Dùng 'good at / bad at' thay vì 'in/for'."
+                },
+                {
+                    id: "listen_prep",
+                    regex: /\blisten\s+(the\s+radio|music|songs?|podcasts?|teachers?|parents?|him|her|them|me|us)\b/gi,
+                    desc: "Thiếu giới từ 'to': Cần viết 'listen to music / listen to someone'."
+                },
+                {
+                    id: "wait_prep",
+                    regex: /\bwait\s+(the\s+bus|bus|someone|me|him|her|them|us|you)\b/gi,
+                    desc: "Thiếu giới từ 'for': Cần viết 'wait for someone / wait for the bus'."
+                },
+                {
+                    id: "arrive_prep",
+                    regex: /\b(arrive|arrives|arrived|arriving)\s+to\b/gi,
+                    desc: "Dùng sai giới từ: Dùng 'arrive in' (thành phố/quốc gia) hoặc 'arrive at' (địa điểm), không dùng 'arrive to'."
+                },
+                {
+                    id: "do_mistake",
+                    regex: /\b(do|does|did|done|doing)\s+(a\s+)?([a-zA-Z]+\s+)?mistakes?\b/gi,
+                    desc: "Sai kết hợp từ (Collocation): Dùng 'make a mistake' thay vì 'do a mistake'."
+                },
+                {
+                    id: "make_research",
+                    regex: /\b(make|makes|made|making)\s+(a\s+)?research\b/gi,
+                    desc: "Sai kết hợp từ: Dùng 'do / conduct research' thay vì 'make research'."
+                },
+                {
+                    id: "give_decision",
+                    regex: /\b(give|gives|gave|giving)\s+(a\s+)?decision\b/gi,
+                    desc: "Sai kết hợp từ: Dùng 'make a decision' hoặc 'reach a decision'."
+                },
+                {
+                    id: "opinion_i_think",
+                    regex: /\bin\s+my\s+opinion,?\s+i\s+think\b/gi,
+                    desc: "Lặp ý (Redundancy): 'In my opinion' và 'I think' mang cùng nghĩa, chỉ nên giữ 1 cụm."
+                },
+                {
+                    id: "more_and_more",
+                    regex: /\bmore\s+and\s+more\s+(people|students|children|citizens)\b/gi,
+                    desc: "Văn phong học thuật: Nên nâng cấp cụm này thành 'an increasing number of'."
+                },
+                {
+                    id: "nowaday",
+                    regex: /\bnowaday\b/gi,
+                    desc: "Sai chính tả: Viết đúng là 'nowadays' (có 's')."
+                },
+                {
+                    id: "everyday_adverb",
+                    regex: /\beveryday\s+(i|we|they|he|she|people|students|children)\b/gi,
+                    desc: "Dùng sai từ loại: 'everyday' là tính từ. Trạng từ chỉ tần suất phải viết tách thành 'every day'."
+                },
+                {
+                    id: "one_of_the_verb",
+                    regex: /\bone\s+of\s+the\s+(([a-zA-Z]+\s+){0,3})([a-z]+s)\s+(are|were|have)\b/gi,
+                    desc: "Lỗi hòa hợp chủ vị: Chủ ngữ chính là 'One' (số ít), động từ phải chia số ít ('is/was/has')."
+                },
+                {
+                    id: "the_number_of_verb",
+                    regex: /\bthe\s+number\s+of\s+([a-zA-Z]+\s+)?([a-z]+s)\s+(are|were|have)\b/gi,
+                    desc: "Cấu trúc 'The number of + N(số nhiều)' đi với động từ số ít ('is/was/has')."
+                },
+                {
+                    id: "a_number_of_verb",
+                    regex: /\ba\s+number\s+of\s+([a-zA-Z]+\s+)?([a-z]+s)\s+(is|was|has)\b/gi,
+                    desc: "Cấu trúc 'A number of + N(số nhiều)' đi với động từ số nhiều ('are/were/have')."
+                },
+                {
+                    id: "comma_splice_transition",
+                    regex: /,\s+(however|therefore|moreover|furthermore|besides|nevertheless)\s+[a-z]+/gi,
+                    desc: "Lỗi ngắt câu (Comma splice): Các liên từ này cần đứng sau dấu chấm phẩy (;) hoặc dấu chấm (.)."
+                },
+                {
+                    id: "gerund_as_subject",
+                    regex: /^(play|plays|do|does|watch|watches|read|reads|eat|eats|study|studies|learn|learns|use|uses|drive|drives|smoke|smokes)\s+([a-zA-Z\s]{2,20}?)\s+(is|are|can|helps?|causes?|leads?)\b/gi,
+                    desc: "Hành động làm chủ ngữ đứng đầu câu phải ở dạng V-ing (Gerund). Ví dụ: 'Playing games...', 'Studying online...'."
+                },
+                {
                     id: "subj_verb",
                     regex: /\\b(he|she|it|this|that|someone|somebody|everyone|everybody|anyone|anybody|noone|nobody)\\s+(have|do|go|want|like|think|say|hope|know|make|seem|take|get|come|find|contribute|lead|cause|help|reduce|increase|show|give|bring|create|provide|support|affect|improve|study|learn|work|use|live|play|watch|feel|see|hear|tell|ask|write|read|speak)\\b/gi,
                     desc: "Động từ chưa chia ngôi số ít (chủ ngữ số ít như 'he', 'she', 'it', 'this', 'someone' đi với động từ chưa chia)"
@@ -4792,6 +4951,146 @@ function highlightGrammarErrors(text) {
                 
             const grammarErrors = [
                 {
+                    id: "although_but",
+                    regex: /\balthough\b[^.!?]*\bbut\b/gi,
+                    desc: "Lỗi liên từ kép: Đã dùng 'Although' thì không dùng 'but' trong cùng một câu ghép."
+                },
+                {
+                    id: "because_so",
+                    regex: /\bbecause\b[^.!?]*\bso\b/gi,
+                    desc: "Lỗi liên từ kép: Đã dùng 'Because' thì không dùng 'so' trong cùng một câu ghép."
+                },
+                {
+                    id: "look_forward_verb",
+                    regex: /\blook(?:s|ed|ing)?\s+forward\s+to\s+([a-z]+(?<!ing))\b/gi,
+                    desc: "Sau 'look forward to' phải là V-ing (ví dụ: 'look forward to hearing from you')."
+                },
+                {
+                    id: "enjoy_suggest_verb",
+                    regex: /\b(enjoy|enjoys|enjoyed|avoid|avoids|avoided|suggest|suggests|suggested|recommend|recommends|recommended|practice|practices|practiced|mind|minds|minded)\s+to\s+([a-z]+)\b/gi,
+                    desc: "Động từ này đi trực tiếp với V-ing (không dùng 'to V')."
+                },
+                {
+                    id: "make_let_verb",
+                    regex: /\b(make|makes|made|let|lets)\s+([a-zA-Z]+)\s+to\s+([a-z]+)\b/gi,
+                    desc: "Cấu trúc 'make/let someone do something': Động từ nguyên thể không có 'to'."
+                },
+                {
+                    id: "spend_time_verb",
+                    regex: /\b(spend|spends|spent|spending)\s+([a-zA-Z0-9\s]{1,15}?)\s+to\s+([a-z]+)\b/gi,
+                    desc: "Cấu trúc 'spend time doing something': Dùng V-ing thay vì 'to V'."
+                },
+                {
+                    id: "prefer_than",
+                    regex: /\bprefer\s+([a-zA-Z0-9\s]{1,20}?)\s+than\s+([a-zA-Z0-9\s]{1,20}?)\b/gi,
+                    desc: "Cấu trúc so sánh sở thích: Dùng 'prefer ... to ...' thay vì 'than'."
+                },
+                {
+                    id: "uncountable_plural",
+                    regex: /\b(advices|informations|equipments|feedbacks|furnitures|knowledges|homeworks|houseworks|traffics|researches|evidences|accommodations)\b/gi,
+                    desc: "Danh từ không đếm được: Không thêm đuôi -s/-es."
+                },
+                {
+                    id: "a_uncountable",
+                    regex: /\b(a|an)\s+([a-zA-Z]+\s+)?(advice|information|equipment|feedback|furniture|knowledge|traffic|research|evidence|accommodation|homework)\b/gi,
+                    desc: "Danh từ không đếm được không đi trực tiếp với 'a/an'. Hãy dùng 'a piece of...' hoặc bỏ 'a/an'."
+                },
+                {
+                    id: "many_uncountable",
+                    regex: /\bmany\s+([a-zA-Z]+\s+)?(advice|advices|information|informations|equipment|equipments|feedback|feedbacks|furniture|furnitures|knowledge|knowledges|traffic|traffics|homework|homeworks)\b/gi,
+                    desc: "Danh từ không đếm được không dùng 'many'. Hãy dùng 'much' hoặc 'a lot of'."
+                },
+                {
+                    id: "depend_rely_of",
+                    regex: /\b(depend|depends|depended|depending|rely|relies|relied|relying)\s+of\b/gi,
+                    desc: "Dùng sai giới từ: Đi với 'depend/rely' phải là 'on' hoặc 'upon', không dùng 'of'."
+                },
+                {
+                    id: "interested_prep",
+                    regex: /\binterested\s+(for|about|at|with)\b/gi,
+                    desc: "Dùng sai giới từ: Cụm chuẩn là 'interested in'."
+                },
+                {
+                    id: "good_bad_prep",
+                    regex: /\b(good|bad|clever|skilled|terrible)\s+(in|for)\s+([a-z]+ing)\b/gi,
+                    desc: "Dùng sai giới từ chỉ năng khiếu: Dùng 'good at / bad at' thay vì 'in/for'."
+                },
+                {
+                    id: "listen_prep",
+                    regex: /\blisten\s+(the\s+radio|music|songs?|podcasts?|teachers?|parents?|him|her|them|me|us)\b/gi,
+                    desc: "Thiếu giới từ 'to': Cần viết 'listen to music / listen to someone'."
+                },
+                {
+                    id: "wait_prep",
+                    regex: /\bwait\s+(the\s+bus|bus|someone|me|him|her|them|us|you)\b/gi,
+                    desc: "Thiếu giới từ 'for': Cần viết 'wait for someone / wait for the bus'."
+                },
+                {
+                    id: "arrive_prep",
+                    regex: /\b(arrive|arrives|arrived|arriving)\s+to\b/gi,
+                    desc: "Dùng sai giới từ: Dùng 'arrive in' (thành phố/quốc gia) hoặc 'arrive at' (địa điểm), không dùng 'arrive to'."
+                },
+                {
+                    id: "do_mistake",
+                    regex: /\b(do|does|did|done|doing)\s+(a\s+)?([a-zA-Z]+\s+)?mistakes?\b/gi,
+                    desc: "Sai kết hợp từ (Collocation): Dùng 'make a mistake' thay vì 'do a mistake'."
+                },
+                {
+                    id: "make_research",
+                    regex: /\b(make|makes|made|making)\s+(a\s+)?research\b/gi,
+                    desc: "Sai kết hợp từ: Dùng 'do / conduct research' thay vì 'make research'."
+                },
+                {
+                    id: "give_decision",
+                    regex: /\b(give|gives|gave|giving)\s+(a\s+)?decision\b/gi,
+                    desc: "Sai kết hợp từ: Dùng 'make a decision' hoặc 'reach a decision'."
+                },
+                {
+                    id: "opinion_i_think",
+                    regex: /\bin\s+my\s+opinion,?\s+i\s+think\b/gi,
+                    desc: "Lặp ý (Redundancy): 'In my opinion' và 'I think' mang cùng nghĩa, chỉ nên giữ 1 cụm."
+                },
+                {
+                    id: "more_and_more",
+                    regex: /\bmore\s+and\s+more\s+(people|students|children|citizens)\b/gi,
+                    desc: "Văn phong học thuật: Nên nâng cấp cụm này thành 'an increasing number of'."
+                },
+                {
+                    id: "nowaday",
+                    regex: /\bnowaday\b/gi,
+                    desc: "Sai chính tả: Viết đúng là 'nowadays' (có 's')."
+                },
+                {
+                    id: "everyday_adverb",
+                    regex: /\beveryday\s+(i|we|they|he|she|people|students|children)\b/gi,
+                    desc: "Dùng sai từ loại: 'everyday' là tính từ. Trạng từ chỉ tần suất phải viết tách thành 'every day'."
+                },
+                {
+                    id: "one_of_the_verb",
+                    regex: /\bone\s+of\s+the\s+(([a-zA-Z]+\s+){0,3})([a-z]+s)\s+(are|were|have)\b/gi,
+                    desc: "Lỗi hòa hợp chủ vị: Chủ ngữ chính là 'One' (số ít), động từ phải chia số ít ('is/was/has')."
+                },
+                {
+                    id: "the_number_of_verb",
+                    regex: /\bthe\s+number\s+of\s+([a-zA-Z]+\s+)?([a-z]+s)\s+(are|were|have)\b/gi,
+                    desc: "Cấu trúc 'The number of + N(số nhiều)' đi với động từ số ít ('is/was/has')."
+                },
+                {
+                    id: "a_number_of_verb",
+                    regex: /\ba\s+number\s+of\s+([a-zA-Z]+\s+)?([a-z]+s)\s+(is|was|has)\b/gi,
+                    desc: "Cấu trúc 'A number of + N(số nhiều)' đi với động từ số nhiều ('are/were/have')."
+                },
+                {
+                    id: "comma_splice_transition",
+                    regex: /,\s+(however|therefore|moreover|furthermore|besides|nevertheless)\s+[a-z]+/gi,
+                    desc: "Lỗi ngắt câu (Comma splice): Các liên từ này cần đứng sau dấu chấm phẩy (;) hoặc dấu chấm (.)."
+                },
+                {
+                    id: "gerund_as_subject",
+                    regex: /^(play|plays|do|does|watch|watches|read|reads|eat|eats|study|studies|learn|learns|use|uses|drive|drives|smoke|smokes)\s+([a-zA-Z\s]{2,20}?)\s+(is|are|can|helps?|causes?|leads?)\b/gi,
+                    desc: "Hành động làm chủ ngữ đứng đầu câu phải ở dạng V-ing (Gerund). Ví dụ: 'Playing games...', 'Studying online...'."
+                },
+                {
                     id: "subj_verb",
                     regex: /\\b(he|she|it|this|that|someone|somebody|everyone|everybody|anyone|anybody|noone|nobody)\\s+(have|do|go|want|like|think|say|hope|know|make|seem|take|get|come|find|contribute|lead|cause|help|reduce|increase|show|give|bring|create|provide|support|affect|improve|study|learn|work|use|live|play|watch|feel|see|hear|tell|ask|write|read|speak)\\b/gi,
                     desc: "Động từ chưa chia ngôi số ít (chủ ngữ số ít như 'he', 'she', 'it', 'this', 'someone' đi với động từ chưa chia)"
@@ -5042,6 +5341,146 @@ function analyzeSentences(text, isTask2) {
 
     const grammarRules = [
         {
+            id: "although_but",
+            regex: /\\balthough\\b[^.!?]*\\bbut\\b/i,
+            message: () => `Lỗi liên từ kép: Đã dùng "Although" thì không dùng "but" trong cùng một câu ghép.`
+        },
+        {
+            id: "because_so",
+            regex: /\\bbecause\\b[^.!?]*\\bso\\b/i,
+            message: () => `Lỗi liên từ kép: Đã dùng "Because" thì không dùng "so" trong cùng một câu ghép.`
+        },
+        {
+            id: "look_forward_verb",
+            regex: /\\blook(?:s|ed|ing)?\\s+forward\\s+to\\s+([a-z]+(?<!ing))\\b/gi,
+            message: (m) => `Sau "look forward to" phải là V-ing. Sửa "${m[0]}" thành "look forward to ${m[1]}ing".`
+        },
+        {
+            id: "enjoy_suggest_verb",
+            regex: /\\b(enjoy|enjoys|enjoyed|avoid|avoids|avoided|suggest|suggests|suggested|recommend|recommends|recommended|practice|practices|practiced|mind|minds|minded)\\s+to\\s+([a-z]+)\\b/gi,
+            message: (m) => `Động từ "${m[1]}" đi trực tiếp với V-ing (không dùng "to V"). Sửa thành "${m[1]} ${m[2]}ing".`
+        },
+        {
+            id: "make_let_verb",
+            regex: /\\b(make|makes|made|let|lets)\\s+([a-zA-Z]+)\\s+to\\s+([a-z]+)\\b/gi,
+            message: (m) => `Cấu trúc "${m[1]} someone do something": Không dùng "to" trước động từ. Sửa thành "${m[1]} ${m[2]} ${m[3]}".`
+        },
+        {
+            id: "spend_time_verb",
+            regex: /\\b(spend|spends|spent|spending)\\s+([a-zA-Z0-9\\s]{1,15}?)\\s+to\\s+([a-z]+)\\b/gi,
+            message: (m) => `Cấu trúc "spend time doing something": Dùng V-ing thay vì "to V". Sửa thành "... ${m[3]}ing".`
+        },
+        {
+            id: "prefer_than",
+            regex: /\\bprefer\\s+([a-zA-Z0-9\\s]{1,20}?)\\s+than\\s+([a-zA-Z0-9\\s]{1,20}?)\\b/gi,
+            message: () => `Cấu trúc so sánh sở thích: Dùng "prefer ... to ..." thay vì "prefer ... than ...".`
+        },
+        {
+            id: "uncountable_plural",
+            regex: /\\b(advices|informations|equipments|feedbacks|furnitures|knowledges|homeworks|houseworks|traffics|researches|evidences|accommodations)\\b/gi,
+            message: (m) => `Danh từ không đếm được "${m[0]}": Không thêm đuôi -s/-es. Sửa thành danh từ số ít hoặc dùng "pieces of...".`
+        },
+        {
+            id: "a_uncountable",
+            regex: /\\b(a|an)\\s+([a-zA-Z]+\\s+)?(advice|information|equipment|feedback|furniture|knowledge|traffic|research|evidence|accommodation|homework)\\b/gi,
+            message: (m) => `"${m[3]}" là danh từ không đếm được, không đi trực tiếp với "a/an". Sửa thành "a piece of ${m[3]}" hoặc bỏ "a/an".`
+        },
+        {
+            id: "many_uncountable",
+            regex: /\\bmany\\s+([a-zA-Z]+\\s+)?(advice|advices|information|informations|equipment|equipments|feedback|feedbacks|furniture|furnitures|knowledge|knowledges|traffic|traffics|homework|homeworks)\\b/gi,
+            message: (m) => `"${m[2]}" là danh từ không đếm được, không dùng "many". Hãy sửa thành "much ${m[2]}" hoặc "a lot of ${m[2]}".`
+        },
+        {
+            id: "depend_rely_of",
+            regex: /\\b(depend|depends|depended|depending|rely|relies|relied|relying)\\s+of\\b/gi,
+            message: (m) => `Dùng sai giới từ: Đi với "${m[1]}" phải là "on" hoặc "upon", không dùng "of".`
+        },
+        {
+            id: "interested_prep",
+            regex: /\\binterested\\s+(for|about|at|with)\\b/gi,
+            message: (m) => `Dùng sai giới từ: Cụm chuẩn là "interested in", không dùng "interested ${m[1]}".`
+        },
+        {
+            id: "good_bad_prep",
+            regex: /\\b(good|bad|clever|skilled|terrible)\\s+(in|for)\\s+([a-z]+ing)\\b/gi,
+            message: (m) => `Dùng sai giới từ chỉ năng khiếu: Dùng "${m[1]} at ${m[3]}" thay vì "${m[1]} ${m[2]}".`
+        },
+        {
+            id: "listen_prep",
+            regex: /\\blisten\\s+(the\\s+radio|music|songs?|podcasts?|teachers?|parents?|him|her|them|me|us)\\b/gi,
+            message: (m) => `Thiếu giới từ "to": "listen" cần có "to" trước tân ngữ (ví dụ: "listen to ${m[1]}").`
+        },
+        {
+            id: "wait_prep",
+            regex: /\\bwait\\s+(the\\s+bus|bus|someone|me|him|her|them|us|you)\\b/gi,
+            message: (m) => `Thiếu giới từ "for": Cần viết là "wait for ${m[1]}".`
+        },
+        {
+            id: "arrive_prep",
+            regex: /\\b(arrive|arrives|arrived|arriving)\\s+to\\b/gi,
+            message: () => `Dùng sai giới từ: Dùng "arrive in" (thành phố/quốc gia) hoặc "arrive at" (địa điểm), không dùng "arrive to".`
+        },
+        {
+            id: "do_mistake",
+            regex: /\\b(do|does|did|done|doing)\\s+(a\\s+)?([a-zA-Z]+\\s+)?mistakes?\\b/gi,
+            message: (m) => `Sai kết hợp từ (Collocation): Dùng "make a mistake" thay vì "${m[0]}".`
+        },
+        {
+            id: "make_research",
+            regex: /\\b(make|makes|made|making)\\s+(a\\s+)?research\\b/gi,
+            message: (m) => `Sai kết hợp từ (Collocation): Dùng "do / conduct research" thay vì "${m[0]}".`
+        },
+        {
+            id: "give_decision",
+            regex: /\\b(give|gives|gave|giving)\\s+(a\\s+)?decision\\b/gi,
+            message: (m) => `Sai kết hợp từ: Dùng "make a decision" hoặc "reach a decision" thay vì "${m[0]}".`
+        },
+        {
+            id: "opinion_i_think",
+            regex: /\\bin\\s+my\\s+opinion,?\\s+i\\s+think\\b/gi,
+            message: () => `Lặp ý (Redundancy): "In my opinion" và "I think" mang cùng nghĩa, chỉ nên giữ 1 cụm.`
+        },
+        {
+            id: "more_and_more",
+            regex: /\\bmore\\s+and\\s+more\\s+(people|students|children|citizens)\\b/gi,
+            message: (m) => `Văn phong học thuật: Nên nâng cấp cụm "${m[0]}" thành "an increasing number of ${m[1]}".`
+        },
+        {
+            id: "nowaday",
+            regex: /\\bnowaday\\b/gi,
+            message: () => `Sai chính tả: Viết đúng là "nowadays" (có chữ s ở cuối).`
+        },
+        {
+            id: "everyday_adverb",
+            regex: /\\beveryday\\s+(i|we|they|he|she|people|students|children)\\b/gi,
+            message: (m) => `Dùng sai từ loại: "everyday" là tính từ. Trạng từ chỉ tần suất phải viết tách thành "every day".`
+        },
+        {
+            id: "one_of_the_verb",
+            regex: /\\bone\\s+of\\s+the\\s+(([a-zA-Z]+\\s+){0,3})([a-z]+s)\\s+(are|were|have)\\b/gi,
+            message: (m) => `Lỗi hòa hợp chủ vị: Chủ ngữ chính là "One" (số ít), động từ phải chia số ít ("is/was/has"), không dùng "${m[4]}".`
+        },
+        {
+            id: "the_number_of_verb",
+            regex: /\\bthe\\s+number\\s+of\\s+([a-zA-Z]+\\s+)?([a-z]+s)\\s+(are|were|have)\\b/gi,
+            message: (m) => `Cấu trúc "The number of + N(số nhiều)" đi với động từ số ít ("is/was/has"), không dùng "${m[3]}".`
+        },
+        {
+            id: "a_number_of_verb",
+            regex: /\\ba\\s+number\\s+of\\s+([a-zA-Z]+\\s+)?([a-z]+s)\\s+(is|was|has)\\b/gi,
+            message: (m) => `Cấu trúc "A number of + N(số nhiều)" đi với động từ số nhiều ("are/were/have"), không dùng "${m[3]}".`
+        },
+        {
+            id: "comma_splice_transition",
+            regex: /,\\s+(however|therefore|moreover|furthermore|besides|nevertheless)\\s+[a-z]+/gi,
+            message: (m) => `Lỗi ngắt câu (Comma splice): Các liên từ ("${m[0].trim()}") cần đứng sau dấu chấm phẩy (;) hoặc dấu chấm (.), không dùng dấu phẩy đơn.`
+        },
+        {
+            id: "gerund_as_subject",
+            regex: /^(play|plays|do|does|watch|watches|read|reads|eat|eats|study|studies|learn|learns|use|uses|drive|drives|smoke|smokes)\\s+([a-zA-Z\\s]{2,20}?)\\s+(is|are|can|helps?|causes?|leads?)\\b/gi,
+            message: () => `Hành động làm chủ ngữ đứng đầu câu phải ở dạng V-ing (Gerund). Ví dụ: "Playing games...", "Studying online...".`
+        },
+        {
             id: "subj_verb",
             regex: /\\b(he|she|it|this|that|someone|somebody|everyone|everybody|anyone|anybody|noone|nobody)\\s+(have|do|go|want|like|think|say|hope|know|make|seem|take|get|come|find|contribute|lead|cause|help|reduce|increase|show|give|bring|create|provide|support|affect|improve|study|learn|work|use|live|play|watch|feel|see|hear|tell|ask|write|read|speak)\\b/gi,
             message: (m) => `Lỗi hòa hợp chủ ngữ - vị ngữ: Chủ ngữ số ít đi với động từ nguyên mẫu ("${m[0]}"). Cần chia động từ số ít (-s/-es).`
@@ -5221,10 +5660,12 @@ function analyzeSentences(text, isTask2) {
 
         // 4. Grammar rules check
         grammarRules.forEach(rule => {
-            const regex = new RegExp(rule.regex.source, rule.regex.flags);
+            const flags = (rule.regex.flags || "").includes("g") ? rule.regex.flags : ((rule.regex.flags || "") + "g");
+            const regex = new RegExp(rule.regex.source, flags);
             let match;
             while ((match = regex.exec(s)) !== null) {
                 errors.push(rule.message(match));
+                if (regex.lastIndex === match.index) regex.lastIndex++;
             }
         });
 
