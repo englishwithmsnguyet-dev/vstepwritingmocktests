@@ -780,7 +780,9 @@ html_template = """<!DOCTYPE html>
                             <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-square-poll-vertical"></i> KẾT QUẢ & BÀI GIẢI MẪU <span id="sol-overall-level" style="font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px; border: 1px solid transparent; display: none;"></span></h2>
                             <span style="font-size: 13px; color: var(--text-muted);">Học viên: <strong id="sol-student-name">Học viên</strong> | Trạng thái: <strong>Hoàn thành</strong></span>
                         </div>
-                        <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="lock-btn" id="btn-open-report-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); font-size: 13px; padding: 8px 18px; box-shadow: 0 4px 12px rgba(16,185,129,0.3);" onclick="openResultReportModal()"><i class="fa-solid fa-file-invoice"></i> Phiếu Báo Cáo Kết Quả</button>
+                            <button class="lock-btn" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); font-size: 13px; padding: 8px 16px;" onclick="rewriteExamKeepViolations()"><i class="fa-solid fa-rotate-right"></i> Viết lại bài</button>
                             <button class="lock-btn" style="background: linear-gradient(135deg, var(--color-violet) 0%, #4f46e5 100%); font-size: 13px; padding: 8px 18px;" onclick="printStudentWork()"><i class="fa-solid fa-download"></i> Tải về bài viết & Bài giải</button>
                             <button class="lock-btn" style="background: #64748b; font-size: 13px; padding: 8px 18px;" onclick="window.location.href='../index.html'"><i class="fa-solid fa-house"></i> Về trang chủ</button>
                         </div>
@@ -965,7 +967,7 @@ html_template = """<!DOCTYPE html>
     </div>
 
     <!-- DB Scripts -->
-    <script src="../db.js?v=1794900001"></script>
+    <script src="../db.js?v=2026112101"></script>
     <script src="../writing_data.js?v=2026112107"></script>
     <!-- Firebase SDK (Compat) & Realtime Exam Room Control -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -973,8 +975,9 @@ html_template = """<!DOCTYPE html>
     <script>window.VSTEP_ROOM_SKILL = 'writing';</script>
     <script src="../exam_room.js?v=2026112103"></script>
     <!-- Core App logic script -->
-    <script src="../vstep_ai_grader.js?v=2026112102"></script>
-    <script src="app.js?v=2026112103"></script>
+    <script src="../vstep_ai_grader.js?v=2026112103"></script>
+    <script src="../result_report.js?v=2026112101"></script>
+    <script src="app.js?v=2026112104"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -2689,6 +2692,9 @@ js_template = """/* ============================================================
 let testId = 1;
 let studentName = "Học viên";
 let timeRemaining = 3600; // 60 minutes in seconds
+let elapsedSeconds = 0; // Exact total writing duration in seconds
+let lastPasteLogTime = 0;
+let lastSubmittedAtStr = "";
 let timerInterval = null;
 let activeTask = 1; // 1 = Task 1, 2 = Task 2
 let isSubmitted = false;
@@ -3062,6 +3068,15 @@ function setupAntiCheatListeners() {
 
             if (isExamRunning) {
                 e.preventDefault();
+                if (eventType === "paste") {
+                    const nowMs = Date.now();
+                    if (nowMs - lastPasteLogTime > 500) {
+                        lastPasteLogTime = nowMs;
+                        if (typeof VstepResultReport !== "undefined") {
+                            VstepResultReport.recordViolation(testId, "paste");
+                        }
+                    }
+                }
                 const actionName = eventType === "paste" ? "Dán văn bản (Paste)" : (eventType === "copy" ? "Sao chép (Copy)" : "Cắt văn bản (Cut)");
                 handleCheatingViolation(`Hành vi ${actionName} bị nghiêm cấm trong quá trình làm bài thi!`);
             }
@@ -3080,6 +3095,15 @@ function setupAntiCheatListeners() {
             const key = (e.key || "").toLowerCase();
             if (isCtrlOrCmd && (key === "c" || key === "v" || key === "x")) {
                 e.preventDefault();
+                if (key === "v") {
+                    const nowMs = Date.now();
+                    if (nowMs - lastPasteLogTime > 500) {
+                        lastPasteLogTime = nowMs;
+                        if (typeof VstepResultReport !== "undefined") {
+                            VstepResultReport.recordViolation(testId, "paste");
+                        }
+                    }
+                }
                 const actionName = key === "v" ? "Dán văn bản (Ctrl+V)" : (key === "c" ? "Sao chép (Ctrl+C)" : "Cắt văn bản (Ctrl+X)");
                 handleCheatingViolation(`Phím tắt ${actionName} bị nghiêm cấm trong quá trình làm bài thi!`);
             }
@@ -3113,6 +3137,9 @@ function setupAntiCheatListeners() {
             } else {
                 if (tabLeaveTime > 0) {
                     tabLeaveTime = 0;
+                    if (typeof VstepResultReport !== "undefined") {
+                        VstepResultReport.recordViolation(testId, "tab");
+                    }
                     handleCheatingViolation("Hành vi rời khỏi màn hình bài thi hoặc chuyển tab trình duyệt bị nghiêm cấm!");
                 }
             }
@@ -4900,7 +4927,8 @@ function autosaveSession() {
                     studentName: studentName,
                     task1Text: elements.textareaTask1.value,
                     task2Text: elements.textareaTask2.value,
-                    timeRemaining: timeRemaining
+                    timeRemaining: timeRemaining,
+                    elapsedSeconds: elapsedSeconds
                 };
                 await VstepWritingDB.saveSession(testId, sessionData);
                 
@@ -4938,6 +4966,7 @@ function startExam() {
     studentName = `${validResult.matchedName} (${validResult.className})`;
     elements.studentNameInput.value = studentName;
     elements.displayStudentName.innerText = `Thí sinh: ${studentName}`;
+    elapsedSeconds = 0;
     
     // Switch Screen
     elements.viewWelcome.style.display = 'none';
@@ -4968,6 +4997,9 @@ function resumeExam(session) {
     handleTextareaInput(2);
     
     timeRemaining = session.timeRemaining || 3600;
+    elapsedSeconds = (typeof session.elapsedSeconds === 'number' && session.elapsedSeconds >= 0)
+        ? session.elapsedSeconds
+        : Math.max(0, 3600 - timeRemaining);
     
     // Switch Screen
     elements.viewWelcome.style.display = 'none';
@@ -4997,11 +5029,12 @@ function startTimer() {
     updateTimerDisplay();
     
     timerInterval = setInterval(() => {
+        elapsedSeconds++;
         timeRemaining--;
         updateTimerDisplay();
         
         // Autosave remaining time every 10 seconds
-        if (timeRemaining % 10 === 0) {
+        if (elapsedSeconds % 10 === 0) {
             autosaveSession();
         }
 
@@ -5055,10 +5088,24 @@ async function submitTest(force = false) {
     const t1Words = countWords(task1Text);
     const t2Words = countWords(task2Text);
     const qualifiedForUnlock = (t1Words >= 50 && t2Words >= 100);
+
+    const nowObj = new Date();
+    lastSubmittedAtStr = `${nowObj.getHours().toString().padStart(2, '0')}:${nowObj.getMinutes().toString().padStart(2, '0')} — ${nowObj.getDate().toString().padStart(2, '0')}/${(nowObj.getMonth() + 1).toString().padStart(2, '0')}/${nowObj.getFullYear()}`;
+    const stInfo = (typeof VstepResultReport !== 'undefined') ? VstepResultReport.getLoggedInStudent() : { name: studentName, className: '' };
+    const viol = (typeof VstepResultReport !== 'undefined') ? VstepResultReport.getViolations(testId) : { tabSwitches: 0, pasteAttempts: 0 };
+    const initialReportMeta = {
+        studentName: stInfo.name,
+        studentClass: stInfo.className,
+        elapsedSeconds: elapsedSeconds,
+        submittedAt: lastSubmittedAtStr,
+        tabSwitches: viol.tabSwitches,
+        pasteAttempts: viol.pasteAttempts,
+        aiSynced: false
+    };
     
     try {
         if (typeof VstepWritingDB !== 'undefined') {
-            currentHistoryId = await VstepWritingDB.saveHistory(testId, studentName, task1Text, task2Text, t1Words, t2Words);
+            currentHistoryId = await VstepWritingDB.saveHistory(testId, studentName, task1Text, task2Text, t1Words, t2Words, initialReportMeta);
             // Delete autosave session
             await VstepWritingDB.deleteSession(testId);
         }
@@ -6076,54 +6123,97 @@ function loadSolutions(name, t1, t2, w1, w2) {
     renderSentenceFeedback(1, sfResultT1);
     renderSentenceFeedback(2, sfResultT2);
     
-    // Mount VSTEP AI Grader (MOET Decision 729/QD-BGDDT)
-    if (window.VstepAIGrader && elements && elements.viewSolution) {
-        const _p1 = (document.getElementById("prompt-t1-text") || document.getElementById("sol-prompt-t1") || {}).innerText || "";
-        const _p2 = (document.getElementById("prompt-t2-text") || document.getElementById("sol-prompt-t2") || {}).innerText || "";
-        const _aiWrap = elements.viewSolution.querySelector(".solution-card") || elements.viewSolution.querySelector(".sol-panels-wrapper") || elements.viewSolution;
-        window.VstepAIGrader.mountFullMock(_aiWrap, { prompt1: _p1, essay1: t1 || "", prompt2: _p2, essay2: t2 || "" });
-    }
-    
     // Update overall VSTEP predicted score & badge
     const score1 = evalT1.scores ? evalT1.scores.average : 0;
     const score2 = evalT2.scores ? evalT2.scores.average : 0;
     const overallScore = Math.round((((score1 + score2 * 2) / 3) + 1e-9) * 2) / 2;
-    
-    let levelLabel = "CHƯA ĐẠT";
-    let levelColor = "#e11d48";
-    let levelBg = "#fff1f2";
-    let levelBorder = "#fecdd3";
-    
-    if (w1 > 0 || w2 > 0) {
-        if (overallScore >= 8.5) {
-            levelLabel = `ĐẠT C1 (${overallScore.toFixed(1)})`;
-            levelColor = "#1e3a8a";
-            levelBg = "#dbeafe";
-            levelBorder = "#bfdbfe";
-        } else if (overallScore >= 6.0) {
-            levelLabel = `ĐẠT B2 (${overallScore.toFixed(1)})`;
-            levelColor = "#0369a1";
-            levelBg = "#e0f2fe";
-            levelBorder = "#bae6fd";
-        } else if (overallScore >= 4.0) {
-            levelLabel = `ĐẠT B1 (${overallScore.toFixed(1)})`;
-            levelColor = "#029a60";
-            levelBg = "#e6fdf4";
-            levelBorder = "#a7f3d0";
+
+    function updateOverallLevelBadge(valScore) {
+        let levelLabel = "CHƯA ĐẠT";
+        let levelColor = "#e11d48";
+        let levelBg = "#fff1f2";
+        let levelBorder = "#fecdd3";
+        
+        if (w1 > 0 || w2 > 0) {
+            if (valScore >= 8.5) {
+                levelLabel = `ĐẠT C1 (${valScore.toFixed(1)})`;
+                levelColor = "#1e3a8a";
+                levelBg = "#dbeafe";
+                levelBorder = "#bfdbfe";
+            } else if (valScore >= 6.0) {
+                levelLabel = `ĐẠT B2 (${valScore.toFixed(1)})`;
+                levelColor = "#0369a1";
+                levelBg = "#e0f2fe";
+                levelBorder = "#bae6fd";
+            } else if (valScore >= 4.0) {
+                levelLabel = `ĐẠT B1 (${valScore.toFixed(1)})`;
+                levelColor = "#029a60";
+                levelBg = "#e6fdf4";
+                levelBorder = "#a7f3d0";
+            } else {
+                levelLabel = `CHƯA ĐẠT (${valScore.toFixed(1)})`;
+            }
         } else {
-            levelLabel = `CHƯA ĐẠT (${overallScore.toFixed(1)})`;
+            levelLabel = "CHƯA LÀM BÀI";
         }
-    } else {
-        levelLabel = "CHƯA LÀM BÀI";
+        
+        const overallEl = document.getElementById('sol-overall-level');
+        if (overallEl) {
+            overallEl.innerText = levelLabel;
+            overallEl.style.background = levelBg;
+            overallEl.style.color = levelColor;
+            overallEl.style.borderColor = levelBorder;
+            overallEl.style.display = 'inline-block';
+        }
     }
-    
-    const overallEl = document.getElementById('sol-overall-level');
-    if (overallEl) {
-        overallEl.innerText = levelLabel;
-        overallEl.style.background = levelBg;
-        overallEl.style.color = levelColor;
-        overallEl.style.borderColor = levelBorder;
-        overallEl.style.display = 'inline-block';
+
+    updateOverallLevelBadge(overallScore);
+
+    // Initialize Official Result Report Card data
+    if (typeof VstepResultReport !== 'undefined') {
+        const stInfo = VstepResultReport.getLoggedInStudent();
+        const viol = VstepResultReport.getViolations(testId);
+        const nowFallback = new Date().toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+        VstepResultReport.setReportData({
+            testId: testId,
+            studentName: stInfo.name,
+            studentClass: stInfo.className,
+            elapsedSeconds: elapsedSeconds,
+            submittedAt: lastSubmittedAtStr || nowFallback,
+            task1Words: w1,
+            task2Words: w2,
+            tabSwitches: viol.tabSwitches,
+            pasteAttempts: viol.pasteAttempts,
+            scoreT1: score1,
+            scoreT2: score2,
+            overallScore: overallScore,
+            aiSynced: false,
+            aiPending: Boolean(window.VstepAIGrader && (w1 >= 10 || w2 >= 10))
+        });
+    }
+
+    // Mount VSTEP AI Grader (MOET Decision 729/QD-BGDDT) & live-sync Result Report Card
+    if (window.VstepAIGrader && elements && elements.viewSolution) {
+        const _p1 = (document.getElementById("prompt-t1-text") || document.getElementById("sol-prompt-t1") || {}).innerText || "";
+        const _p2 = (document.getElementById("prompt-t2-text") || document.getElementById("sol-prompt-t2") || {}).innerText || "";
+        const _aiWrap = elements.viewSolution.querySelector(".solution-card") || elements.viewSolution.querySelector(".sol-panels-wrapper") || elements.viewSolution;
+        window.VstepAIGrader.mountFullMock(_aiWrap, {
+            prompt1: _p1,
+            essay1: t1 || "",
+            prompt2: _p2,
+            essay2: t2 || "",
+            onResult: function(bundle) {
+                if (!bundle) return;
+                updateOverallLevelBadge(bundle.finalScore);
+                if (typeof VstepResultReport !== 'undefined') {
+                    VstepResultReport.updateFromAI(bundle);
+                    const syncedState = VstepResultReport.getCurrentState();
+                    if (currentHistoryId && typeof VstepWritingDB !== 'undefined' && typeof VstepWritingDB.updateHistoryItem === 'function' && syncedState) {
+                        VstepWritingDB.updateHistoryItem(currentHistoryId, { reportMeta: syncedState }).catch(() => {});
+                    }
+                }
+            }
+        });
     }
     
     const badgeT1 = document.getElementById('eval-badge-t1');
@@ -6707,6 +6797,54 @@ function printStudentWork() {
         </html>
     `);
     printWindow.document.close();
+}
+
+// Open Official Result Report Card Modal
+function openResultReportModal() {
+    if (typeof VstepResultReport !== 'undefined') {
+        VstepResultReport.open();
+    } else {
+        alert("Đang tải mô-đun Phiếu Báo Cáo Kết Quả, vui lòng thử lại sau giây lát!");
+    }
+}
+
+// Rewrite exam while strictly preserving violation counters (tab switches & paste attempts)
+async function rewriteExamKeepViolations() {
+    const ok = confirm("Bạn có muốn viết lại bài thi này không?\\n\\nLưu ý: Ô viết bài và thời gian sẽ được làm mới, nhưng số lần vi phạm chuyển tab / dán văn bản (nếu có) vẫn được hệ thống lưu giữ nguyên.");
+    if (!ok) return;
+
+    try {
+        if (typeof VstepWritingDB !== 'undefined') {
+            await VstepWritingDB.deleteSession(testId);
+        }
+    } catch (e) {}
+
+    isSubmitted = false;
+    isExamRunning = true;
+    timeRemaining = 3600;
+    elapsedSeconds = 0;
+    currentHistoryId = null;
+
+    elements.textareaTask1.value = "";
+    elements.textareaTask2.value = "";
+    elements.textareaTask1.readOnly = false;
+    elements.textareaTask2.readOnly = false;
+    handleTextareaInput(1);
+    handleTextareaInput(2);
+
+    // Clear old mounted AI grader slot & unlock banner so next submission starts fresh
+    const oldAiSlot = document.querySelector('.vai-mount-slot, .vai-card');
+    if (oldAiSlot) oldAiSlot.remove();
+    const oldBanner = document.getElementById('unlock-progress-banner');
+    if (oldBanner) oldBanner.remove();
+
+    switchTask(1);
+    elements.viewSolution.style.display = 'none';
+    elements.viewWriting.style.display = 'flex';
+    elements.stepSolution.className = 'timeline-step';
+    elements.stepWriting.className = 'timeline-step active';
+
+    startTimer();
 }
 """
 

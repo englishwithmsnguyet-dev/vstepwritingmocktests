@@ -847,6 +847,12 @@
         if (retryBtn) retryBtn.onclick = () => run(true);
       }
       paint();
+      if (typeof options.onResult === 'function') {
+        try { options.onResult(b); } catch (e) { console.error('VstepAIGrader onResult error:', e); }
+      }
+      try {
+        window.dispatchEvent(new CustomEvent('vstep-ai-graded', { detail: b }));
+      } catch (e) {}
     }
 
     run(false);

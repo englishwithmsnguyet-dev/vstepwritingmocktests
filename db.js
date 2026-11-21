@@ -76,7 +76,7 @@ const VstepWritingDB = {
     },
 
     // --- Completed History Operations ---
-    async saveHistory(testId, studentName, task1Text, task2Text, task1Words, task2Words) {
+    async saveHistory(testId, studentName, task1Text, task2Text, task1Words, task2Words, reportMeta = null) {
         const db = await this.init();
         return new Promise((resolve, reject) => {
             const transaction = db.transaction("history", "readwrite");
@@ -96,7 +96,8 @@ const VstepWritingDB = {
                 task1Words: task1Words || 0,
                 task2Words: task2Words || 0,
                 teacherComment1: "",
-                teacherComment2: ""
+                teacherComment2: "",
+                reportMeta: reportMeta || null
             };
             const request = store.add(data);
 

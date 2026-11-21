@@ -777,7 +777,9 @@
                             <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-square-poll-vertical"></i> KẾT QUẢ & BÀI GIẢI MẪU <span id="sol-overall-level" style="font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px; border: 1px solid transparent; display: none;"></span></h2>
                             <span style="font-size: 13px; color: var(--text-muted);">Học viên: <strong id="sol-student-name">Học viên</strong> | Trạng thái: <strong>Hoàn thành</strong></span>
                         </div>
-                        <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="lock-btn" id="btn-open-report-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); font-size: 13px; padding: 8px 18px; box-shadow: 0 4px 12px rgba(16,185,129,0.3);" onclick="openResultReportModal()"><i class="fa-solid fa-file-invoice"></i> Phiếu Báo Cáo Kết Quả</button>
+                            <button class="lock-btn" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); font-size: 13px; padding: 8px 16px;" onclick="rewriteExamKeepViolations()"><i class="fa-solid fa-rotate-right"></i> Viết lại bài</button>
                             <button class="lock-btn" style="background: linear-gradient(135deg, var(--color-violet) 0%, #4f46e5 100%); font-size: 13px; padding: 8px 18px;" onclick="printStudentWork()"><i class="fa-solid fa-download"></i> Tải về bài viết & Bài giải</button>
                             <button class="lock-btn" style="background: #64748b; font-size: 13px; padding: 8px 18px;" onclick="window.location.href='../index.html'"><i class="fa-solid fa-house"></i> Về trang chủ</button>
                         </div>
@@ -962,7 +964,7 @@
     </div>
 
     <!-- DB Scripts -->
-    <script src="../db.js?v=1794900001"></script>
+    <script src="../db.js?v=2026112101"></script>
     <script src="../writing_data.js?v=2026112107"></script>
     <!-- Firebase SDK (Compat) & Realtime Exam Room Control -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -970,8 +972,9 @@
     <script>window.VSTEP_ROOM_SKILL = 'writing';</script>
     <script src="../exam_room.js?v=2026112103"></script>
     <!-- Core App logic script -->
-    <script src="../vstep_ai_grader.js?v=2026112102"></script>
-    <script src="app.js?v=2026112103"></script>
+    <script src="../vstep_ai_grader.js?v=2026112103"></script>
+    <script src="../result_report.js?v=2026112101"></script>
+    <script src="app.js?v=2026112104"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
