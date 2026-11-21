@@ -57,7 +57,7 @@ html_template = """<!DOCTYPE html>
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css?v=1794900001">
+    <link rel="stylesheet" href="styles.css?v=2026112103">
 
     <!-- Direct Student Login Modal Styles -->
     <style id="vstep-login-styles">
@@ -966,7 +966,7 @@ html_template = """<!DOCTYPE html>
 
     <!-- DB Scripts -->
     <script src="../db.js?v=1794900001"></script>
-    <script src="../writing_data.js?v=1794900001"></script>
+    <script src="../writing_data.js?v=2026112103"></script>
     <!-- Firebase SDK (Compat) & Realtime Exam Room Control -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -2622,6 +2622,62 @@ body {
 }
 .req-box:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Polished Useful Vocabulary Box under Model Answer */
+.vocab-section {
+    margin-top: 16px !important;
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    border-radius: 12px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.08);
+}
+.vocab-section h5 {
+    margin: 0 0 10px 0 !important;
+    color: #b45309 !important;
+    font-size: 14.5px !important;
+    font-weight: 800 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1.5px dashed #fcd34d;
+    padding-bottom: 8px;
+}
+.vocab-section .box {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 14.5px !important;
+    line-height: 1.7 !important;
+    color: #1e293b;
+}
+.vocab-section ul {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.vocab-section ul li {
+    position: relative;
+    padding: 6px 10px 6px 24px;
+    background: #ffffff;
+    border: 1px solid #fef3c7;
+    border-radius: 8px;
+}
+.vocab-section ul li::before {
+    content: "✦";
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    color: #f59e0b;
+    font-size: 12px;
+}
+.vocab-section ul li strong {
+    color: #b45309;
+    font-weight: 700;
 }
 """
 
