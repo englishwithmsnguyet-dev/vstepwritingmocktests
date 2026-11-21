@@ -8,7 +8,7 @@
   const VSTEP_AI_ENDPOINT =
     'https://script.google.com/macros/s/AKfycbwUNnMInGfNlI4QqWVqqrhOXEYpwRVJ8FFFCdeBtQl8cA4AmoftBDdWnO13DxCnwgjWvg/exec';
 
-  const CACHE_PREFIX = 'vstep_ai_cache_v3_';
+  const CACHE_PREFIX = 'vstep_ai_cache_v4_';
 
   function escHtml(str) {
     return String(str == null ? '' : str)
@@ -391,6 +391,72 @@
     return '#dc2626';
   }
 
+  
+  function enforceMoetCaps(data) {
+    if (!data || typeof data.overallScore === 'undefined') return data;
+    const taskType = data.taskType === 'task2' ? 'task2' : 'task1';
+    const words = Number(data.wordCount || 0);
+    const minWords = taskType === 'task2' ? 250 : 120;
+    data.minWords = minWords;
+
+    let tf = Math.max(0, Math.min(10, Math.round(Number(data.scores && data.scores.tf) || 0)));
+    let org = Math.max(0, Math.min(10, Math.round(Number(data.scores && data.scores.org) || 0)));
+    let voc = Math.max(0, Math.min(10, Math.round(Number(data.scores && data.scores.voc) || 0)));
+    let gram = Math.max(0, Math.min(10, Math.round(Number(data.scores && data.scores.gram) || 0)));
+    let rawScore = Number(data.overallScore);
+
+    if (taskType === 'task2') {
+      if (words < 150) {
+        tf = Math.min(tf, 2);
+        rawScore = Math.min(rawScore, 2.5);
+        data.wordPenaltyNote = `Bài viết chỉ có ${words} từ (quá ngắn so với chuẩn tối thiểu 250 từ của VSTEP Task 2). Điểm số tổng thể bị giới hạn tối đa ở mức 2.5 (Dưới B1 / Không đạt).`;
+      } else if (words < 200) {
+        tf = Math.min(tf, 3);
+        rawScore = Math.min(rawScore, 3.5);
+        data.wordPenaltyNote = `Bài viết chỉ có ${words} từ (thiếu ${250 - words} từ so với chuẩn tối thiểu 250 từ). Theo quy chế khảo thí VSTEP Task 2, bài viết dưới 200 từ bị trừ nặng điểm Task Fulfillment và bị giới hạn trần điểm tối đa ở mức 3.5 (Dưới B1 / Chưa đạt chuẩn).`;
+      } else if (words < 230) {
+        tf = Math.min(tf, 4);
+        rawScore = Math.min(rawScore, 4.5);
+        data.wordPenaltyNote = `Bài viết có ${words} từ (chưa đạt chuẩn tối thiểu 250 từ). Dung lượng 200-229 từ bị giới hạn trần tối đa ở mức 4.5 (Chớm B1 / Cần bổ sung ý).`;
+      } else if (words < 250) {
+        tf = Math.min(tf, 5);
+        rawScore = Math.min(rawScore, 5.0);
+        data.wordPenaltyNote = `Bài viết có ${words} từ (thiếu ${250 - words} từ so với chuẩn 250 từ). Trần điểm tổng thể được giới hạn tối đa 5.0 (B1 cơ bản).`;
+      }
+    } else {
+      if (words < 60) {
+        tf = Math.min(tf, 2);
+        rawScore = Math.min(rawScore, 2.5);
+        data.wordPenaltyNote = `Thư/Email chỉ có ${words} từ (quá ngắn so với chuẩn tối thiểu 120 từ). Giới hạn tối đa 2.5 (Dưới B1).`;
+      } else if (words < 90) {
+        tf = Math.min(tf, 3);
+        rawScore = Math.min(rawScore, 3.5);
+        data.wordPenaltyNote = `Thư/Email chỉ có ${words} từ (thiếu ${120 - words} từ so với chuẩn 120 từ). Giới hạn tối đa 3.5 (Dưới B1 / Chưa đạt chuẩn).`;
+      } else if (words < 120) {
+        tf = Math.min(tf, 5);
+        rawScore = Math.min(rawScore, 4.5);
+        data.wordPenaltyNote = `Thư/Email có ${words} từ (chưa đủ 120 từ). Giới hạn trần điểm tối đa 4.5 (B1 yếu).`;
+      }
+    }
+
+    if (data.isOffTopic) {
+      tf = Math.min(tf, 2);
+      rawScore = Math.min(rawScore, 3.0);
+    }
+
+    data.scores = { tf, org, voc, gram };
+    data.overallScore = Math.round(rawScore * 2) / 2;
+    data.contributionMax = taskType === 'task2' ? 6.67 : 3.33;
+    data.contribution = Number(((data.overallScore * (taskType === 'task2' ? 2 : 1)) / 3).toFixed(2));
+
+    if (data.overallScore >= 8.5) data.vstepLevel = 'Bậc 5 (C1)';
+    else if (data.overallScore >= 6.0) data.vstepLevel = 'Bậc 4 (B2)';
+    else if (data.overallScore >= 4.0) data.vstepLevel = 'Bậc 3 (B1)';
+    else data.vstepLevel = 'Dưới B1 (Chưa đạt Bậc 3)';
+
+    return data;
+  }
+
   async function callGraderApi(payload) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 90000);
@@ -411,7 +477,7 @@
       if (!json || !json.ok || !json.data) {
         throw new Error((json && json.error) || 'Không nhận được kết quả chấm từ AI.');
       }
-      return json.data;
+      return enforceMoetCaps(json.data);
     } catch (err) {
       if (err && (err.name === 'AbortError' || /aborted/i.test(err.message))) {
         throw new Error('Hệ thống AI phản hồi chậm hơn thường lệ do mạng. Bạn vui lòng bấm nút "Thử chấm AI lại" nhé.');
@@ -607,7 +673,7 @@
         const cached = readCache(cacheKey);
         if (cached) {
           cached.targetLevel = cached.targetLevel || targetLevel;
-          renderResult(cached);
+          renderResult(enforceMoetCaps(cached));
           return;
         }
       }

@@ -107,6 +107,16 @@
                 icon: 'fa-circle-minus'
             };
         }
+        if (totalWords < 250) {
+            return {
+                label: '❌ CHƯA ĐẠT (THIẾU TỪ NGHIÊM TRỌNG)',
+                sub: `Tổng 2 bài viết mới đạt ${totalWords}/370 từ, chưa đủ dung lượng tối thiểu để xét đạt chuẩn VSTEP`,
+                bg: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)',
+                border: '#f43f5e',
+                color: '#be123c',
+                icon: 'fa-circle-xmark'
+            };
+        }
         if (overallScore >= 8.5) {
             return {
                 label: '🏅 ĐẠT CHUẨN C1 (VƯỢT CHUẨN B1 - B2)',
