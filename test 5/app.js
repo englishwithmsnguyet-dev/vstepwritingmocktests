@@ -822,6 +822,10 @@ if (document.readyState === 'loading') {
 function syncSidebarNavigation() {
     const sidebarList = document.getElementById('sidebar-test-list');
     if (!sidebarList) return;
+
+    const completedList = (typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.getCompletedTests === 'function')
+        ? VstepExamRoom.getCompletedTests('writing')
+        : [];
     
     sidebarList.innerHTML = `
         <li class="test-item">
@@ -834,6 +838,10 @@ function syncSidebarNavigation() {
     
     for (let i = 1; i <= 10; i++) {
         const active = (i === testId);
+        const isDone = completedList.includes(i);
+        const access = (typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.canAccessTest === 'function')
+            ? VstepExamRoom.canAccessTest(i, 'writing')
+            : { allowed: true, lockType: null, reason: '' };
         const testName = `WRITING TEST ${i.toString().padStart(2, '0')}`;
         const li = document.createElement('li');
         li.className = `test-item ${active ? 'active' : ''}`;
@@ -841,18 +849,34 @@ function syncSidebarNavigation() {
         const a = document.createElement('a');
         a.href = 'javascript:void(0)';
         
-        a.innerHTML = `
-            <span class="test-icon"><i class="fa-solid fa-file-signature"></i></span>
-            <span class="test-name">${testName}</span>
-        `;
-        if (!active) {
-            a.onclick = () => {
-                window.location.href = `../test ${i}/test${i.toString().padStart(2, '0')}-index.html`;
+        if (access.allowed || active) {
+            a.innerHTML = `
+                <span class="test-icon"><i class="fa-solid ${isDone ? 'fa-circle-check' : 'fa-file-signature'}" style="${isDone ? 'color:#10b981;' : ''}"></i></span>
+                <span class="test-name">${testName}</span>
+            `;
+            if (!active) {
+                a.onclick = () => {
+                    window.location.href = `../test ${i}/test${i.toString().padStart(2, '0')}-index.html`;
+                };
+            }
+        } else {
+            a.className = 'locked';
+            a.innerHTML = `
+                <span class="test-icon"><i class="fa-solid fa-lock"></i></span>
+                <span class="test-name">${testName}</span>
+            `;
+            a.onclick = (e) => {
+                e.preventDefault();
+                alert((access.lockType === 'sequential' ? '🔒 CHƯA MỞ KHÓA ĐỀ THI:\n\n' : '⛔ ĐỀ THI ĐANG KHÓA:\n\n') + access.reason);
             };
         }
         li.appendChild(a);
         sidebarList.appendChild(li);
     }
+}
+
+if (typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.onProgressChange === 'function') {
+    VstepExamRoom.onProgressChange(() => syncSidebarNavigation());
 }
 
 // Format prompt text: justify, italicize quote, bold requirements
@@ -2321,8 +2345,16 @@ function updateTimerDisplay() {
 
 // Submit mock exam
 async function submitTest(force = false) {
+    const preT1Words = countWords(elements.textareaTask1.value);
+    const preT2Words = countWords(elements.textareaTask2.value);
+    const isCompleteBothTasks = (preT1Words >= 50 && preT2Words >= 100);
+
     if (!force) {
-        const confirmSub = confirm("Bạn có chắc chắn muốn nộp bài thi viết ngay bây giờ không? Bạn sẽ không thể tiếp tục viết bài.");
+        let msg = "Bạn có chắc chắn muốn nộp bài thi viết ngay bây giờ không? Bạn sẽ không thể tiếp tục viết bài.";
+        if (!isCompleteBothTasks && typeof VstepExamRoom !== 'undefined' && VstepExamRoom.isSequentialModeEnabled && VstepExamRoom.isSequentialModeEnabled('writing')) {
+            msg = `⚠️ LƯU Ý: Bạn chưa hoàn thành đầy đủ cả 2 Task (Task 1: ${preT1Words}/50 từ tối thiểu, Task 2: ${preT2Words}/100 từ tối thiểu).\n\nNếu nộp ngay, hệ thống vẫn chấm bài nhưng SẼ CHƯA MỞ KHÓA ĐỀ TIẾP THEO.\nBạn có chắc chắn muốn nộp bài không?`;
+        }
+        const confirmSub = confirm(msg);
         if (!confirmSub) return;
     }
     
@@ -2339,6 +2371,7 @@ async function submitTest(force = false) {
     const task2Text = elements.textareaTask2.value;
     const t1Words = countWords(task1Text);
     const t2Words = countWords(task2Text);
+    const qualifiedForUnlock = (t1Words >= 50 && t2Words >= 100);
     
     try {
         if (typeof VstepWritingDB !== 'undefined') {
@@ -2348,6 +2381,13 @@ async function submitTest(force = false) {
         }
     } catch (e) {
         console.error("Save history to DB fail:", e);
+    }
+
+    // Record completion & unlock next test if BOTH tasks are complete
+    if (qualifiedForUnlock && typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.recordTestCompletion === 'function') {
+        VstepExamRoom.recordTestCompletion('writing', testId, {
+            details: `Task 1: ${t1Words} từ | Task 2: ${t2Words} từ`
+        });
     }
     
     // Load Solution Screen contents
@@ -2359,6 +2399,37 @@ async function submitTest(force = false) {
     
     elements.stepWriting.className = 'timeline-step';
     elements.stepSolution.className = 'timeline-step active';
+
+    // Show sequential unlock status banner on Solution Screen
+    try {
+        const solCard = elements.viewSolution.querySelector('.solution-card') || elements.viewSolution;
+        let banner = document.getElementById('unlock-progress-banner');
+        if (!banner && solCard) {
+            banner = document.createElement('div');
+            banner.id = 'unlock-progress-banner';
+            solCard.prepend(banner);
+        }
+        if (banner) {
+            const curPad = testId.toString().padStart(2, '0');
+            const nextId = testId + 1;
+            const nextPad = nextId.toString().padStart(2, '0');
+            if (qualifiedForUnlock) {
+                const nextBtnHtml = nextId <= 10
+                    ? `<a href="../test ${nextId}/test${nextPad}-index.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#16a34a;color:#fff;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap;">Làm Đề ${nextPad} ngay <i class="fa-solid fa-arrow-right"></i></a>`
+                    : '';
+                banner.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#f0fdf4;border:1.5px solid #86efac;border-left:5px solid #16a34a;border-radius:12px;padding:14px 18px;margin-bottom:16px;color:#14532d;font-size:14px;';
+                banner.innerHTML = `
+                    <div><strong><i class="fa-solid fa-circle-check" style="color:#16a34a;"></i> HOÀN THÀNH ĐỀ ${curPad}!</strong> Bạn đã nộp hoàn chỉnh cả 2 Task (Task 1: ${t1Words} từ, Task 2: ${t2Words} từ)${nextId <= 10 ? ` và đã mở khóa <strong>WRITING TEST ${nextPad}</strong>.` : '.'}</div>
+                    ${nextBtnHtml}
+                `;
+            } else {
+                banner.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#fffbeb;border:1.5px solid #fcd34d;border-left:5px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:16px;color:#92400e;font-size:14px;';
+                banner.innerHTML = `
+                    <div><strong><i class="fa-solid fa-lock" style="color:#d97706;"></i> CHƯA MỞ KHÓA ĐỀ ${nextPad}:</strong> Để mở khóa đề tiếp theo, bạn cần hoàn thành và nộp đủ cả 2 Task (Task 1 ≥ 50 từ, Task 2 ≥ 100 từ). Hiện tại: Task 1 (${t1Words} từ), Task 2 (${t2Words} từ).</div>
+                `;
+            }
+        }
+    } catch (e) {}
 }
 
 function highlightGrammarErrors(text) {

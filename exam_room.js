@@ -70,12 +70,21 @@
 
     // Local room states
     const allRoomsState = {
-        writing: { isOpen: true, allowedTest: "all" },
-        speaking: { isOpen: true, allowedTest: "all" },
-        reading: { isOpen: true, allowedTest: "all" },
-        listening: { isOpen: true, allowedTest: "all" },
-        vstep: { isOpen: true, allowedTest: "all" }
+        writing: { isOpen: true, allowedTest: "all", sequentialMode: true },
+        speaking: { isOpen: true, allowedTest: "all", sequentialMode: true },
+        reading: { isOpen: true, allowedTest: "all", sequentialMode: false },
+        listening: { isOpen: true, allowedTest: "all", sequentialMode: false },
+        vstep: { isOpen: true, allowedTest: "all", sequentialMode: false }
     };
+
+    // Google Apps Script Web App URL for 2-way Student Progress Sync (Google Sheet)
+    const DEFAULT_PROGRESS_SHEET_URL = "";
+    const LOCAL_PROGRESS_KEY = "vstep_student_progress_v1";
+    const LOCAL_SHEET_URL_KEY = "vstep_progress_sheet_url";
+    const progressListeners = [];
+    let progressSheetUrl = localStorage.getItem(LOCAL_SHEET_URL_KEY) || DEFAULT_PROGRESS_SHEET_URL;
+    let studentProgressCache = {};
+    let lastSyncedStudentKey = "";
 
     let fbApp = null;
     let rtdb = null;
@@ -111,6 +120,293 @@
             return parseInt(window.TEST_NUMBER, 10);
         }
         return 0; // Homepage or all
+    }
+
+    function padTestNum(n) {
+        return n < 10 ? "0" + n : String(n);
+    }
+
+    function normalizeIdentityPart(str) {
+        return String(str || "")
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_+|_+$/g, "");
+    }
+
+    function getStudentProgressKey() {
+        const info = getCurrentUserInfo();
+        const n = normalizeIdentityPart(info.name);
+        const c = normalizeIdentityPart(info.className);
+        if (!n) return "guest";
+        return c ? `${c}__${n}` : n;
+    }
+
+    function loadLocalProgressMap() {
+        try {
+            const raw = localStorage.getItem(LOCAL_PROGRESS_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveLocalProgressMap(map) {
+        try {
+            localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(map));
+        } catch (e) {}
+    }
+
+    function getCompletedTests(skillKey) {
+        const sk = skillKey || currentSkillKey;
+        const studentKey = getStudentProgressKey();
+        const localMap = loadLocalProgressMap();
+        const localList = (localMap[studentKey] && Array.isArray(localMap[studentKey][sk])) ? localMap[studentKey][sk] : [];
+        const cachedList = (studentProgressCache[studentKey] && Array.isArray(studentProgressCache[studentKey][sk])) ? studentProgressCache[studentKey][sk] : [];
+        return Array.from(new Set([...localList, ...cachedList]))
+            .map(n => parseInt(n, 10))
+            .filter(n => !isNaN(n) && n > 0)
+            .sort((a, b) => a - b);
+    }
+
+    function notifyProgressListeners() {
+        progressListeners.forEach(fn => {
+            try { fn(); } catch (e) {}
+        });
+    }
+
+    function mergeCompletedTests(skillKey, testNums, shouldNotify = true) {
+        if (!Array.isArray(testNums) || testNums.length === 0) return false;
+        const sk = skillKey || currentSkillKey;
+        const studentKey = getStudentProgressKey();
+        const localMap = loadLocalProgressMap();
+        if (!localMap[studentKey]) localMap[studentKey] = {};
+        const prev = Array.isArray(localMap[studentKey][sk]) ? localMap[studentKey][sk] : [];
+        const next = Array.from(new Set([
+            ...prev,
+            ...testNums.map(n => parseInt(n, 10)).filter(n => !isNaN(n) && n > 0)
+        ])).sort((a, b) => a - b);
+
+        const changed = next.length !== prev.length || next.some((v, idx) => v !== prev[idx]);
+        localMap[studentKey][sk] = next;
+        saveLocalProgressMap(localMap);
+
+        if (!studentProgressCache[studentKey]) studentProgressCache[studentKey] = {};
+        studentProgressCache[studentKey][sk] = next;
+
+        if (changed && shouldNotify) {
+            notifyProgressListeners();
+            applyRoomState();
+        }
+        return changed;
+    }
+
+    function isSequentialModeEnabled(skillKey) {
+        const sk = skillKey || currentSkillKey;
+        const room = allRoomsState[sk] || {};
+        if (typeof room.sequentialMode === "boolean") return room.sequentialMode;
+        return sk === "writing" || sk === "speaking";
+    }
+
+    function canAccessTest(testNum, skillKey) {
+        const sk = skillKey || currentSkillKey;
+        const userInfo = getCurrentUserInfo();
+        if (userInfo.isTeacher) {
+            return { allowed: true, reason: "", lockType: null, requiredTest: null };
+        }
+
+        const room = allRoomsState[sk] || { isOpen: true, allowedTest: "all" };
+        const skillTitle = (SKILLS_CONFIG[sk] && SKILLS_CONFIG[sk].title) ? SKILLS_CONFIG[sk].title : "PHÒNG THI";
+
+        // 1. Teacher Room Open/Closed (Highest priority)
+        if (room.isOpen === false) {
+            return {
+                allowed: false,
+                reason: `Phòng thi ${skillTitle} hiện đang ĐÓNG. Vui lòng chờ Giáo viên (Cô Nguyệt) mở phòng để vào làm bài!`,
+                lockType: "room_closed",
+                requiredTest: null
+            };
+        }
+
+        if (!testNum || testNum <= 0) {
+            return { allowed: true, reason: "", lockType: null, requiredTest: null };
+        }
+
+        // 2. Teacher Allowed Tests Whitelist (Highest priority)
+        const allowedVal = room.allowedTest || "all";
+        if (!isTestNumberAllowed(testNum, allowedVal)) {
+            const parsed = parseAllowedTests(allowedVal);
+            let reason = `Đề ${padTestNum(testNum)} hiện chưa được Giáo viên mở!`;
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                const formatted = parsed.map(n => padTestNum(n)).join(", ");
+                reason = `Hôm nay lớp chỉ mở các ĐỀ: ${formatted}. Đề ${padTestNum(testNum)} hiện chưa được mở!`;
+            } else if (Array.isArray(parsed) && parsed.length === 0) {
+                reason = `Phòng thi hiện đang tạm khóa tất cả các đề. Vui lòng chờ Giáo viên mở đề!`;
+            }
+            return {
+                allowed: false,
+                reason,
+                lockType: "teacher_locked",
+                requiredTest: null
+            };
+        }
+
+        // 3. Sequential Unlock Mode (Must complete Test N-1 before Test N)
+        if (isSequentialModeEnabled(sk) && testNum > 1) {
+            let requiredTest = testNum - 1;
+            const parsedAllowed = parseAllowedTests(allowedVal);
+            if (Array.isArray(parsedAllowed)) {
+                const earlierAllowed = parsedAllowed.filter(n => n < testNum).sort((a, b) => a - b);
+                if (earlierAllowed.length === 0) {
+                    // Teacher explicitly started the session at this test number
+                    return { allowed: true, reason: "", lockType: null, requiredTest: null };
+                }
+                requiredTest = earlierAllowed[earlierAllowed.length - 1];
+            }
+
+            const completed = getCompletedTests(sk);
+            if (!completed.includes(requiredTest)) {
+                const extraReq = sk === "writing"
+                    ? " (nộp bài hoàn chỉnh cả 2 Task)"
+                    : (sk === "speaking" ? " (hoàn thành đủ 3 phần nói)" : "");
+                return {
+                    allowed: false,
+                    reason: `Bạn cần hoàn thành ĐỀ ${padTestNum(requiredTest)}${extraReq} trước khi mở khóa ĐỀ ${padTestNum(testNum)}!`,
+                    lockType: "sequential",
+                    requiredTest
+                };
+            }
+        }
+
+        return { allowed: true, reason: "", lockType: null, requiredTest: null };
+    }
+
+    function recordTestCompletion(skillKey, testNum, meta = {}) {
+        const sk = skillKey || currentSkillKey;
+        const tNum = parseInt(testNum, 10);
+        if (isNaN(tNum) || tNum <= 0) return;
+
+        const info = getCurrentUserInfo();
+        const studentKey = getStudentProgressKey();
+        const details = meta.details || "";
+
+        // 1. Instant local update
+        mergeCompletedTests(sk, [tNum], true);
+
+        // 2. Firebase RTDB backup sync
+        if (studentKey && studentKey !== "guest") {
+            const payload = {
+                completed: true,
+                name: info.name || "Học viên",
+                className: info.className || "",
+                details: details,
+                updatedAt: Date.now()
+            };
+            if (rtdb) {
+                rtdb.ref(`student_progress/${studentKey}/${sk}/${tNum}`).set(payload).catch(() => {});
+            }
+            fetch(`${RTDB_BASE}/student_progress/${studentKey}/${sk}/${tNum}.json`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).catch(() => {});
+        }
+
+        // 3. Google Sheet 2-way Web App sync
+        const activeUrl = (progressSheetUrl || "").trim();
+        if (activeUrl && activeUrl.startsWith("https://script.google.com/")) {
+            const nowStr = new Date().toLocaleString("vi-VN");
+            fetch(activeUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({
+                    action: "saveProgress",
+                    studentKey: studentKey,
+                    name: info.name || "Học viên",
+                    className: info.className || "",
+                    skill: sk,
+                    testId: tNum,
+                    details: details,
+                    timestamp: nowStr
+                })
+            }).catch(() => {});
+        }
+    }
+
+    function syncProgressFromCloud(force = false) {
+        const info = getCurrentUserInfo();
+        if (info.isTeacher) return;
+        const studentKey = getStudentProgressKey();
+        if (!studentKey || studentKey === "guest") return;
+        if (!force && lastSyncedStudentKey === `${studentKey}::${currentSkillKey}`) return;
+        lastSyncedStudentKey = `${studentKey}::${currentSkillKey}`;
+
+        // A. Sync from Firebase RTDB (if rules allow)
+        if (rtdb) {
+            rtdb.ref(`student_progress/${studentKey}/${currentSkillKey}`).once("value")
+                .then(snap => {
+                    const val = snap.val();
+                    if (val && typeof val === "object") {
+                        const nums = Object.keys(val).map(k => parseInt(k, 10)).filter(n => !isNaN(n) && n > 0);
+                        mergeCompletedTests(currentSkillKey, nums, true);
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // B. Sync from Google Sheet Web App (if configured)
+        const activeUrl = (progressSheetUrl || "").trim();
+        if (activeUrl && activeUrl.startsWith("https://script.google.com/")) {
+            const qs = new URLSearchParams({
+                action: "getProgress",
+                studentKey: studentKey,
+                name: info.name || "",
+                className: info.className || "",
+                skill: currentSkillKey
+            });
+            fetch(`${activeUrl}?${qs.toString()}`, { cache: "no-store" })
+                .then(res => res.ok ? res.json() : null)
+                .then(json => {
+                    if (json && Array.isArray(json.completedTests) && json.completedTests.length > 0) {
+                        mergeCompletedTests(currentSkillKey, json.completedTests, true);
+                    }
+                })
+                .catch(() => {});
+        }
+    }
+
+    function bootstrapProgressFromIndexedDB() {
+        try {
+            // Writing Mock Tests history bootstrap (require both tasks completed: T1 >= 50w, T2 >= 100w)
+            if (currentSkillKey === "writing" && typeof VstepWritingDB !== "undefined" && typeof VstepWritingDB.getAllHistory === "function") {
+                VstepWritingDB.getAllHistory().then(list => {
+                    if (!Array.isArray(list) || list.length === 0) return;
+                    const completedIds = list
+                        .filter(item => (item.task1Words || 0) >= 50 && (item.task2Words || 0) >= 100)
+                        .map(item => parseInt(item.testId, 10))
+                        .filter(n => !isNaN(n) && n > 0);
+                    if (completedIds.length > 0) {
+                        mergeCompletedTests("writing", completedIds, true);
+                    }
+                }).catch(() => {});
+            }
+            // Speaking Mock Tests history bootstrap
+            if (currentSkillKey === "speaking" && typeof VstepDB !== "undefined" && typeof VstepDB.getAllHistory === "function") {
+                VstepDB.getAllHistory().then(list => {
+                    if (!Array.isArray(list) || list.length === 0) return;
+                    const completedIds = list
+                        .map(item => parseInt(item.testId, 10))
+                        .filter(n => !isNaN(n) && n > 0);
+                    if (completedIds.length > 0) {
+                        mergeCompletedTests("speaking", completedIds, true);
+                    }
+                }).catch(() => {});
+            }
+        } catch (e) {}
     }
 
     // --- Inject Styles ---
@@ -585,6 +881,49 @@
                 font-weight: 700;
                 cursor: pointer;
             }
+            .btn-toggle-seq.on {
+                background: linear-gradient(135deg, #0ea5e9, #0284c7);
+                color: #ffffff;
+                border: 1px solid rgba(255,255,255,0.25);
+            }
+            .btn-toggle-seq.off {
+                background: rgba(255,255,255,0.12);
+                color: #cbd5e1;
+                border: 1px solid rgba(255,255,255,0.2);
+            }
+            .btn-sheet-config {
+                background: rgba(16, 185, 129, 0.2);
+                color: #6ee7b7;
+                border: 1px solid rgba(16, 185, 129, 0.45);
+            }
+            .btn-sheet-config:hover {
+                background: rgba(16, 185, 129, 0.35);
+                color: #ffffff;
+            }
+            .btn-jump-prev-test {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                margin-top: 12px;
+                padding: 9px 18px;
+                border-radius: 9px;
+                background: linear-gradient(135deg, #4f46e5, #6366f1);
+                color: #ffffff !important;
+                font-size: 13.5px;
+                font-weight: 700;
+                text-decoration: none;
+                border: none;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            }
+            .vstep-room-closed-box.is-sequential {
+                background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+                border-color: #fcd34d;
+                color: #92400e;
+            }
+            .vstep-room-closed-box.is-sequential .room-closed-icon { color: #d97706; }
+            .vstep-room-closed-box.is-sequential .room-closed-title { color: #92400e; }
+            .vstep-room-closed-box.is-sequential .room-closed-desc { color: #78350f; }
 
             body.has-teacher-bar { padding-top: 54px !important; }
         `;
@@ -673,6 +1012,8 @@
         const currentRoom = allRoomsState[currentSkillKey] || { isOpen: true, allowedTest: "all" };
         const isOpen = currentRoom.isOpen !== false;
         const allowed = currentRoom.allowedTest || "all";
+        const isSeq = isSequentialModeEnabled(currentSkillKey);
+        const hasSheet = Boolean((progressSheetUrl || "").trim());
 
         bar.innerHTML = `
             <div class="vstep-teacher-bar-content">
@@ -737,6 +1078,16 @@
                         </div>
                     </div>
 
+                    <button type="button" class="teacher-btn-action btn-toggle-seq ${isSeq ? 'on' : 'off'}" onclick="VstepExamRoom.toggleSequentialMode()" title="Bật/Tắt chế độ làm tuần tự (xong Đề 1 mới mở Đề 2)">
+                        <i class="fa-solid fa-stairs"></i>
+                        <span>Tuần tự: ${isSeq ? 'BẬT' : 'TẮT'}</span>
+                    </button>
+
+                    <button type="button" class="teacher-btn-action btn-sheet-config" onclick="VstepExamRoom.configureProgressSheet()" title="Cài đặt link Google Sheet lưu tiến độ học viên">
+                        <i class="fa-solid fa-table"></i>
+                        <span>${hasSheet ? 'Sheet ✓' : 'Gắn Sheet'}</span>
+                    </button>
+
                     <button type="button" class="teacher-btn-action btn-toggle-room ${isOpen ? 'open' : 'closed'}" onclick="VstepExamRoom.toggleCurrentRoom()">
                         <i class="fa-solid ${isOpen ? 'fa-lock' : 'fa-lock-open'}"></i>
                         <span>${isOpen ? 'Đóng Phòng ' + currentSkill.short : 'Mở Phòng ' + currentSkill.short}</span>
@@ -774,114 +1125,120 @@
         if (userInfo.isTeacher) {
             renderTeacherBar();
             restoreStudentAccess();
+            notifyProgressListeners();
             return;
         }
 
-        const currentRoom = allRoomsState[currentSkillKey] || { isOpen: true, allowedTest: "all" };
         const currentTest = getCurrentTestNumber();
-        const isOpen = currentRoom.isOpen !== false;
-        const allowed = currentRoom.allowedTest || "all";
+        const access = canAccessTest(currentTest, currentSkillKey);
 
-        let isThisTestAllowed = true;
-        let blockedReason = "";
-
-        if (!isOpen) {
-            isThisTestAllowed = false;
-            blockedReason = `Phòng thi ${currentSkill.title} hiện đang ĐÓNG. Vui lòng chờ Giáo viên (Cô Nguyệt) mở phòng để vào làm bài!`;
-        } else if (!isTestNumberAllowed(currentTest, allowed)) {
-            isThisTestAllowed = false;
-            const parsed = parseAllowedTests(allowed);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                const formatted = parsed.map(n => n < 10 ? '0' + n : String(n)).join(', ');
-                blockedReason = `Hôm nay lớp chỉ mở các ĐỀ: ${formatted}. Đề thi này hiện chưa được mở!`;
-            } else if (Array.isArray(parsed) && parsed.length === 0) {
-                blockedReason = `Phòng thi hiện đang tạm khóa tất cả các đề. Vui lòng chờ Giáo viên mở đề!`;
-            } else {
-                blockedReason = `Đề thi này hiện chưa được mở!`;
-            }
-        }
-
-        if (!isThisTestAllowed) {
-            enforceStudentBlock(blockedReason);
+        if (!access.allowed) {
+            enforceStudentBlock(access.reason, access);
         } else {
             restoreStudentAccess();
         }
+
+        // Notify homepage grid / sidebar to reflect latest room state & sequential progress
+        notifyProgressListeners();
     }
 
-    function enforceStudentBlock(reasonText) {
-        // 1. Writing Mock Tests (isExamRunning)
-        if (typeof isExamRunning !== "undefined" && isExamRunning) {
-            if (typeof submitTest === "function") {
-                submitTest(true);
-            } else {
-                isExamRunning = false;
-                if (typeof timerInterval !== "undefined" && timerInterval) clearInterval(timerInterval);
+    function enforceStudentBlock(reasonText, accessInfo = {}) {
+        const isSequentialLock = accessInfo && accessInfo.lockType === "sequential";
+
+        // Only auto-submit active exam if Teacher closed the room / locked the test (not sequential)
+        if (!isSequentialLock) {
+            // 1. Writing Mock Tests (isExamRunning)
+            if (typeof isExamRunning !== "undefined" && isExamRunning) {
+                if (typeof submitTest === "function") {
+                    submitTest(true);
+                } else {
+                    isExamRunning = false;
+                    if (typeof timerInterval !== "undefined" && timerInterval) clearInterval(timerInterval);
+                }
+                showEmergencyClosedModal(reasonText);
+                return;
             }
-            showEmergencyClosedModal(reasonText);
-            return;
+
+            // 2. Speaking Mock Tests (currentScreen !== 'welcome' && currentScreen !== 'review')
+            if (typeof currentScreen !== "undefined" && currentScreen !== "welcome" && currentScreen !== "review") {
+                if (typeof enterReview === "function") {
+                    enterReview();
+                }
+                showEmergencyClosedModal(reasonText);
+                return;
+            }
+
+            // 3. Reading Mock Tests (state.activeExam && state.activeExam.test && !state.activeExam.isSubmitted)
+            if (typeof state !== "undefined" && state.activeExam && state.activeExam.test && !state.activeExam.isSubmitted) {
+                if (typeof submitExam === "function") {
+                    submitExam();
+                }
+                showEmergencyClosedModal(reasonText);
+                return;
+            }
+
+            // 4. Listening Mock Tests (window.VSTEP_IS_LISTENING_RUNNING / VSTEP_SUBMIT_LISTENING)
+            if (typeof window.VSTEP_IS_LISTENING_RUNNING === "function" && window.VSTEP_IS_LISTENING_RUNNING()) {
+                if (typeof window.VSTEP_SUBMIT_LISTENING === "function") {
+                    window.VSTEP_SUBMIT_LISTENING();
+                }
+                showEmergencyClosedModal(reasonText);
+                return;
+            }
+
+            // 5. VSTEP Mock Tests (mocktests - DOM.examScreen && DOM.examScreen.classList.contains("active"))
+            if (typeof DOM !== "undefined" && DOM.examScreen && DOM.examScreen.classList.contains("active")) {
+                if (typeof submitExam === "function") {
+                    submitExam();
+                }
+                showEmergencyClosedModal(reasonText);
+                return;
+            }
         }
 
-        // 2. Speaking Mock Tests (currentScreen !== 'welcome' && currentScreen !== 'review')
-        if (typeof currentScreen !== "undefined" && currentScreen !== "welcome" && currentScreen !== "review") {
-            if (typeof enterReview === "function") {
-                enterReview();
-            }
-            showEmergencyClosedModal(reasonText);
-            return;
-        }
-
-        // 3. Reading Mock Tests (state.activeExam && state.activeExam.test && !state.activeExam.isSubmitted)
-        if (typeof state !== "undefined" && state.activeExam && state.activeExam.test && !state.activeExam.isSubmitted) {
-            if (typeof submitExam === "function") {
-                submitExam();
-            }
-            showEmergencyClosedModal(reasonText);
-            return;
-        }
-
-        // 4. Listening Mock Tests (window.VSTEP_IS_LISTENING_RUNNING / VSTEP_SUBMIT_LISTENING)
-        if (typeof window.VSTEP_IS_LISTENING_RUNNING === "function" && window.VSTEP_IS_LISTENING_RUNNING()) {
-            if (typeof window.VSTEP_SUBMIT_LISTENING === "function") {
-                window.VSTEP_SUBMIT_LISTENING();
-            }
-            showEmergencyClosedModal(reasonText);
-            return;
-        }
-
-        // 5. VSTEP Mock Tests (mocktests - DOM.examScreen && DOM.examScreen.classList.contains("active"))
-        if (typeof DOM !== "undefined" && DOM.examScreen && DOM.examScreen.classList.contains("active")) {
-            if (typeof submitExam === "function") {
-                submitExam();
-            }
-            showEmergencyClosedModal(reasonText);
-            return;
-        }
-
-        // On welcome screen start buttons
-        const startBtns = document.querySelectorAll("#btn-start-test, #btn-start-exam, .btn-practice-cbt, .btn-start");
+        // On welcome screen start buttons (only on individual test pages, or when whole room is closed)
+        const currentTest = getCurrentTestNumber();
+        const selector = currentTest > 0
+            ? "#btn-start-test, #btn-start-exam, .btn-practice-cbt"
+            : "#btn-start-test, #btn-start-exam, .btn-practice-cbt, .btn-start";
+        const startBtns = document.querySelectorAll(selector);
         startBtns.forEach(btn => {
             btn.disabled = true;
             btn.classList.add("room-locked");
             btn.dataset.origHtml = btn.dataset.origHtml || btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-lock"></i> PHÒNG THI ĐANG ĐÓNG`;
+            if (isSequentialLock && accessInfo.requiredTest) {
+                btn.innerHTML = `<i class="fa-solid fa-lock"></i> CẦN XONG ĐỀ ${padTestNum(accessInfo.requiredTest)} TRƯỚC`;
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-lock"></i> PHÒNG THI ĐANG ĐÓNG`;
+            }
             btn.title = reasonText;
         });
 
-        // Show room closed notice box
-        const targetBtn = document.querySelector("#btn-start-test, #btn-start-exam, .btn-practice-cbt, .btn-start");
+        // Show notice box on individual test welcome screen
+        const targetBtn = document.querySelector("#btn-start-test, #btn-start-exam, .btn-practice-cbt");
         if (targetBtn && targetBtn.parentElement) {
             let noticeBox = document.getElementById("vstep-room-closed-alert");
             if (!noticeBox) {
                 noticeBox = document.createElement("div");
                 noticeBox.id = "vstep-room-closed-alert";
-                noticeBox.className = "vstep-room-closed-box";
                 targetBtn.parentElement.parentElement.insertBefore(noticeBox, targetBtn.parentElement);
             }
+            noticeBox.className = isSequentialLock ? "vstep-room-closed-box is-sequential" : "vstep-room-closed-box";
             noticeBox.style.display = "block";
+
+            let jumpHtml = "";
+            if (isSequentialLock && accessInfo.requiredTest) {
+                const reqNum = accessInfo.requiredTest;
+                const reqPad = padTestNum(reqNum);
+                const prevHref = `../test ${reqNum}/test${reqPad}-index.html`;
+                jumpHtml = `<div><a href="${prevHref}" class="btn-jump-prev-test"><i class="fa-solid fa-arrow-left"></i> Quay lại làm Đề ${reqPad} ngay</a></div>`;
+            }
+
             noticeBox.innerHTML = `
-                <div class="room-closed-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <h4 class="room-closed-title">PHÒNG THI TẠM THỜI ĐÓNG</h4>
+                <div class="room-closed-icon"><i class="fa-solid ${isSequentialLock ? 'fa-lock' : 'fa-triangle-exclamation'}"></i></div>
+                <h4 class="room-closed-title">${isSequentialLock ? 'CHƯA MỞ KHÓA ĐỀ THI NÀY' : 'PHÒNG THI TẠM THỜI ĐÓNG'}</h4>
                 <p class="room-closed-desc">${reasonText}</p>
+                ${jumpHtml}
             `;
         }
     }
@@ -947,7 +1304,7 @@
                     rtdb.ref(nodeName).on("value", snapshot => {
                         const data = snapshot.val();
                         if (data) {
-                            allRoomsState[sk] = data;
+                            allRoomsState[sk] = { ...allRoomsState[sk], ...data };
                             applyRoomState();
                         }
                     }, err => {
@@ -955,6 +1312,17 @@
                         console.warn("RTDB listen permission/network note:", sk, err ? err.message : err);
                     });
                 });
+
+                // Listen to shared Google Sheet Progress URL config
+                rtdb.ref("room_config/progressSheetUrl").on("value", snapshot => {
+                    const val = snapshot.val();
+                    if (typeof val === "string" && val.trim()) {
+                        progressSheetUrl = val.trim();
+                        try { localStorage.setItem(LOCAL_SHEET_URL_KEY, progressSheetUrl); } catch (e) {}
+                        renderTeacherBar();
+                        syncProgressFromCloud(true);
+                    }
+                }, () => {});
             } catch (e) {
                 console.log("Firebase RTDB init note:", e);
                 fetchAllRoomsREST();
@@ -966,7 +1334,12 @@
         // Periodic REST Polling every 8 seconds as resilient backup
         setInterval(fetchAllRoomsREST, 8000);
 
+        // Bootstrap existing completed tests from browser IndexedDB & Cloud/Google Sheet
+        bootstrapProgressFromIndexedDB();
+        syncProgressFromCloud(false);
+
         renderTeacherBar();
+        applyRoomState();
     }
 
     function fetchAllRoomsREST() {
@@ -980,9 +1353,17 @@
                 Object.keys(SKILLS_CONFIG).forEach(sk => {
                     const nodeName = SKILLS_CONFIG[sk].node;
                     if (data[nodeName]) {
-                        allRoomsState[sk] = data[nodeName];
+                        allRoomsState[sk] = { ...allRoomsState[sk], ...data[nodeName] };
                     }
                 });
+                if (data.room_config && data.room_config.progressSheetUrl) {
+                    const newUrl = String(data.room_config.progressSheetUrl).trim();
+                    if (newUrl && newUrl !== progressSheetUrl) {
+                        progressSheetUrl = newUrl;
+                        try { localStorage.setItem(LOCAL_SHEET_URL_KEY, progressSheetUrl); } catch (e) {}
+                        syncProgressFromCloud(true);
+                    }
+                }
                 applyRoomState();
             })
             .catch(() => {});
@@ -1025,19 +1406,66 @@
         init: initFirebase,
         getCurrentSkill: () => currentSkillKey,
         getRoomState: (skillKey) => allRoomsState[skillKey || currentSkillKey],
-
-        canStudentStartExam(skillKey) {
-            const userInfo = getCurrentUserInfo();
-            if (userInfo.isTeacher) return true;
-
-            const room = allRoomsState[skillKey || currentSkillKey] || { isOpen: true, allowedTest: "all" };
-            const currentTest = getCurrentTestNumber();
-
-            if (room.isOpen === false) return false;
-            if (!isTestNumberAllowed(currentTest, room.allowedTest)) {
-                return false;
+        isSequentialModeEnabled,
+        getCompletedTests,
+        canAccessTest,
+        recordTestCompletion,
+        syncProgressFromCloud,
+        onProgressChange(cb) {
+            if (typeof cb === "function" && !progressListeners.includes(cb)) {
+                progressListeners.push(cb);
             }
-            return true;
+        },
+
+        canStudentStartExam(skillKey, explicitTestNum) {
+            const sk = skillKey || currentSkillKey;
+            const tNum = typeof explicitTestNum === "number" ? explicitTestNum : getCurrentTestNumber();
+            return canAccessTest(tNum, sk).allowed;
+        },
+
+        toggleSequentialMode() {
+            const nextSeq = !isSequentialModeEnabled(currentSkillKey);
+            updateRoomInFirebase(currentSkillKey, {
+                sequentialMode: nextSeq,
+                message: nextSeq
+                    ? `Đã BẬT chế độ làm tuần tự (Đề 1 → Đề 2 → ...) cho phòng ${currentSkill.short}`
+                    : `Đã TẮT chế độ làm tuần tự cho phòng ${currentSkill.short}`
+            });
+            alert(nextSeq
+                ? `🔗 ĐÃ BẬT CHẾ ĐỘ LÀM TUẦN TỰ (${currentSkill.title})!\n\nHọc viên phải nộp bài hoàn chỉnh Đề 01 mới mở được Đề 02, xong Đề 02 mới mở được Đề 03...`
+                : `🔓 ĐÃ TẮT CHẾ ĐỘ LÀM TUẦN TỰ (${currentSkill.title})!\n\nHọc viên có thể chọn bất kỳ đề nào Cô đang mở.`);
+        },
+
+        configureProgressSheet() {
+            const currentUrl = (progressSheetUrl || "").trim();
+            const input = prompt(
+                "📊 CÀI ĐẶT GOOGLE SHEET LƯU TIẾN ĐỘ HỌC VIÊN:\n\n" +
+                "Dán đường link Web App Google Apps Script (bắt đầu bằng https://script.google.com/macros/s/.../exec).\n" +
+                "(Để trống nếu chỉ muốn lưu tạm trên trình duyệt & Firebase)",
+                currentUrl
+            );
+            if (input === null) return;
+            const trimmed = input.trim();
+            if (trimmed && !trimmed.startsWith("https://script.google.com/")) {
+                alert("❌ Đường link chưa đúng định dạng Google Apps Script (phải bắt đầu bằng https://script.google.com/...).");
+                return;
+            }
+            progressSheetUrl = trimmed;
+            try { localStorage.setItem(LOCAL_SHEET_URL_KEY, progressSheetUrl); } catch (e) {}
+
+            if (rtdb) {
+                rtdb.ref("room_config").update({ progressSheetUrl: progressSheetUrl, updatedAt: Date.now() }).catch(() => {});
+            }
+            fetch(`${RTDB_BASE}/room_config.json`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ progressSheetUrl: progressSheetUrl, updatedAt: Date.now() })
+            }).catch(() => {});
+
+            renderTeacherBar();
+            alert(progressSheetUrl
+                ? "✅ Đã gắn Google Sheet thành công! Tiến độ hoàn thành đề của học viên sẽ tự động lưu & đồng bộ với Google Sheet."
+                : "ℹ️ Đã gỡ link Google Sheet. Hệ thống vẫn lưu tiến độ trên trình duyệt & Firebase.");
         },
 
         toggleCurrentRoom() {
@@ -1159,6 +1587,8 @@
 
         refreshUI() {
             renderTeacherBar();
+            bootstrapProgressFromIndexedDB();
+            syncProgressFromCloud(true);
             applyRoomState();
         }
     };
@@ -1176,14 +1606,18 @@
         }
     });
 
-    // Intercept clicks on start buttons if room is closed
+    // Intercept clicks on start buttons if room is closed or test is sequentially locked
     document.addEventListener("click", function(e) {
         const btn = e.target.closest && e.target.closest("#btn-start-test, #btn-start-exam, .btn-practice-cbt, .btn-start");
         if (!btn) return;
-        if (typeof window.VstepExamRoom !== "undefined" && !window.VstepExamRoom.canStudentStartExam()) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            alert("⛔ PHÒNG THI HIỆN ĐANG ĐÓNG!\n\nVui lòng chờ Giáo viên (Cô Nguyệt) mở phòng để vào làm bài.");
+        const tNum = getCurrentTestNumber();
+        if (typeof window.VstepExamRoom !== "undefined") {
+            const access = window.VstepExamRoom.canAccessTest(tNum);
+            if (!access.allowed) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                alert((access.lockType === "sequential" ? "🔒 CHƯA MỞ KHÓA ĐỀ THI:\n\n" : "⛔ PHÒNG THI ĐANG KHÓA:\n\n") + access.reason);
+            }
         }
     }, true);
 

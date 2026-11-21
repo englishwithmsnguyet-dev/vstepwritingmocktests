@@ -712,7 +712,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script>window.VSTEP_ROOM_SKILL = 'writing';</script>
-    <script src="exam_room.js?v=2026112101"></script>
+    <script src="exam_room.js?v=2026112103"></script>
     <script src="vstep_ai_grader.js?v=2026112102"></script>
     <script>
         const TEST_PASSWORDS = {
@@ -2358,6 +2358,21 @@
         // Initialize elements
         function initSidebarAndGrid() {
             try {
+                const completedList = (typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.getCompletedTests === 'function')
+                    ? VstepExamRoom.getCompletedTests('writing')
+                    : [];
+
+                function getTestAccessState(testId) {
+                    const localUnlocked = typeof isTestUnlocked === 'function' ? isTestUnlocked(testId) : true;
+                    if (!localUnlocked) {
+                        return { allowed: false, lockType: 'password', reason: 'Đề thi đang khóa bằng mật khẩu.', requiredTest: null };
+                    }
+                    if (typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.canAccessTest === 'function') {
+                        return VstepExamRoom.canAccessTest(testId, 'writing');
+                    }
+                    return { allowed: true, lockType: null, reason: '', requiredTest: null };
+                }
+
                 // Render Sidebar
                 const sidebarList = document.getElementById('sidebar-test-list');
                 if (sidebarList) {
@@ -2371,7 +2386,8 @@
                     `;
                     
                     for (let i = 1; i <= 10; i++) {
-                        const unlocked = typeof isTestUnlocked === 'function' ? isTestUnlocked(i) : true;
+                        const access = getTestAccessState(i);
+                        const isDone = completedList.includes(i);
                         const testName = `WRITING TEST ${i.toString().padStart(2, '0')}`;
                         const li = document.createElement('li');
                         li.className = 'test-item';
@@ -2380,10 +2396,10 @@
                         a.href = 'javascript:void(0)';
                         a.setAttribute('data-test-id', i);
                         
-                        if (unlocked) {
+                        if (access.allowed) {
                             a.className = '';
                             a.innerHTML = `
-                                <span class="test-icon"><i class="fa-solid fa-file-signature"></i></span>
+                                <span class="test-icon"><i class="fa-solid ${isDone ? 'fa-circle-check' : 'fa-file-signature'}" style="${isDone ? 'color:#10b981;' : ''}"></i></span>
                                 <span class="test-name">${testName}</span>
                             `;
                             a.onclick = () => {
@@ -2397,7 +2413,14 @@
                             `;
                             a.onclick = (e) => {
                                 e.preventDefault();
-                                showPasswordPrompt(i);
+                                if (access.lockType === 'password') {
+                                    showPasswordPrompt(i);
+                                } else {
+                                    showNotificationModal(
+                                        access.lockType === 'sequential' ? '🔒 CHƯA MỞ KHÓA ĐỀ THI' : '⛔ ĐỀ THI ĐANG KHÓA',
+                                        access.reason
+                                    );
+                                }
                             };
                         }
                         li.appendChild(a);
@@ -2411,7 +2434,8 @@
                     grid.innerHTML = '';
 
                     for (let i = 1; i <= 10; i++) {
-                        const unlocked = typeof isTestUnlocked === 'function' ? isTestUnlocked(i) : true;
+                        const access = getTestAccessState(i);
+                        const isDone = completedList.includes(i);
                         const testNum = i.toString().padStart(2, '0');
                         const testData = (typeof WRITING_TESTS_DATA !== 'undefined' && WRITING_TESTS_DATA[i]) ? WRITING_TESTS_DATA[i] : null;
                         const card = document.createElement('div');
@@ -2451,22 +2475,43 @@
                             }
                         }
 
-                        if (unlocked) {
+                        if (access.allowed) {
                             card.className = 'test-card is-unlocked';
+                            const statusBadgeHtml = isDone
+                                ? `<span class="status-badge unlocked" style="background:#dcfce7;color:#15803d;border:1px solid #86efac;"><i class="fa-solid fa-circle-check"></i> Đã hoàn thành</span>`
+                                : `<span class="status-badge unlocked"><i class="fa-solid fa-lock-open"></i> Sẵn sàng</span>`;
                             card.innerHTML = `
                                 <div class="test-card-header">
                                     <span class="test-card-title">WRITING TEST ${testNum}</span>
-                                    <span class="status-badge unlocked"><i class="fa-solid fa-lock-open"></i> Sẵn sàng</span> <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:rgba(99,102,241,0.12);color:#4f46e5;border:1px solid rgba(99,102,241,0.3);padding:2px 8px;border-radius:999px;margin-left:4px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Chấm thi AI</span>
+                                    ${statusBadgeHtml} <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:rgba(99,102,241,0.12);color:#4f46e5;border:1px solid rgba(99,102,241,0.3);padding:2px 8px;border-radius:999px;margin-left:4px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Chấm thi AI</span>
                                 </div>
                                 <div class="test-card-body">
                                     <p class="test-card-desc">${testData ? testData.desc : 'Đề luyện viết VSTEP Writing.'}</p>
                                     ${topicsHtml}
                                 </div>
                                 <div class="test-card-action">
-                                    <button class="btn-card-action btn-start" onclick="window.location.href='test ${i}/test${testNum}-index.html'">Vào thi thử <i class="fa-solid fa-arrow-right"></i></button>
+                                    <button class="btn-card-action btn-start" onclick="window.location.href='test ${i}/test${testNum}-index.html'">${isDone ? 'Làm lại đề này' : 'Vào thi thử'} <i class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            `;
+                        } else if (access.lockType === 'sequential') {
+                            const reqNum = access.requiredTest || (i - 1);
+                            const reqPad = reqNum.toString().padStart(2, '0');
+                            card.className = 'test-card is-locked';
+                            card.innerHTML = `
+                                <div class="test-card-header">
+                                    <span class="test-card-title">WRITING TEST ${testNum}</span>
+                                    <span class="status-badge locked" style="background:#fef3c7;color:#b45309;border:1px solid #fcd34d;"><i class="fa-solid fa-lock"></i> Cần xong Đề ${reqPad}</span>
+                                </div>
+                                <div class="test-card-body">
+                                    <p class="test-card-desc">${testData ? testData.desc : 'Đề luyện viết VSTEP Writing.'}</p>
+                                    ${topicsHtml}
+                                </div>
+                                <div class="test-card-action">
+                                    <button class="btn-card-action btn-unlock" style="background:#f59e0b;color:#fff;border:none;" onclick="showNotificationModal('🔒 CHƯA MỞ KHÓA ĐỀ ${testNum}', 'Bạn cần hoàn thành và nộp bài đầy đủ cả 2 Task của <strong>WRITING TEST ${reqPad}</strong> trước khi làm <strong>WRITING TEST ${testNum}</strong>!')">Cần xong Đề ${reqPad} <i class="fa-solid fa-lock"></i></button>
                                 </div>
                             `;
                         } else {
+                            const safeReason = (access.reason || 'Đề thi hiện đang khóa.').replace(/'/g, "\\'");
                             card.className = 'test-card is-locked';
                             card.innerHTML = `
                                 <div class="test-card-header">
@@ -2478,7 +2523,7 @@
                                     ${topicsHtml}
                                 </div>
                                 <div class="test-card-action">
-                                    <button class="btn-card-action btn-unlock" onclick="showPasswordPrompt(${i})">Mở khóa <i class="fa-solid fa-key"></i></button>
+                                    <button class="btn-card-action btn-unlock" onclick="${access.lockType === 'password' ? `showPasswordPrompt(${i})` : `showNotificationModal('⛔ ĐỀ THI ĐANG KHÓA', '${safeReason}')`}">${access.lockType === 'password' ? 'Mở khóa <i class="fa-solid fa-key"></i>' : 'Cô Nguyệt đang khóa <i class="fa-solid fa-lock"></i>'}</button>
                                 </div>
                             `;
                         }
@@ -4856,6 +4901,11 @@ function renderStudentBadge() {
         // Initialize on load
         function initializeApp() {
             checkStudentAuth();
+            if (typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.onProgressChange === 'function') {
+                VstepExamRoom.onProgressChange(() => {
+                    initSidebarAndGrid();
+                });
+            }
             initSidebarAndGrid();
             loadPracticeHistory();
         }
