@@ -571,15 +571,31 @@
       hostEl.prepend(slot);
     }
 
+    const titleLabel = taskType === 'task2'
+      ? '🎓 GIÁM KHẢO AI CHẤM BÀI CHUẨN VSTEP — TASK 2 (ESSAY)'
+      : '🎓 GIÁM KHẢO AI CHẤM BÀI CHUẨN VSTEP — TASK 1 (LETTER / EMAIL)';
+
     if (wordCount < 10) {
-      slot.innerHTML = '';
+      slot.innerHTML = `
+        <div class="vai-card" style="margin-bottom:20px;">
+          <div class="vai-header">
+            <div>
+              <div class="vai-header-title">${titleLabel}</div>
+              <div class="vai-header-sub">Chuẩn QĐ 729/QĐ-BGDĐT • 4 tiêu chí độc lập • Sửa lỗi từng câu & Chẩn đoán</div>
+            </div>
+          </div>
+          <div class="vai-body" style="padding:18px 22px;">
+            <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px 18px;color:#92400e;line-height:1.6;">
+              <strong style="font-size:0.95rem;">⚠️ Bài viết của bạn chưa có nội dung (dưới 10 từ).</strong><br>
+              <span style="font-size:0.88rem;color:#b45309;">Giám khảo AI đã sẵn sàng hoạt động! Để nhận điểm chuẩn VSTEP, sửa lỗi chi tiết từng câu và bản chẩn đoán nâng Band, bạn vui lòng viết bài (tối thiểu ${taskType === 'task2' ? '250' : '120'} từ) trước khi nộp bài nhé.</span>
+            </div>
+          </div>
+        </div>
+      `;
       return;
     }
 
     const cacheKey = simpleHash(taskType + '|' + targetLevel + '|' + prompt.slice(0, 200) + '|' + essay);
-    const titleLabel = taskType === 'task2'
-      ? '🎓 GIÁM KHẢO AI CHẤM BÀI CHUẨN VSTEP — TASK 2 (ESSAY)'
-      : '🎓 GIÁM KHẢO AI CHẤM BÀI CHUẨN VSTEP — TASK 1 (LETTER / EMAIL)';
 
     async function run(forceRefresh) {
       if (!forceRefresh) {
@@ -679,7 +695,22 @@
     }
 
     if (w1 < 10 && w2 < 10) {
-      slot.innerHTML = '';
+      slot.innerHTML = `
+        <div class="vai-card" style="margin-bottom:20px;">
+          <div class="vai-header">
+            <div>
+              <div class="vai-header-title">🎓 GIÁM KHẢO AI CHẤM ĐỀ THI THỬ VSTEP WRITING (FULL MOCK TEST)</div>
+              <div class="vai-header-sub">Công thức chuẩn: (Task 1 + 2 × Task 2) / 3 • QĐ 729/QĐ-BGDĐT</div>
+            </div>
+          </div>
+          <div class="vai-body" style="padding:18px 22px;">
+            <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px 18px;color:#92400e;line-height:1.6;">
+              <strong style="font-size:0.95rem;">⚠️ Bài thi của bạn chưa có nội dung (dưới 10 từ).</strong><br>
+              <span style="font-size:0.88rem;color:#b45309;">Giám khảo AI đã sẵn sàng hoạt động! Để nhận bảng điểm tổng quy đổi chuẩn VSTEP và phân tích chi tiết, bạn chỉ cần nhập bài viết cho Task 1 (tối thiểu 120 từ) hoặc Task 2 (tối thiểu 250 từ) trước khi nộp bài nhé.</span>
+            </div>
+          </div>
+        </div>
+      `;
       return;
     }
 

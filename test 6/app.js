@@ -2882,10 +2882,18 @@ function loadSolutions(name, t1, t2, w1, w2) {
     renderSentenceFeedback(1, sfResultT1);
     renderSentenceFeedback(2, sfResultT2);
     
+    // Mount VSTEP AI Grader (MOET Decision 729/QD-BGDDT)
+    if (window.VstepAIGrader && elements && elements.viewSolution) {
+        const _p1 = (document.getElementById("prompt-t1-text") || document.getElementById("sol-prompt-t1") || {}).innerText || "";
+        const _p2 = (document.getElementById("prompt-t2-text") || document.getElementById("sol-prompt-t2") || {}).innerText || "";
+        const _aiWrap = elements.viewSolution.querySelector(".solution-card") || elements.viewSolution.querySelector(".sol-panels-wrapper") || elements.viewSolution;
+        window.VstepAIGrader.mountFullMock(_aiWrap, { prompt1: _p1, essay1: t1 || "", prompt2: _p2, essay2: t2 || "" });
+    }
+    
     // Update overall VSTEP predicted score & badge
     const score1 = evalT1.scores ? evalT1.scores.average : 0;
     const score2 = evalT2.scores ? evalT2.scores.average : 0;
-    const overallScore = Math.round((score1 * 0.3 + score2 * 0.7 + 1e-9) * 10) / 10;
+    const overallScore = Math.round((((score1 + score2 * 2) / 3) + 1e-9) * 2) / 2;
     
     let levelLabel = "CHƯA ĐẠT";
     let levelColor = "#e11d48";
