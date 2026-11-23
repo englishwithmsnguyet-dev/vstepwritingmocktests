@@ -8,7 +8,7 @@
   const VSTEP_AI_ENDPOINT =
     'https://script.google.com/macros/s/AKfycbwUNnMInGfNlI4QqWVqqrhOXEYpwRVJ8FFFCdeBtQl8cA4AmoftBDdWnO13DxCnwgjWvg/exec';
 
-  const CACHE_PREFIX = 'vstep_ai_cache_v4_';
+  const CACHE_PREFIX = 'vstep_ai_cache_v5_';
 
   function escHtml(str) {
     return String(str == null ? '' : str)
@@ -373,6 +373,230 @@
         color: #ffffff;
         border-color: #1e3a8a;
       }
+
+      .vai-annotated-box {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px 20px;
+        font-size: 0.96rem;
+        line-height: 1.9;
+        color: #1e293b;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+      }
+      .vai-annotated-box p {
+        margin: 0 0 12px 0;
+      }
+      .vai-annotated-box p:last-child {
+        margin-bottom: 0;
+      }
+      .vai-inline-mark {
+        background: #fef9c3;
+        padding: 2px 6px;
+        border-radius: 6px;
+        display: inline;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
+      }
+      .vai-inline-mark:hover {
+        background: #fde047;
+      }
+      .vai-inline-del {
+        color: #b91c1c;
+        text-decoration: line-through;
+        text-decoration-thickness: 1.5px;
+        font-weight: 500;
+        margin-right: 3px;
+      }
+      .vai-inline-ins {
+        color: #15803d;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .vai-inline-num {
+        color: #475569;
+        font-size: 0.72em;
+        font-weight: 700;
+        margin-left: 2px;
+        vertical-align: super;
+      }
+      .vai-err-table-wrap {
+        overflow-x: auto;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        background: #ffffff;
+        margin-bottom: 16px;
+      }
+      .vai-err-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+      }
+      .vai-err-table th {
+        background: #f8fafc;
+        color: #334155;
+        font-weight: 700;
+        text-align: left;
+        padding: 11px 13px;
+        border-bottom: 1.5px solid #e2e8f0;
+        white-space: nowrap;
+      }
+      .vai-err-table td {
+        padding: 11px 13px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: top;
+        line-height: 1.55;
+        color: #1e293b;
+      }
+      .vai-err-table tr:last-child td {
+        border-bottom: none;
+      }
+      .vai-err-table tr.vai-row-flash {
+        background: #fef9c3 !important;
+        transition: background 0.4s ease;
+      }
+      .vai-err-idx {
+        font-weight: 700;
+        color: #475569;
+        width: 34px;
+      }
+      .vai-err-wrong {
+        color: #b91c1c;
+        text-decoration: line-through;
+        font-weight: 500;
+        display: block;
+      }
+      .vai-err-fixed {
+        color: #15803d;
+        font-weight: 700;
+        display: block;
+        margin-top: 2px;
+      }
+      .vai-err-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .vai-badge-spell { background: #ffedd5; color: #c2410c; }
+      .vai-badge-gram { background: #fee2e2; color: #be123c; }
+      .vai-badge-vocab { background: #e0e7ff; color: #3730a3; }
+      .vai-badge-style { background: #f3e8ff; color: #7e22ce; }
+      .vai-idea-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .vai-idea-card {
+        background: #fffbeb;
+        border: 1.5px solid #fde68a;
+        border-radius: 12px;
+        padding: 14px 16px;
+      }
+      .vai-idea-loc {
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: #b45309;
+        margin-bottom: 6px;
+      }
+      .vai-idea-reason {
+        font-size: 0.88rem;
+        color: #334155;
+        line-height: 1.55;
+        margin-bottom: 10px;
+      }
+      .vai-idea-quote {
+        background: #ffffff;
+        border-left: 4px solid #f59e0b;
+        border-radius: 0 8px 8px 0;
+        padding: 10px 14px;
+        font-size: 0.93rem;
+        font-weight: 600;
+        color: #0f172a;
+        line-height: 1.6;
+        margin-bottom: 8px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+      }
+      .vai-idea-vi {
+        font-size: 0.85rem;
+        color: #475569;
+        line-height: 1.5;
+      }
+      .vai-revised-details {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        background: #ffffff;
+        margin-bottom: 18px;
+        overflow: hidden;
+      }
+      .vai-revised-details[open] {
+        border-color: #cbd5e1;
+      }
+      .vai-revised-summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 12px 16px;
+        font-size: 0.93rem;
+        font-weight: 800;
+        color: #0f172a;
+        background: #f8fafc;
+        border: 1.5px solid #2563eb;
+        border-radius: 10px;
+        margin: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        user-select: none;
+      }
+      .vai-revised-summary::-webkit-details-marker {
+        display: none;
+      }
+      .vai-revised-summary-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .vai-revised-caret {
+        display: inline-block;
+        font-size: 0.78rem;
+        transition: transform 0.2s ease;
+      }
+      .vai-revised-details[open] .vai-revised-caret {
+        transform: rotate(90deg);
+      }
+      .vai-revised-body {
+        padding: 12px 20px 18px 20px;
+        font-size: 0.95rem;
+        line-height: 1.85;
+        color: #1e293b;
+      }
+      .vai-revised-body p {
+        margin: 0 0 14px 0;
+      }
+      .vai-revised-body p:last-child {
+        margin-bottom: 0;
+      }
+      .vai-copy-btn {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .vai-copy-btn:hover {
+        background: #dbeafe;
+      }
+
     `;
     document.head.appendChild(style);
   }
@@ -488,13 +712,173 @@
     }
   }
 
-  function renderTaskBodyHtml(data) {
+  function errorTypeBadgeClass(typeStr) {
+    const t = String(typeStr || '').toLowerCase();
+    if (t.includes('chính tả') || t.includes('spell')) return 'vai-badge-spell';
+    if (t.includes('ngữ pháp') || t.includes('gram')) return 'vai-badge-gram';
+    if (t.includes('từ vựng') || t.includes('vocab') || t.includes('colloc')) return 'vai-badge-vocab';
+    return 'vai-badge-style';
+  }
+
+  function findSpanInText(text, needle, startCursor, usedSpans) {
+    if (!needle) return -1;
+    const isShortWord = /^[a-zA-Z]{1,4}$/.test(needle);
+    const overlaps = (s, e) => usedSpans.some(u => !(e <= u.start || s >= u.end));
+
+    function trySearch(haystack, target, fromIdx, requireWordBoundary) {
+      let idx = haystack.indexOf(target, fromIdx);
+      while (idx !== -1) {
+        const end = idx + target.length;
+        let boundaryOk = true;
+        if (requireWordBoundary) {
+          const prev = idx > 0 ? haystack[idx - 1] : ' ';
+          const next = end < haystack.length ? haystack[end] : ' ';
+          if (/[a-zA-Z0-9]/.test(prev) || /[a-zA-Z0-9]/.test(next)) {
+            boundaryOk = false;
+          }
+        }
+        if (boundaryOk && !overlaps(idx, end)) return idx;
+        idx = haystack.indexOf(target, idx + 1);
+      }
+      return -1;
+    }
+
+    const lowerText = text.toLowerCase();
+    const lowerNeedle = needle.toLowerCase();
+
+    // 1. Exact from cursor (with word boundary for short words)
+    let pos = trySearch(text, needle, startCursor, isShortWord);
+    if (pos !== -1) return pos;
+    // 2. Case-insensitive from cursor
+    pos = trySearch(lowerText, lowerNeedle, startCursor, isShortWord);
+    if (pos !== -1) return pos;
+    // 3. Exact from start (in case LLM listed slightly out of order)
+    pos = trySearch(text, needle, 0, isShortWord);
+    if (pos !== -1) return pos;
+    // 4. Case-insensitive from start
+    pos = trySearch(lowerText, lowerNeedle, 0, isShortWord);
+    if (pos !== -1) return pos;
+    // 5. Fallback without strict word boundary
+    if (isShortWord) {
+      pos = trySearch(lowerText, lowerNeedle, startCursor, false);
+      if (pos !== -1) return pos;
+      pos = trySearch(lowerText, lowerNeedle, 0, false);
+    }
+    return pos;
+  }
+
+  function buildAnnotatedEssayHtml(essayText, inlineErrors, uidPrefix) {
+    const normalized = String(essayText || '').replace(/\r\n/g, '\n').trim();
+    if (!normalized) return '';
+
+    const usedSpans = [];
+    let cursor = 0;
+
+    inlineErrors.forEach((err, idx) => {
+      const needle = String(err && err.wrong ? err.wrong : '').trim();
+      if (!needle) return;
+      const pos = findSpanInText(normalized, needle, cursor, usedSpans);
+      if (pos !== -1) {
+        const end = pos + needle.length;
+        usedSpans.push({ start: pos, end: end, num: idx + 1, err: err });
+        if (end >= cursor) cursor = end;
+      }
+    });
+
+    usedSpans.sort((a, b) => a.start - b.start);
+
+    // Build HTML with inline highlights while preserving paragraphs
+    let out = '';
+    let pos = 0;
+
+    function appendPlain(str) {
+      if (!str) return;
+      // Preserve paragraph breaks (\n\n) and line breaks (\n)
+      const escaped = escHtml(str)
+        .replace(/\n{2,}/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+      out += escaped;
+    }
+
+    for (let i = 0; i < usedSpans.length; i++) {
+      const sp = usedSpans[i];
+      if (sp.start > pos) {
+        appendPlain(normalized.slice(pos, sp.start));
+      }
+      const origSlice = normalized.slice(sp.start, sp.end);
+      const fixedText = String(sp.err.fixed || '');
+      const tip = `Lỗi #${sp.num} (${sp.err.type || 'Cần sửa'}): ${sp.err.explanation || ''}`;
+      out += `<span class="vai-inline-mark" data-vai-jump="${uidPrefix}-${sp.num}" title="${escHtml(tip)}">` +
+        `<del class="vai-inline-del">${escHtml(origSlice)}</del> ` +
+        `<ins class="vai-inline-ins">${escHtml(fixedText)}</ins>` +
+        `<sup class="vai-inline-num">[${sp.num}]</sup>` +
+        `</span>`;
+      pos = sp.end;
+    }
+
+    if (pos < normalized.length) {
+      appendPlain(normalized.slice(pos));
+    }
+
+    return `<div class="vai-annotated-box"><p>${out}</p></div>`;
+  }
+
+  function formatEssayParagraphsHtml(text) {
+    const clean = String(text || '').replace(/\r\n/g, '\n').trim();
+    if (!clean) return '';
+    return clean
+      .split(/\n{2,}/)
+      .map(para => `<p>${escHtml(para.trim()).replace(/\n/g, '<br>')}</p>`)
+      .join('');
+  }
+
+  function wireInteractiveAnnotations(rootEl) {
+    if (!rootEl) return;
+    rootEl.querySelectorAll('[data-vai-jump]').forEach(el => {
+      el.addEventListener('click', () => {
+        const targetId = el.getAttribute('data-vai-jump');
+        const row = rootEl.querySelector('#vai-row-' + targetId);
+        if (row) {
+          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          row.classList.add('vai-row-flash');
+          setTimeout(() => row.classList.remove('vai-row-flash'), 1600);
+        }
+      });
+    });
+    rootEl.querySelectorAll('.vai-copy-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const details = btn.closest('.vai-revised-details');
+        const body = details ? details.querySelector('.vai-revised-body') : null;
+        if (!body) return;
+        const txt = body.innerText || body.textContent || '';
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(txt).then(() => {
+            const old = btn.textContent;
+            btn.textContent = '✓ Đã sao chép!';
+            setTimeout(() => { btn.textContent = old; }, 1800);
+          }).catch(() => {});
+        }
+      });
+    });
+  }
+
+  function renderTaskBodyHtml(data, originalEssay) {
     const s = data.scores || { tf: 0, org: 0, voc: 0, gram: 0 };
     const c = data.criteria || {};
     const diag = data.diagnosis || {};
+    const inlineErrors = Array.isArray(data.inlineErrors) ? data.inlineErrors : [];
     const corrections = Array.isArray(data.sentenceCorrections) ? data.sentenceCorrections : [];
+    const ideaSuggestions = Array.isArray(data.ideaSuggestions) ? data.ideaSuggestions : [];
+    const revisedEssay = String(data.revisedEssay || '').trim();
+    const studentText = String(originalEssay || data.studentEssay || '').trim();
     const wordOk = data.wordCount >= data.minWords;
     const weightLabel = data.taskType === 'task2' ? 'Tỷ trọng Task 2 (2/3)' : 'Tỷ trọng Task 1 (1/3)';
+    const uidPrefix = (data.taskType || 't') + '-' + Math.floor(Math.random() * 100000);
+
+    const lvlUpper = String(data.targetLevel || '').toUpperCase();
+    const levelLabel = lvlUpper === 'B1' ? 'Level B1' : (lvlUpper === 'B2' ? 'Level B2' : 'chuẩn VSTEP');
 
     const critList = [
       { key: 'tf', title: '1. Task Fulfillment (Hoàn thành đề)', score: s.tf, info: c.tf || {} },
@@ -521,8 +905,51 @@
       `;
     }).join('');
 
-    const corrHtml = corrections.length
-      ? `<div class="vai-corr-list">${corrections.map((item, idx) => `
+    // Build Inline Annotated Essay + Structured Error Table (or fallback to legacy sentenceCorrections)
+    let correctionSectionsHtml = '';
+    if (inlineErrors.length > 0) {
+      const annotatedHtml = studentText
+        ? `
+          <div class="vai-sec-title">1. Bài viết đã đánh dấu lỗi trực tiếp</div>
+          ${buildAnnotatedEssayHtml(studentText, inlineErrors, uidPrefix)}
+        `
+        : '';
+
+      const tableRowsHtml = inlineErrors.map((err, idx) => {
+        const n = idx + 1;
+        const badgeCls = errorTypeBadgeClass(err.type);
+        return `
+          <tr id="vai-row-${uidPrefix}-${n}">
+            <td class="vai-err-idx">${n}</td>
+            <td>
+              <span class="vai-err-wrong">${escHtml(err.wrong || '')}</span>
+              <span class="vai-err-fixed">→ ${escHtml(err.fixed || '')}</span>
+            </td>
+            <td><span class="vai-err-badge ${badgeCls}">${escHtml(err.type || 'Ngữ pháp')}</span></td>
+            <td>${escHtml(err.explanation || '')}</td>
+          </tr>
+        `;
+      }).join('');
+
+      correctionSectionsHtml = `
+        ${annotatedHtml}
+        <div class="vai-sec-title">2. Chi tiết các lỗi cần sửa (${inlineErrors.length} mục)</div>
+        <div class="vai-err-table-wrap">
+          <table class="vai-err-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Chỗ sai → Sửa thành</th>
+                <th>Loại lỗi</th>
+                <th>Giải thích tại sao sai</th>
+              </tr>
+            </thead>
+            <tbody>${tableRowsHtml}</tbody>
+          </table>
+        </div>
+      `;
+    } else if (corrections.length > 0) {
+      const legacyCorrHtml = `<div class="vai-corr-list">${corrections.map((item, idx) => `
           <div class="vai-corr-item">
             <div class="vai-corr-top">
               <strong>Câu #${item.sentenceIndex || (idx + 1)}</strong>
@@ -532,8 +959,52 @@
             <div class="vai-corr-fix"><strong>✅ Sửa chuẩn:</strong> ${escHtml(item.corrected)}</div>
             <div class="vai-corr-exp"><strong>💡 Giải thích:</strong> ${escHtml(item.explanation)}</div>
           </div>
-        `).join('')}</div>`
-      : `<div class="vai-panel-green">✅ Không phát hiện lỗi câu nghiêm trọng nào trong bài viết này!</div>`;
+        `).join('')}</div>`;
+      correctionSectionsHtml = `
+        <div class="vai-sec-title">✏️ Sửa lỗi & Giải thích chi tiết từng câu (${corrections.length} điểm cần lưu ý)</div>
+        ${legacyCorrHtml}
+      `;
+    } else {
+      correctionSectionsHtml = `
+        <div class="vai-sec-title">1. Đánh dấu & Sửa lỗi chi tiết</div>
+        <div class="vai-panel-green">✅ Không phát hiện lỗi chính tả hay ngữ pháp nghiêm trọng nào trong bài viết này!</div>
+      `;
+    }
+
+    // Build Idea Expansion Suggestions (Section 3)
+    const ideaSuggestionsHtml = ideaSuggestions.length > 0
+      ? `
+        <div class="vai-sec-title">3. Gợi ý bổ sung ý cho đầy đủ hơn (chuẩn ${escHtml(levelLabel)})</div>
+        <div class="vai-idea-list">
+          ${ideaSuggestions.map(item => `
+            <div class="vai-idea-card">
+              ${item.location ? `<div class="vai-idea-loc">${escHtml(item.location)}</div>` : ''}
+              ${item.reason ? `<div class="vai-idea-reason">${escHtml(item.reason)}</div>` : ''}
+              ${item.suggestionEn ? `<div class="vai-idea-quote">“${escHtml(item.suggestionEn)}”</div>` : ''}
+              ${item.translationVi ? `<div class="vai-idea-vi">${escHtml(item.translationVi)}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `
+      : '';
+
+    // Build Collapsible Complete Revised Essay
+    const revisedEssayHtml = revisedEssay
+      ? `
+        <details class="vai-revised-details" open>
+          <summary class="vai-revised-summary">
+            <span class="vai-revised-summary-left">
+              <span class="vai-revised-caret">▶</span>
+              <span>Xem bài viết hoàn chỉnh sau khi sửa (giữ nguyên ý của bạn)</span>
+            </span>
+            <button type="button" class="vai-copy-btn">📋 Sao chép</button>
+          </summary>
+          <div class="vai-revised-body">
+            ${formatEssayParagraphsHtml(revisedEssay)}
+          </div>
+        </details>
+      `
+      : '';
 
     const strengths = Array.isArray(diag.keyStrengths) ? diag.keyStrengths : [];
     const weaknesses = Array.isArray(diag.rootWeaknesses) ? diag.rootWeaknesses : [];
@@ -564,13 +1035,16 @@
 
       ${data.wordPenaltyNote ? `<div style="margin:10px 0 14px 0;background:#fff1f2;border:1.5px solid #fecdd3;border-radius:10px;padding:10px 14px;color:#9f1239;font-size:0.86rem;line-height:1.5;"><strong>⚠️ Quy chế khống chế trần điểm:</strong> ${escHtml(data.wordPenaltyNote)}</div>` : ""}
 
-      <div class="vai-sec-title">📊 1. Phân tích chi tiết 4 tiêu chí VSTEP (Analytic Scoring)</div>
+      <div class="vai-sec-title">📊 Phân tích chi tiết 4 tiêu chí VSTEP (Analytic Scoring)</div>
       <div class="vai-criteria-grid">${critHtml}</div>
 
-      <div class="vai-sec-title">✏️ 2. Sửa lỗi & Giải thích chi tiết từng câu (${corrections.length} điểm cần lưu ý)</div>
-      ${corrHtml}
+      ${correctionSectionsHtml}
 
-      <div class="vai-sec-title">🩺 3. Bản Chẩn đoán & Lời khuyên nâng Band</div>
+      ${ideaSuggestionsHtml}
+
+      ${revisedEssayHtml}
+
+      <div class="vai-sec-title">🩺 Chẩn đoán tổng quan & Nâng cấp Từ vựng</div>
       ${diag.overallDiagnosis ? `<div class="vai-diag-box"><strong>Chẩn đoán tổng quan:</strong> ${escHtml(diag.overallDiagnosis)}</div>` : ''}
 
       <div class="vai-two-col">
@@ -593,11 +1067,11 @@
 
       ${vocabUp.length ? `
         <div style="margin-top:10px;">
-          <div class="vai-panel-title">${String(data.targetLevel || '').toUpperCase() === 'B1' ? '💎 Từ vựng & Cụm từ chuẩn B1 nên dùng cho bài viết này' : '💎 Gợi ý nâng cấp từ vựng từ mức B1 lên chuẩn B2'}</div>
+          <div class="vai-panel-title">${lvlUpper === 'B1' ? '💎 Từ vựng & Cụm từ chuẩn B1 nên dùng cho bài viết này' : '💎 Gợi ý nâng cấp từ vựng từ mức B1 lên chuẩn B2'}</div>
           <table class="vai-table">
             <thead><tr>
-              <th>${String(data.targetLevel || '').toUpperCase() === 'B1' ? 'Cách diễn đạt cơ bản / vụng' : 'Cụm từ mức B1 học viên dùng'}</th>
-              <th>${String(data.targetLevel || '').toUpperCase() === 'B1' ? 'Cụm từ chuẩn B1 tự nhiên' : 'Nâng cấp chuẩn B2'}</th>
+              <th>${lvlUpper === 'B1' ? 'Cách diễn đạt cơ bản / vụng' : 'Cụm từ mức B1 học viên dùng'}</th>
+              <th>${lvlUpper === 'B1' ? 'Cụm từ chuẩn B1 tự nhiên' : 'Nâng cấp chuẩn B2'}</th>
               <th>Nghĩa tiếng Việt</th>
             </tr></thead>
             <tbody>${vocabUp.map(v => `<tr><td>${escHtml(v.basic)}</td><td><strong>${escHtml(v.upgraded)}</strong></td><td>${escHtml(v.meaning)}</td></tr>`).join('')}</tbody>
@@ -607,7 +1081,7 @@
 
       ${sentUp.length ? `
         <div style="margin-top:14px;">
-          <div class="vai-panel-title">${String(data.targetLevel || '').toUpperCase() === 'B1' ? '✨ Câu viết lại chuẩn B1 rõ ràng, chuẩn ngữ pháp' : '✨ Câu viết lại nâng Band B2 (giữ nguyên ý của bạn)'}</div>
+          <div class="vai-panel-title">${lvlUpper === 'B1' ? '✨ Câu viết lại chuẩn B1 rõ ràng, chuẩn ngữ pháp' : '✨ Câu viết lại nâng Band B2 (giữ nguyên ý của bạn)'}</div>
           <div class="vai-corr-list">${sentUp.map(u => `
             <div class="vai-corr-item">
               <div class="vai-corr-orig" style="background:#f8fafc;border-left-color:#64748b;color:#334155;"><strong>Câu gốc:</strong> ${escHtml(u.original)}</div>
@@ -701,6 +1175,7 @@
       try {
         const data = await callGraderApi({ taskType, targetLevel, prompt, essay });
         data.targetLevel = data.targetLevel || targetLevel;
+        data.studentEssay = essay;
         writeCache(cacheKey, data);
         renderResult(data);
         if (typeof options.onGraded === 'function') options.onGraded(data);
@@ -733,13 +1208,14 @@
           <div class="vai-header">
             <div>
               <div class="vai-header-title">${titleLabel}</div>
-              <div class="vai-header-sub">Thang điểm 0–10 (làm tròn 0.5) • 4 tiêu chí độc lập • Sửa lỗi từng câu & Chẩn đoán</div>
+              <div class="vai-header-sub">Thang điểm 0–10 (làm tròn 0.5) • Đánh dấu lỗi trực tiếp • Gợi ý bổ sung ý & Chẩn đoán</div>
             </div>
             <button type="button" class="vai-btn-retry">🔄 Chấm lại bằng AI</button>
           </div>
-          <div class="vai-body">${renderTaskBodyHtml(data)}</div>
+          <div class="vai-body">${renderTaskBodyHtml(data, essay)}</div>
         </div>
       `;
+      wireInteractiveAnnotations(slot);
       const btn = slot.querySelector('.vai-btn-retry');
       if (btn) btn.onclick = () => run(true);
     }
@@ -838,6 +1314,8 @@
         else if (finalScore >= 6.0) finalLevel = 'Bậc 4 (B2)';
         else if (finalScore >= 4.0) finalLevel = 'Bậc 3 (B1)';
 
+        if (d1) d1.studentEssay = essay1;
+        if (d2) d2.studentEssay = essay2;
         const bundle = { d1, d2, s1, s2, finalScore, finalLevel };
         writeCache(cacheKey, bundle);
         renderFullResult(bundle);
@@ -867,8 +1345,8 @@
       let activeTab = b.d1 ? 't1' : 't2';
       function paint() {
         const activeHtml = activeTab === 't1'
-          ? (b.d1 ? renderTaskBodyHtml(b.d1) : '<div class="vai-error">Thí sinh chưa hoàn thành Task 1 (dưới 10 từ) — 0.0 điểm.</div>')
-          : (b.d2 ? renderTaskBodyHtml(b.d2) : '<div class="vai-error">Thí sinh chưa hoàn thành Task 2 (dưới 10 từ) — 0.0 điểm.</div>');
+          ? (b.d1 ? renderTaskBodyHtml(b.d1, essay1) : '<div class="vai-error">Thí sinh chưa hoàn thành Task 1 (dưới 10 từ) — 0.0 điểm.</div>')
+          : (b.d2 ? renderTaskBodyHtml(b.d2, essay2) : '<div class="vai-error">Thí sinh chưa hoàn thành Task 2 (dưới 10 từ) — 0.0 điểm.</div>');
 
         slot.innerHTML = `
           <div class="vai-card">
@@ -909,6 +1387,7 @@
         slot.querySelectorAll('.vai-tab-btn').forEach(btn => {
           btn.onclick = () => { activeTab = btn.getAttribute('data-tab'); paint(); };
         });
+        wireInteractiveAnnotations(slot);
         const retryBtn = slot.querySelector('.vai-btn-retry');
         if (retryBtn) retryBtn.onclick = () => run(true);
       }
