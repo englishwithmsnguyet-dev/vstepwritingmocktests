@@ -975,7 +975,7 @@ html_template = """<!DOCTYPE html>
     <script>window.VSTEP_ROOM_SKILL = 'writing';</script>
     <script src="../exam_room.js?v=2026112103"></script>
     <!-- Core App logic script -->
-    <script src="../vstep_ai_grader.js?v=2026112401"></script>
+    <script src="../vstep_ai_grader.js?v=2026112402"></script>
     <script src="../result_report.js?v=2026112104"></script>
     <script src="app.js?v=2026112104"></script>
     <script>

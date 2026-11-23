@@ -681,7 +681,8 @@
     return data;
   }
 
-  async function callGraderApi(payload) {
+  async function callGraderApi(payload, attempt) {
+    const tryNum = attempt || 1;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 90000);
     try {
@@ -699,7 +700,12 @@
         throw new Error('Phản hồi máy chủ không đúng định dạng JSON.');
       }
       if (!json || !json.ok || !json.data) {
-        throw new Error((json && json.error) || 'Không nhận được kết quả chấm từ AI.');
+        const msg = (json && json.error) || 'Không nhận được kết quả chấm từ AI.';
+        if (tryNum < 2 && /503|429|quá tải/i.test(msg)) {
+          await new Promise(r => setTimeout(r, 2500));
+          return callGraderApi(payload, tryNum + 1);
+        }
+        throw new Error(msg);
       }
       return enforceMoetCaps(json.data);
     } catch (err) {
