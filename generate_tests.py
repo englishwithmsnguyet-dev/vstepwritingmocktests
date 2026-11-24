@@ -968,7 +968,7 @@ html_template = """<!DOCTYPE html>
 
     <!-- DB Scripts -->
     <script src="../db.js?v=2026112101"></script>
-    <script src="../writing_data.js?v=2026112107"></script>
+    <script src="../writing_data.js?v=2026112405"></script>
     <!-- Firebase SDK (Compat) & Realtime Exam Room Control -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -977,7 +977,7 @@ html_template = """<!DOCTYPE html>
     <!-- Core App logic script -->
     <script src="../vstep_ai_grader.js?v=2026112403"></script>
     <script src="../result_report.js?v=2026112104"></script>
-    <script src="app.js?v=2026112403"></script>
+    <script src="app.js?v=2026112405"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -3636,7 +3636,7 @@ function syncSidebarNavigation() {
         </li>
     `;
     
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 11; i++) {
         const active = (i === testId);
         const isDone = completedList.includes(i);
         const access = (typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.canAccessTest === 'function')
@@ -5235,12 +5235,12 @@ async function submitTest(force = false) {
             const nextId = testId + 1;
             const nextPad = nextId.toString().padStart(2, '0');
             if (qualifiedForUnlock) {
-                const nextBtnHtml = nextId <= 10
+                const nextBtnHtml = nextId <= 11
                     ? `<a href="../test ${nextId}/test${nextPad}-index.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#16a34a;color:#fff;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap;">Làm Đề ${nextPad} ngay <i class="fa-solid fa-arrow-right"></i></a>`
                     : '';
                 banner.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#f0fdf4;border:1.5px solid #86efac;border-left:5px solid #16a34a;border-radius:12px;padding:14px 18px;margin-bottom:16px;color:#14532d;font-size:14px;';
                 banner.innerHTML = `
-                    <div><strong><i class="fa-solid fa-circle-check" style="color:#16a34a;"></i> HOÀN THÀNH ĐỀ ${curPad}!</strong> Bạn đã nộp hoàn chỉnh cả 2 Task (Task 1: ${t1Words} từ, Task 2: ${t2Words} từ)${nextId <= 10 ? ` và đã mở khóa <strong>WRITING TEST ${nextPad}</strong>.` : '.'}</div>
+                    <div><strong><i class="fa-solid fa-circle-check" style="color:#16a34a;"></i> HOÀN THÀNH ĐỀ ${curPad}!</strong> Bạn đã nộp hoàn chỉnh cả 2 Task (Task 1: ${t1Words} từ, Task 2: ${t2Words} từ)${nextId <= 11 ? ` và đã mở khóa <strong>WRITING TEST ${nextPad}</strong>.` : '.'}</div>
                     ${nextBtnHtml}
                 `;
             } else {
@@ -6946,8 +6946,8 @@ async function rewriteExamKeepViolations() {
 # Let's write generator logic
 print("Starting folder generation...")
 
-# Generate folders test 1 to 20
-for i in range(1, 11):
+# Generate folders test 1 to 11
+for i in range(1, 12):
     folder_name = f"/Users/nguyetpham/Desktop/WEBSITE/WRITING MOCK TESTS/test {i}"
     os.makedirs(folder_name, exist_ok=True)
     
@@ -6969,4 +6969,4 @@ for i in range(1, 11):
     with open(css_file, "w", encoding="utf-8") as f:
         f.write(css_template)
 
-print("All 10 test folders generated successfully!")
+print("All 11 test folders generated successfully!")
