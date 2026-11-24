@@ -693,7 +693,7 @@ html_template = """<!DOCTYPE html>
                         </div>
                     </div>
 
-                    <div style="text-align: center; margin-top: 30px;">
+                    <div id="welcome-action-bar" style="text-align: center; margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 14px;">
                         <button class="lock-btn btn-start-test" id="btn-start-test" style="font-size: 15px; padding: 14px 40px;">BẮT ĐẦU LÀM BÀI <i class="fa-solid fa-play"></i></button>
                     </div>
                 </div>
@@ -977,7 +977,7 @@ html_template = """<!DOCTYPE html>
     <!-- Core App logic script -->
     <script src="../vstep_ai_grader.js?v=2026112402"></script>
     <script src="../result_report.js?v=2026112104"></script>
-    <script src="app.js?v=2026112104"></script>
+    <script src="app.js?v=2026112401"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -3504,22 +3504,91 @@ async function initializeApp() {
         el.spellcheck = false;
     });
     
-    // 4. Try loading autosaved session
+    // 4. Try loading autosaved session & saved completed submissions for Review
+    let hasResumedSession = false;
     try {
         if (typeof VstepWritingDB !== 'undefined') {
             const session = await VstepWritingDB.getSession(testId);
             if (session) {
                 const resume = confirm("Bạn có một bài viết đang làm dở trên hệ thống. Bạn có muốn tiếp tục làm bài không?");
                 if (resume) {
+                    hasResumedSession = true;
                     resumeExam(session);
                 } else {
                     await VstepWritingDB.deleteSession(testId);
                 }
             }
+
+            // Check if student already submitted this test before so they can ALWAYS review it
+            if (!hasResumedSession && typeof VstepWritingDB.getAllHistory === 'function') {
+                const allHistory = await VstepWritingDB.getAllHistory();
+                const latestSaved = allHistory.find(h => parseInt(h.testId, 10) === testId);
+                if (latestSaved) {
+                    const actionBar = document.getElementById('welcome-action-bar') || (elements.btnStartTest && elements.btnStartTest.parentElement);
+                    if (actionBar && !document.getElementById('btn-review-latest-submission')) {
+                        const reviewBtn = document.createElement('button');
+                        reviewBtn.type = 'button';
+                        reviewBtn.id = 'btn-review-latest-submission';
+                        reviewBtn.className = 'lock-btn';
+                        reviewBtn.style.cssText = 'font-size: 15px; padding: 14px 28px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.28); color: #fff; border: none; cursor: pointer;';
+                        reviewBtn.innerHTML = '<i class="fa-solid fa-eye"></i> XEM LẠI BÀI ĐÃ LÀM &amp; BÀI GIẢI';
+                        reviewBtn.onclick = () => openSavedHistoryInSolutionView(latestSaved);
+                        actionBar.appendChild(reviewBtn);
+                    }
+
+                    // Auto-open review view if navigated with ?review=1
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('review') === '1') {
+                        openSavedHistoryInSolutionView(latestSaved);
+                    }
+                }
+            }
         }
     } catch (e) {
-        console.warn("IndexedDB load session error:", e);
+        console.warn("IndexedDB load session/history error:", e);
     }
+}
+
+function openSavedHistoryInSolutionView(savedItem) {
+    if (!savedItem) return;
+    currentHistoryId = savedItem.id || null;
+    const rm = savedItem.reportMeta || {};
+    elapsedSeconds = typeof rm.elapsedSeconds === 'number' ? rm.elapsedSeconds : 0;
+    lastSubmittedAtStr = rm.submittedAt || savedItem.dateStr || "";
+
+    loadSolutions(
+        savedItem.studentName || 'Học viên',
+        savedItem.task1Text || '',
+        savedItem.task2Text || '',
+        savedItem.task1Words || 0,
+        savedItem.task2Words || 0
+    );
+
+    if (rm.aiSynced && typeof VstepResultReport !== 'undefined') {
+        VstepResultReport.setReportData({
+            ...rm,
+            testId: testId,
+            aiSynced: true,
+            aiPending: false
+        });
+    }
+
+    if (elements.viewWelcome) {
+        elements.viewWelcome.style.display = 'none';
+        elements.viewWelcome.classList.remove('active');
+    }
+    if (elements.viewWriting) {
+        elements.viewWriting.style.display = 'none';
+        elements.viewWriting.classList.remove('active');
+    }
+    if (elements.viewSolution) {
+        elements.viewSolution.style.display = 'block';
+        elements.viewSolution.classList.add('active');
+    }
+    if (elements.stepWelcome) elements.stepWelcome.className = 'timeline-step';
+    if (elements.stepWriting) elements.stepWriting.className = 'timeline-step';
+    if (elements.stepSolution) elements.stepSolution.className = 'timeline-step active';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 if (document.readyState === 'loading') {
@@ -3559,14 +3628,15 @@ function syncSidebarNavigation() {
         const a = document.createElement('a');
         a.href = 'javascript:void(0)';
         
-        if (access.allowed || active) {
+        if (access.allowed || active || isDone) {
             a.innerHTML = `
                 <span class="test-icon"><i class="fa-solid ${isDone ? 'fa-circle-check' : 'fa-file-signature'}" style="${isDone ? 'color:#10b981;' : ''}"></i></span>
                 <span class="test-name">${testName}</span>
             `;
             if (!active) {
+                const reviewSuffix = (!access.allowed && isDone) ? '?review=1' : '';
                 a.onclick = () => {
-                    window.location.href = `../test ${i}/test${i.toString().padStart(2, '0')}-index.html`;
+                    window.location.href = `../test ${i}/test${i.toString().padStart(2, '0')}-index.html${reviewSuffix}`;
                 };
             }
         } else {

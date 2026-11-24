@@ -54,7 +54,7 @@
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index-styles.css?v=2026112103">
+    <link rel="stylesheet" href="index-styles.css?v=2026112401">
 
         <!-- Direct Student Login Modal Styles -->
     <style id="vstep-login-styles">
@@ -2356,6 +2356,8 @@
             return countWords(cleanText);
         }
 
+        let latestHistoryByTestId = {};
+
         // Initialize elements
         function initSidebarAndGrid() {
             try {
@@ -2388,7 +2390,8 @@
                     
                     for (let i = 1; i <= 10; i++) {
                         const access = getTestAccessState(i);
-                        const isDone = completedList.includes(i);
+                        const savedAttempt = latestHistoryByTestId[i] || null;
+                        const isDone = completedList.includes(i) || Boolean(savedAttempt);
                         const testName = `WRITING TEST ${i.toString().padStart(2, '0')}`;
                         const li = document.createElement('li');
                         li.className = 'test-item';
@@ -2405,6 +2408,17 @@
                             `;
                             a.onclick = () => {
                                 window.location.href = `test ${i}/test${i.toString().padStart(2, '0')}-index.html`;
+                            };
+                        } else if (savedAttempt) {
+                            // Even if room/test is currently closed by teacher, student can always review their completed attempt
+                            a.className = '';
+                            a.innerHTML = `
+                                <span class="test-icon"><i class="fa-solid fa-circle-check" style="color:#10b981;"></i></span>
+                                <span class="test-name">${testName}</span>
+                            `;
+                            a.onclick = (e) => {
+                                e.preventDefault();
+                                reviewHistoryEntry(savedAttempt.id);
                             };
                         } else {
                             a.className = 'locked';
@@ -2436,7 +2450,8 @@
 
                     for (let i = 1; i <= 10; i++) {
                         const access = getTestAccessState(i);
-                        const isDone = completedList.includes(i);
+                        const savedAttempt = latestHistoryByTestId[i] || null;
+                        const isDone = completedList.includes(i) || Boolean(savedAttempt);
                         const testNum = i.toString().padStart(2, '0');
                         const testData = (typeof WRITING_TESTS_DATA !== 'undefined' && WRITING_TESTS_DATA[i]) ? WRITING_TESTS_DATA[i] : null;
                         const card = document.createElement('div');
@@ -2481,6 +2496,12 @@
                             const statusBadgeHtml = isDone
                                 ? `<span class="status-badge unlocked" style="background:#dcfce7;color:#15803d;border:1px solid #86efac;"><i class="fa-solid fa-circle-check"></i> Đã hoàn thành</span>`
                                 : `<span class="status-badge unlocked"><i class="fa-solid fa-lock-open"></i> Sẵn sàng</span>`;
+                            const actionBtnsHtml = savedAttempt
+                                ? `<div style="display:flex;gap:8px;width:100%;">
+                                        <button type="button" class="btn-card-action" style="flex:1;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;" onclick="reviewHistoryEntry(${savedAttempt.id})"><i class="fa-solid fa-eye"></i> Xem lại bài</button>
+                                        <button type="button" class="btn-card-action btn-start" style="flex:1;" onclick="window.location.href='test ${i}/test${testNum}-index.html'">Làm lại <i class="fa-solid fa-arrow-right"></i></button>
+                                   </div>`
+                                : `<button type="button" class="btn-card-action btn-start" onclick="window.location.href='test ${i}/test${testNum}-index.html'">${isDone ? 'Làm lại đề này' : 'Vào thi thử'} <i class="fa-solid fa-arrow-right"></i></button>`;
                             card.innerHTML = `
                                 <div class="test-card-header">
                                     <span class="test-card-title">WRITING TEST ${testNum}</span>
@@ -2491,7 +2512,23 @@
                                     ${topicsHtml}
                                 </div>
                                 <div class="test-card-action">
-                                    <button class="btn-card-action btn-start" onclick="window.location.href='test ${i}/test${testNum}-index.html'">${isDone ? 'Làm lại đề này' : 'Vào thi thử'} <i class="fa-solid fa-arrow-right"></i></button>
+                                    ${actionBtnsHtml}
+                                </div>
+                            `;
+                        } else if (savedAttempt) {
+                            // Completed test remains viewable even when room/test is closed by Teacher
+                            card.className = 'test-card is-unlocked';
+                            card.innerHTML = `
+                                <div class="test-card-header">
+                                    <span class="test-card-title">WRITING TEST ${testNum}</span>
+                                    <span class="status-badge unlocked" style="background:#dcfce7;color:#15803d;border:1px solid #86efac;"><i class="fa-solid fa-circle-check"></i> Đã làm • Xem lại</span>
+                                </div>
+                                <div class="test-card-body">
+                                    <p class="test-card-desc">${testData ? testData.desc : 'Đề luyện viết VSTEP Writing.'}</p>
+                                    ${topicsHtml}
+                                </div>
+                                <div class="test-card-action">
+                                    <button type="button" class="btn-card-action" style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;" onclick="reviewHistoryEntry(${savedAttempt.id})"><i class="fa-solid fa-eye"></i> Xem lại bài đã làm &amp; Bài giải</button>
                                 </div>
                             `;
                         } else if (access.lockType === 'sequential') {
@@ -2789,6 +2826,16 @@
                 if (typeof VstepWritingDB === 'undefined') return;
                 const history = await VstepWritingDB.getAllHistory();
 
+                // Map latest attempt per testId so homepage cards can open Review directly
+                latestHistoryByTestId = {};
+                history.forEach(h => {
+                    const tid = parseInt(h.testId, 10);
+                    if (!isNaN(tid) && !latestHistoryByTestId[tid]) {
+                        latestHistoryByTestId[tid] = h;
+                    }
+                });
+                initSidebarAndGrid();
+
                 if (history.length === 0) {
                     container.innerHTML = `
                         <div class="history-empty" style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 14px; border: 1px dashed var(--border-color); border-radius: 12px; background: rgba(0,0,0,0.01);">
@@ -2807,7 +2854,10 @@
                     
                     const score1 = eval1.scores ? eval1.scores.average : 0;
                     const score2 = eval2.scores ? eval2.scores.average : 0;
-                    const overallScore = Math.round((((score1 + score2 * 2) / 3) + 1e-9) * 2) / 2;
+                    const rm = item.reportMeta || {};
+                    const overallScore = (rm.aiSynced && typeof rm.overallScore === 'number')
+                        ? rm.overallScore
+                        : Math.round((((score1 + score2 * 2) / 3) + 1e-9) * 2) / 2;
                     
                     let levelLabel = "CHƯA ĐẠT";
                     let levelColor = "#e11d48";
@@ -3611,7 +3661,7 @@ function filterSentenceFeedbackReview(taskNum, filter) {
                 // Create full overlay review modal
                 const modal = document.createElement('div');
                 modal.className = 'lock-screen-overlay';
-                modal.style.opacity = '0';
+                modal.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;background:rgba(15,23,42,0.68);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;transition:opacity 0.25s ease;';
                 modal.id = 'history-review-modal';
                 
                 modal.innerHTML = `
@@ -3688,12 +3738,11 @@ function filterSentenceFeedbackReview(taskNum, filter) {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Post-Submission Idea Bank & Detailed Guidelines Task 1 -->
-                            <div class="glass-card idea-guide-card" id="idea-guide-card-t1-review" style="${testData.task1 && testData.task1.ideaGuide ? 'display: block;' : 'display: none;'} padding: 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">${testData.task1 && testData.task1.ideaGuide ? testData.task1.ideaGuide : ''}</div>
+                                <!-- Post-Submission Idea Bank & Detailed Guidelines Task 1 -->
+                                <div class="glass-card idea-guide-card" id="idea-guide-card-t1-review" style="${testData.task1 && testData.task1.ideaGuide ? 'display: block;' : 'display: none;'} padding: 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">${testData.task1 && testData.task1.ideaGuide ? testData.task1.ideaGuide : ''}</div>
 
-                            <!-- Detailed Sentence-by-Sentence Feedback Task 1 -->
+                                <!-- Detailed Sentence-by-Sentence Feedback Task 1 -->
                             <div class="glass-card sentence-feedback-card" id="sentence-feedback-card-t1-review" style="display: none; padding: 18px 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); flex-direction: column; gap: 14px;">
                                 <div class="sf-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 14px;">
                                     <div>
@@ -3762,12 +3811,11 @@ function filterSentenceFeedbackReview(taskNum, filter) {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Post-Submission Idea Bank & Detailed Guidelines Task 2 -->
-                            <div class="glass-card idea-guide-card" id="idea-guide-card-t2-review" style="${testData.task2 && testData.task2.ideaGuide ? 'display: block;' : 'display: none;'} padding: 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">${testData.task2 && testData.task2.ideaGuide ? testData.task2.ideaGuide : ''}</div>
+                                <!-- Post-Submission Idea Bank & Detailed Guidelines Task 2 -->
+                                <div class="glass-card idea-guide-card" id="idea-guide-card-t2-review" style="${testData.task2 && testData.task2.ideaGuide ? 'display: block;' : 'display: none;'} padding: 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">${testData.task2 && testData.task2.ideaGuide ? testData.task2.ideaGuide : ''}</div>
 
-                            <!-- Detailed Sentence-by-Sentence Feedback Task 2 -->
+                                <!-- Detailed Sentence-by-Sentence Feedback Task 2 -->
                             <div class="glass-card sentence-feedback-card" id="sentence-feedback-card-t2-review" style="display: none; padding: 18px 20px; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); flex-direction: column; gap: 14px;">
                                 <div class="sf-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 14px;">
                                     <div>
@@ -3786,6 +3834,7 @@ function filterSentenceFeedbackReview(taskNum, filter) {
                                 </div>
                                 <div class="sf-sentence-list" id="sf-sentence-list-t2-review"></div>
                             </div>
+                        </div>
                         </div>
                         
                         <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 12px;">

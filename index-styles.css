@@ -1326,3 +1326,64 @@ body {
 .req-box:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
+
+/* ==========================================================================
+   Modal Overlay Styles (History Review, Notifications, Password Prompt)
+   ========================================================================== */
+.lock-screen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    transition: opacity 0.3s ease;
+}
+
+.lock-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.28);
+    border-radius: 20px;
+    width: 92%;
+    max-width: 460px;
+    padding: 28px 26px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.review-modal-card {
+    text-align: left !important;
+    max-width: 1120px !important;
+    width: 94% !important;
+    height: 88vh !important;
+}
+
+.lock-icon-container {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(124, 58, 237, 0.22) 100%);
+    color: var(--color-violet);
+    border: 1px solid rgba(124, 58, 237, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin: 0 auto;
+}
+
+.lock-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--text-dark);
+}
