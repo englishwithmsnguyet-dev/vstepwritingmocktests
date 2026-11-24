@@ -437,10 +437,10 @@
         const cert = getCertificationStatus(overall, totalWords);
 
         const syncHtml = data.aiSynced
-            ? `<div class="vrr-sync-pill synced"><i class="fa-solid fa-circle-check"></i> Đã đồng bộ 100% điểm chính thức từ Giám khảo AI VSTEP</div>`
+            ? `<div class="vrr-sync-pill synced"><i class="fa-solid fa-circle-check"></i> Đã đồng bộ 100% điểm chính thức từ Trợ lý Miss Nguyệt</div>`
             : (data.aiPending
-                ? `<div class="vrr-sync-pill pending"><i class="fa-solid fa-spinner fa-spin"></i> Đang chấm AI... Phiếu sẽ tự cập nhật khi Giám khảo AI chấm xong</div>`
-                : `<div class="vrr-sync-pill pending"><i class="fa-solid fa-calculator"></i> Điểm ước tính hệ thống (tự đồng bộ khi Giám khảo AI chấm xong)</div>`);
+                ? `<div class="vrr-sync-pill pending"><i class="fa-solid fa-spinner fa-spin"></i> TRỢ LÝ MISS NGUYỆT ĐANG CHẤM BÀI... Phiếu sẽ tự cập nhật khi chấm xong</div>`
+                : `<div class="vrr-sync-pill pending"><i class="fa-solid fa-calculator"></i> Điểm ước tính hệ thống (tự đồng bộ khi Trợ lý Miss Nguyệt chấm xong)</div>`);
 
         let integrityHtml = '';
         if (!hasViolation) {

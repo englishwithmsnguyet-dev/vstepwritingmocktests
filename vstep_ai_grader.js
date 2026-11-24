@@ -700,7 +700,7 @@
         throw new Error('Phản hồi máy chủ không đúng định dạng JSON.');
       }
       if (!json || !json.ok || !json.data) {
-        const msg = (json && json.error) || 'Không nhận được kết quả chấm từ AI.';
+        const msg = (json && json.error) || 'Chưa nhận được kết quả chấm từ Trợ lý Miss Nguyệt.';
         if (tryNum < 2 && /503|429|quá tải/i.test(msg)) {
           await new Promise(r => setTimeout(r, 2500));
           return callGraderApi(payload, tryNum + 1);
@@ -710,7 +710,7 @@
       return enforceMoetCaps(json.data);
     } catch (err) {
       if (err && (err.name === 'AbortError' || /aborted/i.test(err.message))) {
-        throw new Error('Hệ thống AI phản hồi chậm hơn thường lệ do mạng. Bạn vui lòng bấm nút "Thử chấm AI lại" nhé.');
+        throw new Error('Trợ lý Miss Nguyệt đang phản hồi chậm hơn thường lệ do mạng. Bạn vui lòng bấm nút "Chấm lại bài" nhé.');
       }
       throw err;
     } finally {
@@ -1125,8 +1125,8 @@
     }
 
     const titleLabel = taskType === 'task2'
-      ? '🎓 GIÁM KHẢO AI CHẤM BÀI CHUẨN VSTEP — TASK 2 (ESSAY)'
-      : '🎓 GIÁM KHẢO AI CHẤM BÀI CHUẨN VSTEP — TASK 1 (LETTER / EMAIL)';
+      ? '🎓 TRỢ LÝ MISS NGUYỆT CHẤM BÀI CHUẨN VSTEP — TASK 2 (ESSAY)'
+      : '🎓 TRỢ LÝ MISS NGUYỆT CHẤM BÀI CHUẨN VSTEP — TASK 1 (LETTER / EMAIL)';
 
     if (wordCount < 10) {
       slot.innerHTML = `
@@ -1140,7 +1140,7 @@
           <div class="vai-body" style="padding:18px 22px;">
             <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px 18px;color:#92400e;line-height:1.6;">
               <strong style="font-size:0.95rem;">⚠️ Bài viết của bạn chưa có nội dung (dưới 10 từ).</strong><br>
-              <span style="font-size:0.88rem;color:#b45309;">Giám khảo AI đã sẵn sàng hoạt động! Để nhận điểm chuẩn VSTEP, sửa lỗi chi tiết từng câu và bản chẩn đoán nâng Band, bạn vui lòng viết bài (tối thiểu ${taskType === 'task2' ? '250' : '120'} từ) trước khi nộp bài nhé.</span>
+              <span style="font-size:0.88rem;color:#b45309;">Trợ lý Miss Nguyệt đã sẵn sàng chấm bài! Để nhận điểm chuẩn VSTEP, sửa lỗi chi tiết từng câu và bản chẩn đoán nâng Band, bạn vui lòng viết bài (tối thiểu ${taskType === 'task2' ? '250' : '120'} từ) trước khi nộp bài nhé.</span>
             </div>
           </div>
         </div>
@@ -1172,7 +1172,7 @@
             <div class="vai-loading">
               <div class="vai-spinner"></div>
               <div>
-                <strong>Đang phân tích & chấm bài bằng Giám khảo AI VSTEP...</strong><br>
+                <strong>TRỢ LÝ MISS NGUYỆT ĐANG CHẤM BÀI...</strong><br>
                 <span style="font-size:0.85rem;color:#3b82f6;">Vui lòng chờ khoảng 4–8 giây để nhận điểm chuẩn, sửa từng câu và bản Chẩn đoán & Lời khuyên.</span>
               </div>
             </div>
@@ -1195,12 +1195,12 @@
                 <div class="vai-header-title">${titleLabel}</div>
                 <div class="vai-header-sub">Đang hiển thị kết quả chấm nhanh offline bên dưới</div>
               </div>
-              <button type="button" class="vai-btn-retry">🔄 Thử chấm AI lại</button>
+              <button type="button" class="vai-btn-retry">🔄 Chấm lại bài</button>
             </div>
             <div class="vai-body">
               <div class="vai-error">
-                <strong>Không thể kết nối Giám khảo AI lúc này:</strong> ${escHtml(err.message || err)}<br>
-                Hệ thống đã tự động giữ kết quả chấm nhanh chuẩn VSTEP bên dưới. Bạn có thể bấm <strong>Thử chấm AI lại</strong> sau vài giây.
+                <strong>Không thể kết nối Trợ lý Miss Nguyệt lúc này:</strong> ${escHtml(err.message || err)}<br>
+                Hệ thống đã tự động giữ kết quả chấm nhanh chuẩn VSTEP bên dưới. Bạn có thể bấm <strong>Chấm lại bài</strong> sau vài giây.
               </div>
             </div>
           </div>
@@ -1218,7 +1218,7 @@
               <div class="vai-header-title">${titleLabel}</div>
               <div class="vai-header-sub">Thang điểm 0–10 (làm tròn 0.5) • Đánh dấu lỗi trực tiếp • Gợi ý bổ sung ý & Chẩn đoán</div>
             </div>
-            <button type="button" class="vai-btn-retry">🔄 Chấm lại bằng AI</button>
+            <button type="button" class="vai-btn-retry">🔄 Chấm lại bài</button>
           </div>
           <div class="vai-body">${renderTaskBodyHtml(data, essay)}</div>
         </div>
@@ -1261,14 +1261,14 @@
         <div class="vai-card" style="margin-bottom:20px;">
           <div class="vai-header">
             <div>
-              <div class="vai-header-title">🎓 GIÁM KHẢO AI CHẤM ĐỀ THI THỬ VSTEP WRITING (FULL MOCK TEST)</div>
+              <div class="vai-header-title">🎓 TRỢ LÝ MISS NGUYỆT CHẤM ĐỀ THI THỬ VSTEP WRITING (FULL MOCK TEST)</div>
               <div class="vai-header-sub">Công thức chuẩn: (Task 1 + 2 × Task 2) / 3 • QĐ 729/QĐ-BGDĐT</div>
             </div>
           </div>
           <div class="vai-body" style="padding:18px 22px;">
             <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px 18px;color:#92400e;line-height:1.6;">
               <strong style="font-size:0.95rem;">⚠️ Bài thi của bạn chưa có nội dung (dưới 10 từ).</strong><br>
-              <span style="font-size:0.88rem;color:#b45309;">Giám khảo AI đã sẵn sàng hoạt động! Để nhận bảng điểm tổng quy đổi chuẩn VSTEP và phân tích chi tiết, bạn chỉ cần nhập bài viết cho Task 1 (tối thiểu 120 từ) hoặc Task 2 (tối thiểu 250 từ) trước khi nộp bài nhé.</span>
+              <span style="font-size:0.88rem;color:#b45309;">Trợ lý Miss Nguyệt đã sẵn sàng chấm bài! Để nhận bảng điểm tổng quy đổi chuẩn VSTEP và phân tích chi tiết, bạn chỉ cần nhập bài viết cho Task 1 (tối thiểu 120 từ) hoặc Task 2 (tối thiểu 250 từ) trước khi nộp bài nhé.</span>
             </div>
           </div>
         </div>
@@ -1291,7 +1291,7 @@
         <div class="vai-card">
           <div class="vai-header">
             <div>
-              <div class="vai-header-title">🎓 GIÁM KHẢO AI CHẤM ĐỀ THI THỬ VSTEP WRITING (FULL TEST)</div>
+              <div class="vai-header-title">🎓 TRỢ LÝ MISS NGUYỆT CHẤM ĐỀ THI THỬ VSTEP WRITING (FULL TEST)</div>
               <div class="vai-header-sub">Chấm đồng thời Task 1 (1/3) & Task 2 (2/3) theo QĐ 729/QĐ-BGDĐT</div>
             </div>
           </div>
@@ -1299,7 +1299,7 @@
             <div class="vai-loading">
               <div class="vai-spinner"></div>
               <div>
-                <strong>Đang chấm chuyên sâu cả 2 bài (Task 1 & Task 2) bằng Giám khảo AI VSTEP...</strong><br>
+                <strong>TRỢ LÝ MISS NGUYỆT ĐANG CHẤM BÀI (TASK 1 & TASK 2)...</strong><br>
                 <span style="font-size:0.85rem;color:#3b82f6;">Vui lòng chờ khoảng 6–10 giây để nhận điểm tổng chuẩn, sửa lỗi từng câu và bản Chẩn đoán & Lời khuyên.</span>
               </div>
             </div>
@@ -1334,14 +1334,14 @@
           <div class="vai-card">
             <div class="vai-header">
               <div>
-                <div class="vai-header-title">🎓 GIÁM KHẢO AI CHẤM ĐỀ THI THỬ VSTEP WRITING</div>
+                <div class="vai-header-title">🎓 TRỢ LÝ MISS NGUYỆT CHẤM ĐỀ THI THỬ VSTEP WRITING</div>
                 <div class="vai-header-sub">Đang hiển thị kết quả chấm nhanh offline bên dưới</div>
               </div>
-              <button type="button" class="vai-btn-retry">🔄 Thử chấm AI lại</button>
+              <button type="button" class="vai-btn-retry">🔄 Chấm lại bài</button>
             </div>
             <div class="vai-body">
               <div class="vai-error">
-                <strong>Chưa kết nối được Giám khảo AI:</strong> ${escHtml(err.message || err)}
+                <strong>Chưa kết nối được Trợ lý Miss Nguyệt:</strong> ${escHtml(err.message || err)}
               </div>
             </div>
           </div>
@@ -1362,10 +1362,10 @@
           <div class="vai-card">
             <div class="vai-header">
               <div>
-                <div class="vai-header-title">🎓 KẾT QUẢ CHẤM AI CHUẨN VSTEP WRITING (FULL MOCK TEST)</div>
+                <div class="vai-header-title">🎓 KẾT QUẢ CHẤM BÀI TỪ TRỢ LÝ MISS NGUYỆT — VSTEP WRITING (FULL MOCK TEST)</div>
                 <div class="vai-header-sub">Công thức chính thức: (Task 1 + 2 × Task 2) / 3 • Làm tròn 0.5 • QĐ 729/QĐ-BGDĐT</div>
               </div>
-              <button type="button" class="vai-btn-retry">🔄 Chấm lại bằng AI</button>
+              <button type="button" class="vai-btn-retry">🔄 Chấm lại bài</button>
             </div>
             <div class="vai-body">
               <div class="vai-summary-strip">
