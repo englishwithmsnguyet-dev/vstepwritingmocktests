@@ -950,7 +950,7 @@ function syncSidebarNavigation() {
         </li>
     `;
     
-    for (let i = 1; i <= 11; i++) {
+    for (let i = 1; i <= 12; i++) {
         const active = (i === testId);
         const isDone = completedList.includes(i);
         const access = (typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.canAccessTest === 'function')
@@ -2549,12 +2549,12 @@ async function submitTest(force = false) {
             const nextId = testId + 1;
             const nextPad = nextId.toString().padStart(2, '0');
             if (qualifiedForUnlock) {
-                const nextBtnHtml = nextId <= 11
+                const nextBtnHtml = nextId <= 12
                     ? `<a href="../test ${nextId}/test${nextPad}-index.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:#16a34a;color:#fff;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap;">Làm Đề ${nextPad} ngay <i class="fa-solid fa-arrow-right"></i></a>`
                     : '';
                 banner.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#f0fdf4;border:1.5px solid #86efac;border-left:5px solid #16a34a;border-radius:12px;padding:14px 18px;margin-bottom:16px;color:#14532d;font-size:14px;';
                 banner.innerHTML = `
-                    <div><strong><i class="fa-solid fa-circle-check" style="color:#16a34a;"></i> HOÀN THÀNH ĐỀ ${curPad}!</strong> Bạn đã nộp hoàn chỉnh cả 2 Task (Task 1: ${t1Words} từ, Task 2: ${t2Words} từ)${nextId <= 11 ? ` và đã mở khóa <strong>WRITING TEST ${nextPad}</strong>.` : '.'}</div>
+                    <div><strong><i class="fa-solid fa-circle-check" style="color:#16a34a;"></i> HOÀN THÀNH ĐỀ ${curPad}!</strong> Bạn đã nộp hoàn chỉnh cả 2 Task (Task 1: ${t1Words} từ, Task 2: ${t2Words} từ)${nextId <= 12 ? ` và đã mở khóa <strong>WRITING TEST ${nextPad}</strong>.` : '.'}</div>
                     ${nextBtnHtml}
                 `;
             } else {
