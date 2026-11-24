@@ -975,9 +975,9 @@ html_template = """<!DOCTYPE html>
     <script>window.VSTEP_ROOM_SKILL = 'writing';</script>
     <script src="../exam_room.js?v=2026112103"></script>
     <!-- Core App logic script -->
-    <script src="../vstep_ai_grader.js?v=2026112402"></script>
+    <script src="../vstep_ai_grader.js?v=2026112403"></script>
     <script src="../result_report.js?v=2026112104"></script>
-    <script src="app.js?v=2026112401"></script>
+    <script src="app.js?v=2026112403"></script>
     <script>
         function toggleSidebar() {
             const sidebar = document.querySelector('.test-sidebar');
@@ -3520,10 +3520,29 @@ async function initializeApp() {
             }
 
             // Check if student already submitted this test before so they can ALWAYS review it
-            if (!hasResumedSession && typeof VstepWritingDB.getAllHistory === 'function') {
-                const allHistory = await VstepWritingDB.getAllHistory();
-                const latestSaved = allHistory.find(h => parseInt(h.testId, 10) === testId);
-                if (latestSaved) {
+            if (!hasResumedSession) {
+                let latestSaved = null;
+                if (typeof VstepWritingDB.getAllHistory === 'function') {
+                    const allHistory = await VstepWritingDB.getAllHistory();
+                    latestSaved = allHistory.find(h => parseInt(h.testId, 10) === testId) || null;
+                }
+                const completedList = (typeof VstepExamRoom !== 'undefined' && typeof VstepExamRoom.getCompletedTests === 'function')
+                    ? VstepExamRoom.getCompletedTests('writing')
+                    : [];
+                const isDoneSynced = completedList.includes(testId);
+
+                if (latestSaved || isDoneSynced) {
+                    const fallbackSaved = latestSaved || {
+                        id: null,
+                        testId: testId,
+                        studentName: savedName || 'Học viên',
+                        dateStr: '',
+                        task1Text: '',
+                        task2Text: '',
+                        task1Words: 0,
+                        task2Words: 0,
+                        reportMeta: null
+                    };
                     const actionBar = document.getElementById('welcome-action-bar') || (elements.btnStartTest && elements.btnStartTest.parentElement);
                     if (actionBar && !document.getElementById('btn-review-latest-submission')) {
                         const reviewBtn = document.createElement('button');
@@ -3531,15 +3550,17 @@ async function initializeApp() {
                         reviewBtn.id = 'btn-review-latest-submission';
                         reviewBtn.className = 'lock-btn';
                         reviewBtn.style.cssText = 'font-size: 15px; padding: 14px 28px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.28); color: #fff; border: none; cursor: pointer;';
-                        reviewBtn.innerHTML = '<i class="fa-solid fa-eye"></i> XEM LẠI BÀI ĐÃ LÀM &amp; BÀI GIẢI';
-                        reviewBtn.onclick = () => openSavedHistoryInSolutionView(latestSaved);
+                        reviewBtn.innerHTML = latestSaved
+                            ? '<i class="fa-solid fa-eye"></i> XEM LẠI BÀI ĐÃ LÀM &amp; BÀI GIẢI'
+                            : '<i class="fa-solid fa-eye"></i> XEM LẠI ĐỀ &amp; BÀI GIẢI';
+                        reviewBtn.onclick = () => openSavedHistoryInSolutionView(fallbackSaved);
                         actionBar.appendChild(reviewBtn);
                     }
 
                     // Auto-open review view if navigated with ?review=1
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.get('review') === '1') {
-                        openSavedHistoryInSolutionView(latestSaved);
+                        openSavedHistoryInSolutionView(fallbackSaved);
                     }
                 }
             }
@@ -6263,27 +6284,31 @@ function loadSolutions(name, t1, t2, w1, w2) {
     }
 
     // Mount VSTEP AI Grader (MOET Decision 729/QD-BGDDT) & live-sync Result Report Card
-    if (window.VstepAIGrader && elements && elements.viewSolution) {
-        const _p1 = (document.getElementById("prompt-t1-text") || document.getElementById("sol-prompt-t1") || {}).innerText || "";
-        const _p2 = (document.getElementById("prompt-t2-text") || document.getElementById("sol-prompt-t2") || {}).innerText || "";
-        const _aiWrap = elements.viewSolution.querySelector(".solution-card") || elements.viewSolution.querySelector(".sol-panels-wrapper") || elements.viewSolution;
-        window.VstepAIGrader.mountFullMock(_aiWrap, {
-            prompt1: _p1,
-            essay1: t1 || "",
-            prompt2: _p2,
-            essay2: t2 || "",
-            onResult: function(bundle) {
-                if (!bundle) return;
-                updateOverallLevelBadge(bundle.finalScore);
-                if (typeof VstepResultReport !== 'undefined') {
-                    VstepResultReport.updateFromAI(bundle);
-                    const syncedState = VstepResultReport.getCurrentState();
-                    if (currentHistoryId && typeof VstepWritingDB !== 'undefined' && typeof VstepWritingDB.updateHistoryItem === 'function' && syncedState) {
-                        VstepWritingDB.updateHistoryItem(currentHistoryId, { reportMeta: syncedState }).catch(() => {});
+    try {
+        if (window.VstepAIGrader && elements && elements.viewSolution) {
+            const _p1 = (document.getElementById("prompt-t1-text") || document.getElementById("sol-prompt-t1") || {}).innerText || "";
+            const _p2 = (document.getElementById("prompt-t2-text") || document.getElementById("sol-prompt-t2") || {}).innerText || "";
+            const _aiWrap = elements.viewSolution.querySelector(".solution-card") || elements.viewSolution.querySelector(".sol-panels-wrapper") || elements.viewSolution;
+            window.VstepAIGrader.mountFullMock(_aiWrap, {
+                prompt1: _p1,
+                essay1: t1 || "",
+                prompt2: _p2,
+                essay2: t2 || "",
+                onResult: function(bundle) {
+                    if (!bundle) return;
+                    updateOverallLevelBadge(bundle.finalScore);
+                    if (typeof VstepResultReport !== 'undefined') {
+                        VstepResultReport.updateFromAI(bundle);
+                        const syncedState = VstepResultReport.getCurrentState();
+                        if (currentHistoryId && typeof VstepWritingDB !== 'undefined' && typeof VstepWritingDB.updateHistoryItem === 'function' && syncedState) {
+                            VstepWritingDB.updateHistoryItem(currentHistoryId, { reportMeta: syncedState }).catch(() => {});
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
+    } catch (aiMountErr) {
+        console.warn("VstepAIGrader mount warning in loadSolutions:", aiMountErr);
     }
     
     const badgeT1 = document.getElementById('eval-badge-t1');

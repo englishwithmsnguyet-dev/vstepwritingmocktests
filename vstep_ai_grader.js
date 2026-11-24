@@ -1114,8 +1114,10 @@
     if (!slot) {
       slot = document.createElement('div');
       slot.className = 'vai-mount-slot';
-      const header = hostEl.querySelector('div[style*="justify-content: space-between"]');
-      if (header && header.nextSibling) {
+      const header = Array.from(hostEl.children || []).find(
+        el => el.tagName === 'DIV' && (el.getAttribute('style') || '').includes('justify-content: space-between')
+      );
+      if (header && header.parentNode === hostEl && header.nextSibling) {
         hostEl.insertBefore(slot, header.nextSibling);
       } else {
         hostEl.prepend(slot);
@@ -1244,8 +1246,10 @@
     if (!slot) {
       slot = document.createElement('div');
       slot.className = 'vai-mount-slot';
-      const header = hostEl.querySelector('div[style*="justify-content: space-between"]');
-      if (header && header.nextSibling) {
+      const header = Array.from(hostEl.children || []).find(
+        el => el.tagName === 'DIV' && (el.getAttribute('style') || '').includes('justify-content: space-between')
+      );
+      if (header && header.parentNode === hostEl && header.nextSibling) {
         hostEl.insertBefore(slot, header.nextSibling);
       } else {
         hostEl.prepend(slot);
