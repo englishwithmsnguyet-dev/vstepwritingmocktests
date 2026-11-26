@@ -2781,16 +2781,13 @@ const VALID_STUDENTS = {
         "Trần Hoàng Thông", "Nguyễn Kim Tiền", "Lê Thị Bảo Trân", "Võ Thị Diễm Trinh", 
         "Nguyễn Tấn Trung", "Nguyễn Tiến Trung", "Trần Thị Ánh Tuyết", "Đặng Nguyễn Khánh Uyên", 
         "Nguyễn Thị Chúc Yến"
-    ],
-    "B2": [
-        "Gia Tuệ", "Trương Gia Tuệ", "Gia Tuê", "Nguyễn Gia Tuệ", "Trần Gia Tuệ", "Lê Gia Tuệ"
     ]
 };
 
-const VALID_CLASSES = ["CB210", "CB211", "CB213", "ONB103", "B212", "B2", "GV"];
+const VALID_CLASSES = ["CB210", "CB211", "CB213", "ONB103", "B212", "GV"];
 const BANNED_CLASSES = ["CB196", "CB201", "CB202", "CB206", "CB219", "CB220", "B209"];
 const REQUIRED_PASSWORD = "VSTEPSEPTEMBER";
-const VALID_PASSWORDS = ["VSTEPSEPTEMBER", "STUDYHARD", "B2", "GIATUE", "PTMN2896", "PTMN2412", "PTMN2805"];
+const VALID_PASSWORDS = ["VSTEPSEPTEMBER", "STUDYHARD", "PTMN2896", "PTMN2412", "PTMN2805"];
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse";
 const GOOGLE_FORM_ENTRY = "entry.388968236";
 
@@ -2834,25 +2831,18 @@ function validateStudentIdentity(fullName, className) {
         return { ok: true, matchedName: "Cô Nguyệt (PTMN)", className: "GV" };
     }
 
-    if (checkIsGiaTue(cleanName) && (!cleanClass || cleanClass === "B2" || cleanClass === "CB206")) {
-        cleanClass = "B2";
+    if (checkIsGiaTue(cleanName) || cleanClass === "B2") {
+        return { 
+            ok: false, 
+            error: 'Tài khoản học viên "Gia Tuệ" hiện đã bị KHÓA! Vui lòng liên hệ Giáo viên (Cô Nguyệt).' 
+        };
     }
 
     if (!VALID_CLASSES.includes(cleanClass)) {
         return { 
             ok: false, 
-            error: `Lớp "${className}" không hợp lệ hoặc đã kết thúc! Hệ thống hiện chỉ nhận các lớp: CB210, CB211, CB213, ONB103, B212 và học viên Gia Tuệ (B2).` 
+            error: `Lớp "${className}" không hợp lệ hoặc đã kết thúc! Hệ thống hiện chỉ nhận các lớp: CB210, CB211, CB213, ONB103, B212.` 
         };
-    }
-
-    if (cleanClass === "B2") {
-        if (!checkIsGiaTue(cleanName)) {
-            return { 
-                ok: false, 
-                error: "Mã lớp B2 hiện chỉ dành riêng cho học viên Gia Tuệ (B2)! Vui lòng kiểm tra lại Họ tên hoặc Mã lớp." 
-            };
-        }
-        return { ok: true, matchedName: "Gia Tuệ", className: "B2" };
     }
 
     if (cleanClass === "GV") {
@@ -2873,9 +2863,7 @@ function validateStudentIdentity(fullName, className) {
     });
 
     if (!found) {
-        if (checkIsGiaTue(cleanName)) {
-            return { ok: true, matchedName: "Gia Tuệ", className: "B2" };
-        }
+
         return { 
             ok: false, 
             error: `Họ và tên "${cleanName}" không có trong danh sách lớp ${cleanClass}. Vui lòng kiểm tra lại chính xác họ tên và mã lớp!` 
@@ -2902,6 +2890,7 @@ function isStudentLocked(name, className) {
     if (!name) return false;
     const cleanClass = className || localStorage.getItem("vstep_student_class") || sessionStorage.getItem("vstep_student_class") || "";
     if (isTeacherUser(name, cleanClass)) return false;
+    if (checkIsGiaTue(name) || (cleanClass && cleanClass.toUpperCase() === "B2")) return true;
     const key = getStudentLockKey(name);
     return localStorage.getItem(key) === "true" || localStorage.getItem("vstep_current_user_locked") === "true";
 }
@@ -3242,7 +3231,7 @@ function handleStudentLoginSubmit(event) {
     className = validation.className;
 
     const isTeacher = isTeacherUser(matchedFullName, className);
-    const isGiaTue = (className === "B2" || checkIsGiaTue(matchedFullName));
+    const isGiaTue = false;
     
     if (!isTeacher && !isGiaTue) {
         if (!pass) {
