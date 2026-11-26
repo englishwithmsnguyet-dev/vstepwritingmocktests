@@ -298,13 +298,24 @@
 
         // 2. Firebase RTDB backup sync
         if (studentKey && studentKey !== "guest") {
-            const payload = {
+            const payload = Object.assign({
                 completed: true,
                 name: info.name || "Học viên",
                 className: info.className || "",
                 details: details,
                 updatedAt: Date.now()
-            };
+            }, meta && typeof meta === "object" ? {
+                task1Words: typeof meta.task1Words === "number" ? meta.task1Words : undefined,
+                task2Words: typeof meta.task2Words === "number" ? meta.task2Words : undefined,
+                scoreT1: typeof meta.scoreT1 === "number" ? meta.scoreT1 : undefined,
+                scoreT2: typeof meta.scoreT2 === "number" ? meta.scoreT2 : undefined,
+                overallScore: typeof meta.overallScore === "number" ? meta.overallScore : undefined,
+                elapsedSeconds: typeof meta.elapsedSeconds === "number" ? meta.elapsedSeconds : undefined,
+                tabSwitches: typeof meta.tabSwitches === "number" ? meta.tabSwitches : undefined,
+                pasteAttempts: typeof meta.pasteAttempts === "number" ? meta.pasteAttempts : undefined,
+                submittedAt: meta.submittedAt || undefined
+            } : {});
+            Object.keys(payload).forEach(k => { if (payload[k] === undefined) delete payload[k]; });
             if (rtdb) {
                 rtdb.ref(`student_progress/${studentKey}/${sk}/${tNum}`).set(payload).catch(() => {});
             }

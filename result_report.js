@@ -3,7 +3,113 @@
     'use strict';
 
     const VIOLATION_STORAGE_KEY = 'vstep_writing_report_violations_v1';
+    const RTDB_BASE = 'https://vstep6868-default-rtdb.firebaseio.com';
+    const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdOUd5JHqX4PXqkgfFuqCXZBEu1dsk3KdndGAio-TXiz6eOmQ/formResponse';
+    const GOOGLE_FORM_ENTRY = 'entry.388968236';
+    const sentFormKeys = new Set();
     let currentReportState = null;
+
+    function captureEssayTextFromDom(taskNum) {
+        const ta = document.getElementById(taskNum === 1 ? 'textarea-task1' : 'textarea-task2');
+        if (ta && typeof ta.value === 'string' && ta.value.trim()) {
+            return ta.value.trim();
+        }
+        const sol = document.getElementById(taskNum === 1 ? 'sol-text-t1' : 'sol-text-t2');
+        if (sol && typeof sol.innerText === 'string') {
+            const txt = sol.innerText.trim();
+            if (txt && !txt.startsWith('(Bạn không làm bài Task')) return txt;
+        }
+        return '';
+    }
+
+    function buildWritingStudentKey(name, className) {
+        const nk = normalizeKey(name);
+        const ck = normalizeKey(className);
+        if (!nk || nk === 'hoc_vien') return 'guest';
+        return ck && ck !== 'chua_cap_nhat' ? `${ck}__${nk}` : nk;
+    }
+
+    function buildAttemptId(st) {
+        const sk = buildWritingStudentKey(st.studentName, st.studentClass);
+        const timePart = normalizeKey(st.submittedAt) || String(Date.now());
+        return `${sk}__t${parseInt(st.testId, 10) || 1}__${timePart}`;
+    }
+
+    function syncSubmissionToFirebase(st) {
+        if (!st || st.skipSync) return;
+        const studentKey = buildWritingStudentKey(st.studentName, st.studentClass);
+        if (!studentKey || studentKey === 'guest') return;
+        const totalWords = (st.task1Words || 0) + (st.task2Words || 0);
+        if (totalWords <= 0 && !st.task1Text && !st.task2Text) return;
+
+        const attemptId = st.attemptId || buildAttemptId(st);
+        st.attemptId = attemptId;
+        const dur = formatDuration(st.elapsedSeconds);
+        const tNum = parseInt(st.testId, 10) || 1;
+        const record = {
+            attemptId: attemptId,
+            studentKey: studentKey,
+            skill: 'writing',
+            testId: tNum,
+            name: st.studentName || 'Học viên',
+            className: st.studentClass || '',
+            task1Words: st.task1Words || 0,
+            task2Words: st.task2Words || 0,
+            totalWords: totalWords,
+            task1Text: st.task1Text || '',
+            task2Text: st.task2Text || '',
+            scoreT1: Number(st.scoreT1 || 0),
+            scoreT2: Number(st.scoreT2 || 0),
+            overallScore: Number(st.overallScore || 0),
+            aiSynced: Boolean(st.aiSynced),
+            elapsedSeconds: Number(st.elapsedSeconds || 0),
+            durationText: dur.text,
+            tabSwitches: parseInt(st.tabSwitches || 0, 10) || 0,
+            pasteAttempts: parseInt(st.pasteAttempts || 0, 10) || 0,
+            submittedAt: st.submittedAt || '',
+            details: `Task 1: ${st.task1Words || 0} từ (${Number(st.scoreT1 || 0).toFixed(1)}) | Task 2: ${st.task2Words || 0} từ (${Number(st.scoreT2 || 0).toFixed(1)}) | Tổng: ${Number(st.overallScore || 0).toFixed(1)}/10`,
+            updatedAt: Date.now()
+        };
+
+        fetch(`${RTDB_BASE}/writing_submissions/${encodeURIComponent(attemptId)}.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(record)
+        }).catch(() => {});
+    }
+
+    function submitResultToGoogleForm(st, manual = false) {
+        const target = st || currentReportState;
+        if (!target) return false;
+        const totalWords = (target.task1Words || 0) + (target.task2Words || 0);
+        if (!manual && totalWords <= 0) return false;
+
+        const dedupeKey = `${target.attemptId || buildAttemptId(target)}__${target.aiSynced ? 'ai' : 'init'}`;
+        if (!manual && sentFormKeys.has(dedupeKey)) return false;
+        sentFormKeys.add(dedupeKey);
+
+        const testPad = String(parseInt(target.testId, 10) || 1).padStart(2, '0');
+        const dur = formatDuration(target.elapsedSeconds);
+        const s1 = Number(target.scoreT1 || 0).toFixed(1);
+        const s2 = Number(target.scoreT2 || 0).toFixed(1);
+        const ov = Number(target.overallScore || 0).toFixed(1);
+        const srcTag = target.aiSynced ? 'AI chuẩn 729' : 'Hệ thống';
+        const tag = manual ? '[WRITING MOCK TESTS - KẾT QUẢ THI (GỬI LẠI)]' : '[WRITING MOCK TESTS - KẾT QUẢ THI]';
+        const summary = `${tag} ${target.studentName} - Lớp ${target.studentClass} - Đề số ${testPad} | Điểm (${srcTag}): ${ov}/10 (T1: ${s1} • T2: ${s2}) | Số từ: ${totalWords} (T1: ${target.task1Words || 0}, T2: ${target.task2Words || 0}) | Thời gian: ${dur.text} | Rời tab: ${target.tabSwitches || 0} | Dán văn bản: ${target.pasteAttempts || 0} | Lúc ${target.submittedAt || ''}`;
+
+        try {
+            const fd = new FormData();
+            fd.append(GOOGLE_FORM_ENTRY, summary);
+            fetch(GOOGLE_FORM_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: fd
+            }).catch(() => {});
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
 
     function escHtml(str) {
         return String(str == null ? '' : str)
@@ -532,6 +638,9 @@
                 </div>
             </div>
             <div class="vrr-footer">
+                <button type="button" class="vrr-btn" style="background:#059669;color:#ffffff;" onclick="VstepResultReport.manualSendGoogleForm(this)">
+                    <i class="fa-solid fa-paper-plane"></i> Gửi báo cáo Google Form
+                </button>
                 <button type="button" class="vrr-btn vrr-btn-print" onclick="VstepResultReport.printReport()">
                     <i class="fa-solid fa-print"></i> In / Lưu PDF Phiếu Báo Cáo
                 </button>
@@ -542,9 +651,25 @@
         `;
     }
 
+    function manualSendGoogleForm(btnEl) {
+        if (!currentReportState) return;
+        submitResultToGoogleForm(currentReportState, true);
+        if (btnEl) {
+            const orig = btnEl.innerHTML;
+            btnEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Đã gửi báo cáo!';
+            btnEl.disabled = true;
+            setTimeout(() => {
+                btnEl.innerHTML = orig;
+                btnEl.disabled = false;
+            }, 2500);
+        }
+    }
+
     function setReportData(data) {
         const st = getLoggedInStudent();
         const viol = getViolations(data.testId);
+        const t1Text = (typeof data.task1Text === 'string' && data.task1Text.trim()) ? data.task1Text.trim() : captureEssayTextFromDom(1);
+        const t2Text = (typeof data.task2Text === 'string' && data.task2Text.trim()) ? data.task2Text.trim() : captureEssayTextFromDom(2);
         currentReportState = {
             testId: parseInt(data.testId, 10) || 1,
             studentName: (data.studentName && data.studentName !== 'Học viên') ? data.studentName : st.name,
@@ -553,14 +678,24 @@
             submittedAt: data.submittedAt || new Date().toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }),
             task1Words: parseInt(data.task1Words || 0, 10) || 0,
             task2Words: parseInt(data.task2Words || 0, 10) || 0,
+            task1Text: t1Text,
+            task2Text: t2Text,
             tabSwitches: typeof data.tabSwitches === 'number' ? data.tabSwitches : viol.tabSwitches,
             pasteAttempts: typeof data.pasteAttempts === 'number' ? data.pasteAttempts : viol.pasteAttempts,
             scoreT1: Number(data.scoreT1 || 0),
             scoreT2: Number(data.scoreT2 || 0),
             overallScore: Number(data.overallScore || 0),
             aiSynced: Boolean(data.aiSynced),
-            aiPending: Boolean(data.aiPending)
+            aiPending: Boolean(data.aiPending),
+            skipSync: Boolean(data.skipSync),
+            attemptId: data.attemptId || null
         };
+        if (!currentReportState.skipSync) {
+            syncSubmissionToFirebase(currentReportState);
+            if (!currentReportState.aiPending) {
+                submitResultToGoogleForm(currentReportState, false);
+            }
+        }
         rerenderIfOpen();
         return currentReportState;
     }
@@ -572,6 +707,10 @@
         currentReportState.overallScore = Number(bundle.finalScore || 0);
         currentReportState.aiSynced = true;
         currentReportState.aiPending = false;
+        if (!currentReportState.skipSync) {
+            syncSubmissionToFirebase(currentReportState);
+            submitResultToGoogleForm(currentReportState, false);
+        }
         rerenderIfOpen();
     }
 
@@ -661,6 +800,8 @@ body { margin: 24px; background: #ffffff; display: flex; justify-content: center
         formatDuration,
         setReportData,
         updateFromAI,
+        submitResultToGoogleForm,
+        manualSendGoogleForm,
         getCurrentState: () => currentReportState,
         open,
         close,

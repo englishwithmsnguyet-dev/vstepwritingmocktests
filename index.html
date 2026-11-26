@@ -54,7 +54,7 @@
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index-styles.css?v=2026112401">
+    <link rel="stylesheet" href="index-styles.css?v=20261126_v45">
 
         <!-- Direct Student Login Modal Styles -->
     <style id="vstep-login-styles">
@@ -603,11 +603,15 @@
                     </a>
                 </h1>
                 <div id="vstep-user-badge-container" style="margin: 14px auto 0; display: flex; justify-content: center;"></div>
+                <div id="teacher-writing-home-btn-wrap" style="margin: 12px auto 0; display: none; justify-content: center;"></div>
                 <div style="margin: 12px auto 6px; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(124, 58, 237, 0.12)); border: 1.5px solid #c7d2fe; padding: 7px 20px; border-radius: 999px; color: #4338ca; font-weight: 800; font-size: 0.92rem; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.12);">
                     <i class="fa-solid fa-wand-magic-sparkles" style="color: #7c3aed;"></i> ĐÃ TÍCH HỢP GIÁM KHẢO AI CHẤM FULL TEST THEO CHUẨN QĐ 729/QĐ-BGDĐT
                 </div>
                 <div class="mock-test-pill"><i class="fa-solid fa-circle-info"></i> LƯU Ý QUAN TRỌNG ĐỐI VỚI VSTEP WRITING</div>
             </div>
+
+            <!-- Dedicated Teacher Results Hub (PTMN Only) -->
+            <div id="teacher-writing-results-view" style="display: none;"></div>
 
             <!-- Two Columns Dashboard Layout -->
             <div class="dashboard-grid">
@@ -712,9 +716,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script>window.VSTEP_ROOM_SKILL = 'writing';</script>
-    <script src="exam_room.js?v=2026112103"></script>
+    <script src="exam_room.js?v=20261126_v45"></script>
     <script src="vstep_ai_grader.js?v=2026112404"></script>
-    <script src="result_report.js?v=2026112105"></script>
+    <script src="result_report.js?v=20261126_v45"></script>
+    <script src="teacher_results.js?v=20261126_v45"></script>
     <script>
         const TEST_PASSWORDS = {
             1: "VSTEPPASS",
@@ -2387,6 +2392,9 @@
                             </a>
                         </li>
                     `;
+                    if (typeof VstepWritingTeacherHub !== 'undefined' && typeof VstepWritingTeacherHub.syncVisibility === 'function') {
+                        VstepWritingTeacherHub.syncVisibility();
+                    }
                     
                     for (let i = 1; i <= 12; i++) {
                         const access = getTestAccessState(i);
@@ -4989,6 +4997,9 @@ function renderStudentBadge() {
                 </div>
             `;
         }
+    }
+    if (typeof VstepWritingTeacherHub !== 'undefined' && typeof VstepWritingTeacherHub.syncVisibility === 'function') {
+        VstepWritingTeacherHub.syncVisibility();
     }
 }
 
