@@ -439,11 +439,14 @@ function setupAntiCheatListeners() {
                 tabLeaveTime = Date.now();
             } else {
                 if (tabLeaveTime > 0) {
+                    const awayMs = Date.now() - tabLeaveTime;
                     tabLeaveTime = 0;
-                    if (typeof VstepResultReport !== "undefined") {
-                        VstepResultReport.recordViolation(testId, "tab");
+                    if (awayMs >= 2000) {
+                        if (typeof VstepResultReport !== "undefined") {
+                            VstepResultReport.recordViolation(testId, "tab");
+                        }
+                        handleCheatingViolation("Hành vi rời khỏi màn hình bài thi hoặc chuyển tab trình duyệt bị nghiêm cấm!");
                     }
-                    handleCheatingViolation("Hành vi rời khỏi màn hình bài thi hoặc chuyển tab trình duyệt bị nghiêm cấm!");
                 }
             }
         }
